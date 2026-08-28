@@ -26,7 +26,7 @@ function Logo({ light = false }: { light?: boolean }) {
       }`}
     >
       <Image
-        src="/icon.png"
+        src="/tapqr-icon.webp"
         alt="TapQR"
         width={36}
         height={36}
