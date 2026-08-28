@@ -1,6 +1,7 @@
 'use client'
 
 import { motion, useInView, useMotionValue, useSpring } from 'framer-motion'
+import Image from 'next/image'
 import { useEffect, useRef, useState } from 'react'
 import { ArrowRight, BarChart3, ChevronRight, Download, Globe2, Link2, Mail, MapPin, Menu, Palette, Phone, QrCode, ScanLine, Share2, Sparkles, Users, WalletCards, X } from 'lucide-react'
 
@@ -17,7 +18,24 @@ function QR({ small = false }: { small?: boolean }) {
 }
 
 function Logo({ light = false }: { light?: boolean }) {
-  return <a href="#top" className={`flex items-center gap-2 font-semibold tracking-tight ${light ? 'text-white' : 'text-ink'}`}><span className="logo-mark"><QrCode size={17} strokeWidth={2.5} /></span><span>TapQR</span></a>
+  return (
+    <a
+      href="#top"
+      className={`flex items-center gap-2 font-semibold tracking-tight ${
+        light ? 'text-white' : 'text-ink'
+      }`}
+    >
+      <Image
+        src="/icon.png"
+        alt="TapQR"
+        width={36}
+        height={36}
+        className="rounded-lg object-contain"
+      />
+
+      <span>TapQR</span>
+    </a>
+  )
 }
 
 function PlayStoreBadge() {
