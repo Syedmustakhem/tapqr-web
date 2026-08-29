@@ -1,7 +1,7 @@
-'use client'
+"use client";
 
-import Link from 'next/link'
-import { motion } from 'framer-motion'
+import Link from "next/link";
+import { motion } from "framer-motion";
 import {
   ArrowRight,
   BarChart3,
@@ -16,109 +16,109 @@ import {
   Sparkles,
   UserRound,
   Users,
-} from 'lucide-react'
+} from "lucide-react";
 
 const resources = [
   {
     icon: BookOpen,
-    category: 'Getting started',
-    title: 'How TapQR works',
+    category: "Getting started",
+    title: "How TapQR works",
     description:
-      'Learn how to create your profile, generate your dynamic QR, and start sharing your digital identity.',
-    href: '#getting-started',
+      "Learn how to create your profile, generate your dynamic QR, and start sharing your digital identity.",
+    href: "#getting-started",
   },
   {
     icon: RefreshCw,
-    category: 'Dynamic QR',
-    title: 'Understanding dynamic QR codes',
+    category: "Dynamic QR",
+    title: "Understanding dynamic QR codes",
     description:
-      'Learn why your TapQR QR can continue working even when the information behind your profile changes.',
-    href: '#dynamic-qr',
+      "Learn why your TapQR QR can continue working even when the information behind your profile changes.",
+    href: "/resources/what-is-a-dynamic-qr-code",
   },
   {
     icon: BarChart3,
-    category: 'Analytics',
-    title: 'Understanding QR analytics',
+    category: "Analytics",
+    title: "Understanding QR analytics",
     description:
-      'See how analytics can help you understand activity around your TapQR profile.',
-    href: '#analytics',
+      "See how analytics can help you understand activity around your TapQR profile.",
+    href: "#analytics",
   },
   {
     icon: Palette,
-    category: 'Branding',
-    title: 'Customize your QR',
+    category: "Branding",
+    title: "Customize your QR",
     description:
-      'Discover how Pro users can use custom QR colors, their own brand colors, and their logo.',
-    href: '#branding',
+      "Discover how Pro users can use custom QR colors, their own brand colors, and their logo.",
+    href: "#branding",
   },
   {
     icon: Users,
-    category: 'Profiles',
-    title: 'Using multiple profiles',
+    category: "Profiles",
+    title: "Using multiple profiles",
     description:
-      'Learn how multiple QR profiles can help you manage different roles, identities, or use cases.',
-    href: '#profiles',
+      "Learn how multiple QR profiles can help you manage different roles, identities, or use cases.",
+    href: "#profiles",
   },
   {
     icon: ShieldCheck,
-    category: 'Sharing',
-    title: 'Share your TapQR',
+    category: "Sharing",
+    title: "Share your TapQR",
     description:
-      'Explore practical ways to use your dynamic QR across digital and physical touchpoints.',
-    href: '#sharing',
+      "Explore practical ways to use your dynamic QR across digital and physical touchpoints.",
+    href: "#sharing",
   },
-]
+];
 
 const steps = [
   {
-    number: '01',
-    title: 'Create your profile',
-    text: 'Add your contact information, social profiles, links, and other information you want people to access.',
+    number: "01",
+    title: "Create your profile",
+    text: "Add your contact information, social profiles, links, and other information you want people to access.",
   },
   {
-    number: '02',
-    title: 'Generate your dynamic QR',
-    text: 'Your TapQR profile is connected to a dynamic QR code that can keep pointing to your profile as it changes.',
+    number: "02",
+    title: "Generate your dynamic QR",
+    text: "Your TapQR profile is connected to a dynamic QR code that can keep pointing to your profile as it changes.",
   },
   {
-    number: '03',
-    title: 'Share your QR',
-    text: 'Use your QR on cards, posters, packaging, websites, screens, or wherever people need to connect with you.',
+    number: "03",
+    title: "Share your QR",
+    text: "Use your QR on cards, posters, packaging, websites, screens, or wherever people need to connect with you.",
   },
   {
-    number: '04',
-    title: 'Keep your information updated',
-    text: 'Update your TapQR profile from the platform without needing to replace the QR code you have already shared.',
+    number: "04",
+    title: "Keep your information updated",
+    text: "Update your TapQR profile from the platform without needing to replace the QR code you have already shared.",
   },
-]
+];
 
 const faqs = [
   {
-    question: 'What is a TapQR dynamic QR code?',
+    question: "What is a TapQR dynamic QR code?",
     answer:
-      'A TapQR dynamic QR code connects people to your TapQR profile. When you update the information behind your profile, you can keep using the same QR code.',
+      "A TapQR dynamic QR code connects people to your TapQR profile. When you update the information behind your profile, you can keep using the same QR code.",
   },
   {
-    question: 'Can I change my profile after sharing my QR?',
+    question: "Can I change my profile after sharing my QR?",
     answer:
-      'Yes. The purpose of a dynamic QR is to let you update the profile connected to the QR without having to replace the QR code you have already shared.',
+      "Yes. The purpose of a dynamic QR is to let you update the profile connected to the QR without having to replace the QR code you have already shared.",
   },
   {
-    question: 'Can I add social media and contact information?',
+    question: "Can I add social media and contact information?",
     answer:
-      'Yes. TapQR profiles are designed to bring your links, social profiles, contact information, and other important details together.',
+      "Yes. TapQR profiles are designed to bring your links, social profiles, contact information, and other important details together.",
   },
   {
-    question: 'Can I create multiple profiles?',
+    question: "Can I create multiple profiles?",
     answer:
-      'Free accounts include one QR profile. Pro plans support multiple QR profiles for different roles, people, or use cases.',
+      "Free accounts include one QR profile. Pro plans support multiple QR profiles for different roles, people, or use cases.",
   },
   {
-    question: 'Can I use my own branding?',
+    question: "Can I use my own branding?",
     answer:
-      'Pro users can customize QR colors and use their own brand colors and logo.',
+      "Pro users can customize QR colors and use their own brand colors and logo.",
   },
-]
+];
 
 export default function ResourcesPage() {
   return (
@@ -227,7 +227,7 @@ export default function ResourcesPage() {
         <div className="mx-auto max-w-6xl">
           <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
             {resources.map((resource, index) => {
-              const Icon = resource.icon
+              const Icon = resource.icon;
 
               return (
                 <motion.a
@@ -235,7 +235,7 @@ export default function ResourcesPage() {
                   href={resource.href}
                   initial={{ opacity: 0, y: 25 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: '-50px' }}
+                  viewport={{ once: true, margin: "-50px" }}
                   transition={{
                     duration: 0.5,
                     delay: index * 0.06,
@@ -270,7 +270,7 @@ export default function ResourcesPage() {
                     <ChevronRight size={16} />
                   </div>
                 </motion.a>
-              )
+              );
             })}
           </div>
         </div>
@@ -354,22 +354,30 @@ export default function ResourcesPage() {
               information from TapQR and continue using the QR you already
               shared.
             </p>
+
+            <Link
+              href="/resources/what-is-a-dynamic-qr-code"
+              className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-[#2F6BFF]"
+            >
+              Read the full dynamic QR guide
+              <ArrowRight size={16} />
+            </Link>
           </div>
 
           <div className="rounded-[32px] bg-[#0B0D0C] p-7 text-white sm:p-10">
             <div className="space-y-4">
               {[
                 {
-                  title: 'Your QR',
-                  text: 'Remains the same',
+                  title: "Your QR",
+                  text: "Remains the same",
                 },
                 {
-                  title: 'Your profile',
-                  text: 'Can be updated',
+                  title: "Your profile",
+                  text: "Can be updated",
                 },
                 {
-                  title: 'Your destination',
-                  text: 'Stays connected',
+                  title: "Your destination",
+                  text: "Stays connected",
                 },
               ].map((item, index) => (
                 <motion.div
@@ -431,9 +439,9 @@ export default function ResourcesPage() {
 
             <div className="mt-8 space-y-3">
               {[
-                'Custom QR colors',
-                'Your own brand colors',
-                'Your own logo',
+                "Custom QR colors",
+                "Your own brand colors",
+                "Your own logo",
               ].map((item) => (
                 <div
                   key={item}
@@ -460,7 +468,7 @@ export default function ResourcesPage() {
               transition={{
                 duration: 5,
                 repeat: Infinity,
-                ease: 'easeInOut',
+                ease: "easeInOut",
               }}
               className="relative w-full max-w-[280px] rounded-[26px] bg-white p-5 text-black shadow-[0_30px_70px_rgba(0,0,0,0.4)]"
             >
@@ -475,8 +483,8 @@ export default function ResourcesPage() {
                         key={index}
                         className={`rounded-[1px] ${
                           (index * 7 + Math.floor(index / 8) * 3) % 5 < 2
-                            ? 'bg-[#0B0D0C]'
-                            : 'bg-black/10'
+                            ? "bg-[#0B0D0C]"
+                            : "bg-black/10"
                         }`}
                       />
                     ))}
@@ -596,16 +604,16 @@ export default function ResourcesPage() {
           <div className="mt-14 grid gap-5 md:grid-cols-3">
             {[
               {
-                title: 'Agent',
-                text: 'A profile for customer-facing work and networking.',
+                title: "Agent",
+                text: "A profile for customer-facing work and networking.",
               },
               {
-                title: 'Manager',
-                text: 'A separate profile for professional communication.',
+                title: "Manager",
+                text: "A separate profile for professional communication.",
               },
               {
-                title: 'Support',
-                text: 'A focused identity for customer support and contact.',
+                title: "Support",
+                text: "A focused identity for customer support and contact.",
               },
             ].map((profile, index) => (
               <motion.div
@@ -643,7 +651,7 @@ export default function ResourcesPage() {
       >
         <div className="mx-auto max-w-6xl rounded-[36px] bg-[#0B0D0C] px-7 py-16 text-center text-white sm:px-12 lg:py-20">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-[#2F6BFF]">
-            <Share2Icon />
+            <Share2 size={23} strokeWidth={2.2} />
           </div>
 
           <h2 className="mx-auto mt-7 max-w-3xl text-4xl font-semibold tracking-tight sm:text-5xl">
@@ -740,7 +748,10 @@ export default function ResourcesPage() {
           </Link>
 
           <div className="flex flex-wrap gap-5">
-            <Link href="/" className="transition-colors hover:text-black">
+            <Link
+              href="/"
+              className="transition-colors hover:text-black"
+            >
               Home
             </Link>
 
@@ -773,6 +784,20 @@ export default function ResourcesPage() {
             </Link>
 
             <Link
+              href="/about"
+              className="transition-colors hover:text-black"
+            >
+              About
+            </Link>
+
+            <Link
+              href="/contact"
+              className="transition-colors hover:text-black"
+            >
+              Contact
+            </Link>
+
+            <Link
               href="/login"
               className="transition-colors hover:text-black"
             >
@@ -782,14 +807,5 @@ export default function ResourcesPage() {
         </div>
       </footer>
     </main>
-  )
-}
-
-function Share2Icon() {
-  return (
-    <Share2
-      size={23}
-      strokeWidth={2.2}
-    />
-  )
+  );
 }

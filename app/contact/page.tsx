@@ -1,7 +1,7 @@
-'use client'
+"use client";
 
-import Link from 'next/link'
-import { motion } from 'framer-motion'
+import Link from "next/link";
+import { motion } from "framer-motion";
 import {
   ArrowRight,
   Mail,
@@ -9,28 +9,28 @@ import {
   QrCode,
   Send,
   Sparkles,
-} from 'lucide-react'
+} from "lucide-react";
 
 const topics = [
   {
     icon: MessageCircle,
-    title: 'General questions',
+    title: "General questions",
     description:
-      'Have a question about TapQR, your account, or how the platform works?',
+      "Have a question about TapQR, your account, or how the platform works?",
   },
   {
     icon: QrCode,
-    title: 'QR & product help',
+    title: "QR & product help",
     description:
-      'Need help with your QR, profile, branding, analytics, or another product feature?',
+      "Need help with your QR, profile, branding, analytics, or another product feature?",
   },
   {
     icon: Mail,
-    title: 'Business enquiries',
+    title: "Business enquiries",
     description:
-      'Interested in TapQR for your business, team, or organization?',
+      "Interested in TapQR for your business, team, or organization?",
   },
-]
+];
 
 export default function ContactPage() {
   return (
@@ -165,53 +165,55 @@ export default function ContactPage() {
               can work for your business, we'd love to hear from you.
             </p>
 
-           <div className="mt-10 space-y-4">
-  <a
-    href="mailto:support@tapqr.shop"
-    className="block rounded-2xl border border-white/10 bg-white/[0.03] p-5 transition-colors hover:bg-white/[0.06]"
-  >
-    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#6F98FF]">
-      Email
-    </p>
+            <div className="mt-10 space-y-4">
+              <a
+                href="mailto:support@tapqr.shop"
+                className="block rounded-2xl border border-white/10 bg-white/[0.03] p-5 transition-colors hover:bg-white/[0.06]"
+              >
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#6F98FF]">
+                  Email
+                </p>
 
-    <p className="mt-2 text-sm text-white/75">
-      support@tapqr.shop
-    </p>
-  </a>
+                <p className="mt-2 text-sm text-white/75">
+                  support@tapqr.shop
+                </p>
+              </a>
 
-  <a
-    href="tel:+919441586322"
-    className="block rounded-2xl border border-white/10 bg-white/[0.03] p-5 transition-colors hover:bg-white/[0.06]"
-  >
-    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#6F98FF]">
-      Phone
-    </p>
+              <a
+                href="tel:+919441586322"
+                className="block rounded-2xl border border-white/10 bg-white/[0.03] p-5 transition-colors hover:bg-white/[0.06]"
+              >
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#6F98FF]">
+                  Phone
+                </p>
 
-    <p className="mt-2 text-sm text-white/75">
-      +91 94415 86322
-    </p>
-  </a>
+                <p className="mt-2 text-sm text-white/75">
+                  +91 94415 86322
+                </p>
+              </a>
 
-  <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#6F98FF]">
-      Support
-    </p>
+              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#6F98FF]">
+                  Support
+                </p>
 
-    <p className="mt-2 text-sm leading-6 text-white/55">
-      Have questions about your TapQR account or product? We're here to help.
-    </p>
-  </div>
+                <p className="mt-2 text-sm leading-6 text-white/55">
+                  Have questions about your TapQR account or product? We're
+                  here to help.
+                </p>
+              </div>
 
-  <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#6F98FF]">
-      Business
-    </p>
+              <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#6F98FF]">
+                  Business
+                </p>
 
-    <p className="mt-2 text-sm leading-6 text-white/55">
-      Looking to use TapQR across a team or organization? Get in touch with us.
-    </p>
-  </div>
-</div>
+                <p className="mt-2 text-sm leading-6 text-white/55">
+                  Looking to use TapQR across a team or organization? Get in
+                  touch with us.
+                </p>
+              </div>
+            </div>
           </motion.div>
 
           {/* Form */}
@@ -290,18 +292,23 @@ export default function ContactPage() {
                   <option value="" disabled>
                     Select a topic
                   </option>
+
                   <option value="general">
                     General question
                   </option>
+
                   <option value="support">
                     Product support
                   </option>
+
                   <option value="business">
                     Business enquiry
                   </option>
+
                   <option value="billing">
                     Billing & pricing
                   </option>
+
                   <option value="other">
                     Something else
                   </option>
@@ -356,7 +363,7 @@ export default function ContactPage() {
 
           <div className="mt-14 grid gap-5 md:grid-cols-3">
             {topics.map((topic, index) => {
-              const Icon = topic.icon
+              const Icon = topic.icon;
 
               return (
                 <motion.div
@@ -382,7 +389,7 @@ export default function ContactPage() {
                     {topic.description}
                   </p>
                 </motion.div>
-              )
+              );
             })}
           </div>
         </div>
@@ -477,5 +484,5 @@ export default function ContactPage() {
         </div>
       </footer>
     </main>
-  )
+  );
 }

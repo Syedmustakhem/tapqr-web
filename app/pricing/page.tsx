@@ -1,105 +1,132 @@
-'use client'
+"use client";
 
-import Link from 'next/link'
-import { motion } from 'framer-motion'
+import Link from "next/link";
+import { motion } from "framer-motion";
 import {
   ArrowRight,
   BarChart3,
   Check,
   Crown,
-  Link2,
   Palette,
   QrCode,
   ShieldCheck,
   Sparkles,
   Users,
-} from 'lucide-react'
+} from "lucide-react";
 
 const plans = [
   {
-    name: 'Free',
-    description: 'Everything you need to start sharing.',
-    price: '₹0',
-    period: 'forever',
+    name: "Free",
+    description: "Everything you need to start sharing.",
+    price: "₹0",
+    period: "forever",
     icon: QrCode,
     popular: false,
     features: [
-      '1 dynamic QR profile',
-      'Add links and social profiles',
-      'Contact information',
-      'Dynamic QR updates',
-      'Basic analytics',
-      'TapQR profile',
+      "1 dynamic QR profile",
+      "Add links and social profiles",
+      "Contact information",
+      "Dynamic QR updates",
+      "Basic analytics",
+      "TapQR profile",
     ],
-    cta: 'Create Free QR',
-    href: '/register',
+    cta: "Create Free QR",
+    href: "/register",
   },
   {
-    name: 'Pro Monthly',
-    description: 'Build a branded digital identity.',
-    price: '₹199',
-    period: '/ month',
+    name: "Pro Monthly",
+    description: "Build a branded digital identity.",
+    price: "₹199",
+    period: "/ month",
     icon: Sparkles,
     popular: true,
     features: [
-      'Everything in Free',
-      'Multiple QR profiles',
-      'Custom QR colors',
-      'Your own brand colors',
-      'Add your own logo',
-      'Advanced QR customization',
-      'Analytics',
+      "Everything in Free",
+      "Multiple QR profiles",
+      "Custom QR colors",
+      "Your own brand colors",
+      "Add your own logo",
+      "Advanced QR customization",
+      "Analytics",
     ],
-    cta: 'Get TapQR Pro',
-    href: '/register?plan=monthly',
+    cta: "Get TapQR Pro",
+    href: "/register?plan=monthly",
   },
   {
-    name: 'Pro Yearly',
-    description: 'The best value for growing brands.',
-    price: '₹999',
-    period: '/ year',
+    name: "Pro Yearly",
+    description: "The best value for growing brands.",
+    price: "₹999",
+    period: "/ year",
     icon: Crown,
     popular: false,
     features: [
-      'Everything in Pro Monthly',
-      'Multiple QR profiles',
-      'Custom QR colors',
-      'Your own brand colors',
-      'Your own logo',
-      'Advanced customization',
-      'Analytics',
+      "Everything in Pro Monthly",
+      "Multiple QR profiles",
+      "Custom QR colors",
+      "Your own brand colors",
+      "Your own logo",
+      "Advanced customization",
+      "Analytics",
     ],
-    cta: 'Choose Yearly',
-    href: '/register?plan=yearly',
+    cta: "Choose Yearly",
+    href: "/register?plan=yearly",
   },
-]
+];
 
 const capabilities = [
   {
     icon: QrCode,
-    title: 'Dynamic QR Codes',
+    title: "Dynamic QR Codes",
     description:
-      'Update your TapQR profile from the backend without needing to replace the QR code.',
+      "Update your TapQR profile from the backend without needing to replace the QR code.",
   },
   {
     icon: BarChart3,
-    title: 'Analytics',
+    title: "Analytics",
     description:
-      'Understand how your QR profile is being viewed and shared.',
+      "Understand how your QR profile is being viewed and shared.",
   },
   {
     icon: Palette,
-    title: 'Your Brand',
+    title: "Your Brand",
     description:
-      'Pro users can customize QR colors and add their own branding.',
+      "Pro users can customize QR colors and add their own branding.",
   },
   {
     icon: Users,
-    title: 'Multiple Profiles',
+    title: "Multiple Profiles",
     description:
-      'Create separate QR profiles for different roles, people, or use cases.',
+      "Create separate QR profiles for different roles, people, or use cases.",
   },
-]
+];
+
+const faqs = [
+  {
+    question: "What is included in the free plan?",
+    answer:
+      "The Free plan includes one dynamic QR profile, links and social profiles, contact information, dynamic QR updates, basic analytics, and your TapQR profile.",
+  },
+  {
+    question: "Can I create multiple QR profiles?",
+    answer:
+      "Free accounts include one QR profile. Pro plans support multiple QR profiles for different roles, people, or use cases.",
+  },
+  {
+    question: "Can I use my own brand colors?",
+    answer:
+      "Yes. Custom QR colors and your own branding are available with TapQR Pro.",
+  },
+  {
+    question: "Can I change my QR after sharing it?",
+    answer:
+      "Yes. TapQR dynamic QR codes are designed so your profile can be updated without changing the QR code you have already shared.",
+  },
+  {
+    question: "What is a dynamic QR code?",
+    answer:
+      "Your QR code points to your TapQR profile. When you update your profile from TapQR, the destination stays the same, so you do not need to replace or reprint the QR code.",
+  },
+];
 
 export default function PricingPage() {
   return (
@@ -134,10 +161,38 @@ export default function PricingPage() {
             </Link>
 
             <Link
+              href="/solutions"
+              className="transition-opacity hover:opacity-60"
+            >
+              Solutions
+            </Link>
+
+            <Link
               href="/pricing"
               className="text-[#2F6BFF]"
             >
               Pricing
+            </Link>
+
+            <Link
+              href="/resources"
+              className="transition-opacity hover:opacity-60"
+            >
+              Resources
+            </Link>
+
+            <Link
+              href="/about"
+              className="transition-opacity hover:opacity-60"
+            >
+              About
+            </Link>
+
+            <Link
+              href="/contact"
+              className="transition-opacity hover:opacity-60"
+            >
+              Contact
             </Link>
           </nav>
 
@@ -185,7 +240,7 @@ export default function PricingPage() {
           <p className="mx-auto mt-7 max-w-2xl text-lg leading-8 text-black/55 sm:text-xl">
             Start free with one dynamic QR profile, or unlock powerful
             branding, customization, analytics, and multiple profiles with
-            TapQR Pro.
+            TapQR.
           </p>
         </motion.div>
       </section>
@@ -194,22 +249,22 @@ export default function PricingPage() {
       <section className="px-6 pb-24 lg:px-8">
         <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-3">
           {plans.map((plan, index) => {
-            const Icon = plan.icon
+            const Icon = plan.icon;
 
             return (
               <motion.div
                 key={plan.name}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-80px' }}
+                viewport={{ once: true, margin: "-80px" }}
                 transition={{
                   duration: 0.55,
                   delay: index * 0.1,
                 }}
                 className={`relative flex flex-col rounded-[28px] border p-7 shadow-sm ${
                   plan.popular
-                    ? 'border-[#2F6BFF]/40 bg-[#0B0D0C] text-white shadow-[0_25px_80px_rgba(47,107,255,0.16)]'
-                    : 'border-black/8 bg-white'
+                    ? "border-[#2F6BFF]/40 bg-[#0B0D0C] text-white shadow-[0_25px_80px_rgba(47,107,255,0.16)]"
+                    : "border-black/8 bg-white"
                 }`}
               >
                 {plan.popular && (
@@ -221,8 +276,8 @@ export default function PricingPage() {
                 <div
                   className={`mb-7 flex h-12 w-12 items-center justify-center rounded-2xl ${
                     plan.popular
-                      ? 'bg-[#2F6BFF] text-white'
-                      : 'bg-[#2F6BFF]/10 text-[#2F6BFF]'
+                      ? "bg-[#2F6BFF] text-white"
+                      : "bg-[#2F6BFF]/10 text-[#2F6BFF]"
                   }`}
                 >
                   <Icon size={22} />
@@ -234,7 +289,7 @@ export default function PricingPage() {
 
                 <p
                   className={`mt-2 min-h-[48px] text-sm leading-6 ${
-                    plan.popular ? 'text-white/55' : 'text-black/50'
+                    plan.popular ? "text-white/55" : "text-black/50"
                   }`}
                 >
                   {plan.description}
@@ -247,7 +302,7 @@ export default function PricingPage() {
 
                   <span
                     className={`pb-1 text-sm ${
-                      plan.popular ? 'text-white/50' : 'text-black/45'
+                      plan.popular ? "text-white/50" : "text-black/45"
                     }`}
                   >
                     {plan.period}
@@ -258,8 +313,8 @@ export default function PricingPage() {
                   href={plan.href}
                   className={`mt-8 flex h-12 items-center justify-center gap-2 rounded-full text-sm font-semibold transition-transform hover:-translate-y-0.5 ${
                     plan.popular
-                      ? 'bg-[#2F6BFF] text-white'
-                      : 'bg-[#0B0D0C] text-white'
+                      ? "bg-[#2F6BFF] text-white"
+                      : "bg-[#0B0D0C] text-white"
                   }`}
                 >
                   {plan.cta}
@@ -268,13 +323,13 @@ export default function PricingPage() {
 
                 <div
                   className={`my-8 h-px ${
-                    plan.popular ? 'bg-white/10' : 'bg-black/8'
+                    plan.popular ? "bg-white/10" : "bg-black/8"
                   }`}
                 />
 
                 <p
                   className={`mb-5 text-xs font-semibold uppercase tracking-[0.16em] ${
-                    plan.popular ? 'text-white/40' : 'text-black/40'
+                    plan.popular ? "text-white/40" : "text-black/40"
                   }`}
                 >
                   Includes
@@ -289,8 +344,8 @@ export default function PricingPage() {
                       <span
                         className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${
                           plan.popular
-                            ? 'bg-[#2F6BFF] text-white'
-                            : 'bg-[#2F6BFF]/10 text-[#2F6BFF]'
+                            ? "bg-[#2F6BFF] text-white"
+                            : "bg-[#2F6BFF]/10 text-[#2F6BFF]"
                         }`}
                       >
                         <Check size={13} strokeWidth={3} />
@@ -298,7 +353,9 @@ export default function PricingPage() {
 
                       <span
                         className={
-                          plan.popular ? 'text-white/75' : 'text-black/65'
+                          plan.popular
+                            ? "text-white/75"
+                            : "text-black/65"
                         }
                       >
                         {feature}
@@ -307,7 +364,7 @@ export default function PricingPage() {
                   ))}
                 </ul>
               </motion.div>
-            )
+            );
           })}
         </div>
       </section>
@@ -326,13 +383,13 @@ export default function PricingPage() {
 
             <p className="mt-5 text-lg leading-8 text-black/50">
               TapQR gives you a flexible digital identity that can evolve
-              without replacing the QR code you've already shared.
+              without replacing the QR code you&apos;ve already shared.
             </p>
           </div>
 
           <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {capabilities.map((item, index) => {
-              const Icon = item.icon
+              const Icon = item.icon;
 
               return (
                 <motion.div
@@ -358,7 +415,7 @@ export default function PricingPage() {
                     {item.description}
                   </p>
                 </motion.div>
-              )
+              );
             })}
           </div>
         </div>
@@ -375,31 +432,14 @@ export default function PricingPage() {
             <h2 className="mt-4 text-4xl font-semibold tracking-tight">
               Simple answers.
             </h2>
+
+            <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-black/50">
+              Everything you need to know about TapQR plans and features.
+            </p>
           </div>
 
           <div className="mt-12 space-y-4">
-            {[
-              {
-                question: 'What is a dynamic QR code?',
-                answer:
-                  'Your QR code points to your TapQR profile. When you update your profile from TapQR, the destination stays the same, so you do not need to replace or reprint the QR code.',
-              },
-              {
-                question: 'Can I create multiple QR profiles?',
-                answer:
-                  'Free accounts include one QR profile. Pro plans support multiple QR profiles for different roles, people, or use cases.',
-              },
-              {
-                question: 'Can I use my own brand colors?',
-                answer:
-                  'Yes. Custom QR colors and your own branding are available with TapQR Pro.',
-              },
-              {
-                question: 'Can I change my QR after sharing it?',
-                answer:
-                  'Yes. TapQR dynamic QR codes are designed so your profile can be updated without changing the QR code you have  already shared.',
-              },
-            ].map((faq) => (
+            {faqs.map((faq) => (
               <details
                 key={faq.question}
                 className="group rounded-2xl border border-black/8 bg-white p-6"
@@ -461,21 +501,64 @@ export default function PricingPage() {
           </Link>
 
           <div className="flex flex-wrap gap-5">
-            <Link href="/" className="hover:text-black">
+            <Link
+              href="/"
+              className="hover:text-black"
+            >
               Home
             </Link>
-            <Link href="/features" className="hover:text-black">
+
+            <Link
+              href="/features"
+              className="hover:text-black"
+            >
               Features
             </Link>
-            <Link href="/pricing" className="hover:text-black">
+
+            <Link
+              href="/solutions"
+              className="hover:text-black"
+            >
+              Solutions
+            </Link>
+
+            <Link
+              href="/pricing"
+              className="hover:text-black"
+            >
               Pricing
             </Link>
-            <Link href="/login" className="hover:text-black">
+
+            <Link
+              href="/resources"
+              className="hover:text-black"
+            >
+              Resources
+            </Link>
+
+            <Link
+              href="/about"
+              className="hover:text-black"
+            >
+              About
+            </Link>
+
+            <Link
+              href="/contact"
+              className="hover:text-black"
+            >
+              Contact
+            </Link>
+
+            <Link
+              href="/login"
+              className="hover:text-black"
+            >
               Login
             </Link>
           </div>
         </div>
       </footer>
     </main>
-  )
+  );
 }

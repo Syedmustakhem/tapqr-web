@@ -1,7 +1,7 @@
-'use client'
+"use client";
 
-import Link from 'next/link'
-import { motion } from 'framer-motion'
+import Link from "next/link";
+import { motion } from "framer-motion";
 import {
   ArrowRight,
   Check,
@@ -13,55 +13,55 @@ import {
   ShieldCheck,
   Sparkles,
   Users,
-} from 'lucide-react'
+} from "lucide-react";
 
 const principles = [
   {
     icon: Lightbulb,
-    title: 'Keep it simple',
+    title: "Keep it simple",
     description:
-      'Sharing your information should not require complicated steps. TapQR is built around one simple QR experience.',
+      "Sharing your information should not require complicated steps. TapQR is built around one simple QR experience.",
   },
   {
     icon: RefreshCw,
-    title: 'Stay flexible',
+    title: "Stay flexible",
     description:
-      'Your information can change. Your dynamic QR is designed to keep connecting people to your profile.',
+      "Your information can change. Your dynamic QR is designed to keep connecting people to your profile.",
   },
   {
     icon: Globe,
-    title: 'Connect everywhere',
+    title: "Connect everywhere",
     description:
-      'Use your TapQR across physical and digital touchpoints wherever people need to connect with you.',
+      "Use your TapQR across physical and digital touchpoints wherever people need to connect with you.",
   },
   {
     icon: ShieldCheck,
-    title: 'Build with purpose',
+    title: "Build with purpose",
     description:
-      'Every part of the product is designed around making digital identity and sharing more useful.',
+      "Every part of the product is designed around making digital identity and sharing more useful.",
   },
-]
+];
 
 const steps = [
   {
-    number: '01',
-    title: 'Create your TapQR',
+    number: "01",
+    title: "Create your TapQR",
     description:
-      'Build a profile with the information, links, and details you want people to discover.',
+      "Build a profile with the information, links, and details you want people to discover.",
   },
   {
-    number: '02',
-    title: 'Get your dynamic QR',
+    number: "02",
+    title: "Get your dynamic QR",
     description:
-      'Your profile is connected to a dynamic QR that can continue pointing to your profile as your information changes.',
+      "Your profile is connected to a dynamic QR that can continue pointing to your profile as your information changes.",
   },
   {
-    number: '03',
-    title: 'Share it anywhere',
+    number: "03",
+    title: "Share it anywhere",
     description:
-      'Place your QR on cards, posters, packaging, websites, screens, or wherever you want to connect.',
+      "Place your QR on cards, posters, packaging, websites, screens, or wherever you want to connect.",
   },
-]
+];
 
 export default function AboutPage() {
   return (
@@ -219,6 +219,7 @@ export default function AboutPage() {
 
                 <div>
                   <p className="font-semibold">TapQR</p>
+
                   <p className="text-xs text-white/40">
                     Your digital profile
                   </p>
@@ -233,6 +234,7 @@ export default function AboutPage() {
 
                   <div>
                     <p className="font-semibold">Your identity</p>
+
                     <p className="text-sm text-black/40">
                       One profile. Many connections.
                     </p>
@@ -241,10 +243,10 @@ export default function AboutPage() {
 
                 <div className="mt-6 grid gap-2 sm:grid-cols-2">
                   {[
-                    'Contact',
-                    'Social links',
-                    'Websites',
-                    'Other links',
+                    "Contact",
+                    "Social links",
+                    "Websites",
+                    "Other links",
                   ].map((item) => (
                     <div
                       key={item}
@@ -287,21 +289,21 @@ export default function AboutPage() {
               {[
                 {
                   icon: QrCode,
-                  title: 'One QR',
-                  text: 'A single QR can become the gateway to your profile.',
+                  title: "One QR",
+                  text: "A single QR can become the gateway to your profile.",
                 },
                 {
                   icon: Link2,
-                  title: 'Everything connected',
-                  text: 'Bring your important information and links together.',
+                  title: "Everything connected",
+                  text: "Bring your important information and links together.",
                 },
                 {
                   icon: RefreshCw,
-                  title: 'Keep it updated',
-                  text: 'Change your profile without needing to replace the QR.',
+                  title: "Keep it updated",
+                  text: "Change your profile without needing to replace the QR.",
                 },
               ].map((item, index) => {
-                const Icon = item.icon
+                const Icon = item.icon;
 
                 return (
                   <motion.div
@@ -327,7 +329,7 @@ export default function AboutPage() {
                       {item.text}
                     </p>
                   </motion.div>
-                )
+                );
               })}
             </div>
           </div>
@@ -397,7 +399,7 @@ export default function AboutPage() {
 
           <div className="mt-14 grid gap-5 sm:grid-cols-2">
             {principles.map((principle, index) => {
-              const Icon = principle.icon
+              const Icon = principle.icon;
 
               return (
                 <motion.div
@@ -423,7 +425,7 @@ export default function AboutPage() {
                     {principle.description}
                   </p>
                 </motion.div>
-              )
+              );
             })}
           </div>
         </div>
@@ -449,11 +451,11 @@ export default function AboutPage() {
 
             <div className="mt-8 space-y-3">
               {[
-                'One dynamic QR',
-                'Your important information',
-                'Flexible profile',
-                'Analytics',
-                'Optional Pro branding',
+                "One dynamic QR",
+                "Your important information",
+                "Flexible profile",
+                "Analytics",
+                "Optional Pro branding",
               ].map((item) => (
                 <div
                   key={item}
@@ -573,5 +575,5 @@ export default function AboutPage() {
         </div>
       </footer>
     </main>
-  )
+  );
 }

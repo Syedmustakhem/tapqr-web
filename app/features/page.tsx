@@ -1,7 +1,7 @@
-'use client'
+"use client";
 
-import Link from 'next/link'
-import { motion } from 'framer-motion'
+import Link from "next/link";
+import { motion } from "framer-motion";
 import {
   ArrowRight,
   BarChart3,
@@ -17,109 +17,109 @@ import {
   Sparkles,
   UserRound,
   Users,
-} from 'lucide-react'
+} from "lucide-react";
 
 const features = [
   {
-    number: '01',
+    number: "01",
     icon: QrCode,
-    title: 'Dynamic QR Codes',
+    title: "Dynamic QR Codes",
     description:
-      'Create a QR code once and keep using it. Update the information behind it from TapQR without replacing the QR code.',
+      "Create a QR code once and keep using it. Update the information behind it from TapQR without replacing the QR code.",
     points: [
-      'Backend-controlled QR destination',
-      'Update your profile anytime',
-      'No need to reprint shared QR codes',
+      "Backend-controlled QR destination",
+      "Update your profile anytime",
+      "No need to reprint shared QR codes",
     ],
   },
   {
-    number: '02',
+    number: "02",
     icon: UserRound,
-    title: 'Everything in One Profile',
+    title: "Everything in One Profile",
     description:
-      'Bring your important information together in one easy-to-share TapQR profile.',
+      "Bring your important information together in one easy-to-share TapQR profile.",
     points: [
-      'Contact information',
-      'Social profiles',
-      'Links and important pages',
+      "Contact information",
+      "Social profiles",
+      "Links and important pages",
     ],
   },
   {
-    number: '03',
+    number: "03",
     icon: Palette,
-    title: 'Make It Your Brand',
+    title: "Make It Your Brand",
     description:
-      'Pro users can customize their QR experience with their own colors and branding.',
+      "Pro users can customize their QR experience with their own colors and branding.",
     points: [
-      'Custom QR colors',
-      'Your own brand colors',
-      'Add your own logo',
+      "Custom QR colors",
+      "Your own brand colors",
+      "Add your own logo",
     ],
   },
   {
-    number: '04',
+    number: "04",
     icon: BarChart3,
-    title: 'QR Analytics',
+    title: "QR Analytics",
     description:
-      'Understand how your TapQR profile is being discovered and interacted with.',
+      "Understand how your TapQR profile is being discovered and interacted with.",
     points: [
-      'Track QR activity',
-      'Understand engagement',
-      'Use insights to improve your profile',
+      "Track QR activity",
+      "Understand engagement",
+      "Use insights to improve your profile",
     ],
   },
   {
-    number: '05',
+    number: "05",
     icon: Users,
-    title: 'Multiple QR Profiles',
+    title: "Multiple QR Profiles",
     description:
-      'Create separate profiles for different people, roles, or purposes with TapQR Pro.',
+      "Create separate profiles for different people, roles, or purposes with TapQR Pro.",
     points: [
-      'Different profiles for different roles',
-      'Separate identities under one account',
-      'Useful for teams and businesses',
+      "Different profiles for different roles",
+      "Separate identities under one account",
+      "Useful for teams and businesses",
     ],
   },
   {
-    number: '06',
+    number: "06",
     icon: Share2,
-    title: 'Share Everywhere',
+    title: "Share Everywhere",
     description:
-      'One TapQR profile can be shared through your QR code, links, and other digital touchpoints.',
+      "One TapQR profile can be shared through your QR code, links, and other digital touchpoints.",
     points: [
-      'Simple QR sharing',
-      'Easy profile access',
-      'One destination for your information',
+      "Simple QR sharing",
+      "Easy profile access",
+      "One destination for your information",
     ],
   },
-]
+];
 
 const steps = [
   {
-    number: '01',
-    title: 'Create your profile',
+    number: "01",
+    title: "Create your profile",
     description:
-      'Add your links, contact details, social profiles, and the information you want people to see.',
+      "Add your links, contact details, social profiles, and the information you want people to see.",
   },
   {
-    number: '02',
-    title: 'Generate your QR',
+    number: "02",
+    title: "Generate your QR",
     description:
-      'TapQR creates a dynamic QR code connected to your profile.',
+      "TapQR creates a dynamic QR code connected to your profile.",
   },
   {
-    number: '03',
-    title: 'Share it anywhere',
+    number: "03",
+    title: "Share it anywhere",
     description:
-      'Put your QR on cards, posters, packaging, screens, websites, or share it digitally.',
+      "Put your QR on cards, posters, packaging, screens, websites, or share it digitally.",
   },
   {
-    number: '04',
-    title: 'Update without replacing',
+    number: "04",
+    title: "Update without replacing",
     description:
-      'Change your profile from TapQR while keeping the same QR code you already shared.',
+      "Change your profile from TapQR while keeping the same QR code you already shared.",
   },
-]
+];
 
 export default function FeaturesPage() {
   return (
@@ -233,7 +233,7 @@ export default function FeaturesPage() {
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-100px' }}
+          viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 0.7 }}
           className="mx-auto grid max-w-6xl overflow-hidden rounded-[36px] bg-[#0B0D0C] text-white lg:grid-cols-[1.05fr_0.95fr]"
         >
@@ -261,9 +261,9 @@ export default function FeaturesPage() {
 
             <div className="mt-9 space-y-4">
               {[
-                'Create once',
-                'Share anywhere',
-                'Update whenever you need',
+                "Create once",
+                "Share anywhere",
+                "Update whenever you need",
               ].map((item) => (
                 <div
                   key={item}
@@ -272,6 +272,7 @@ export default function FeaturesPage() {
                   <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#2F6BFF]/20 text-[#6F98FF]">
                     <Check size={14} strokeWidth={3} />
                   </span>
+
                   {item}
                 </div>
               ))}
@@ -289,7 +290,7 @@ export default function FeaturesPage() {
               transition={{
                 duration: 5,
                 repeat: Infinity,
-                ease: 'easeInOut',
+                ease: "easeInOut",
               }}
               className="relative w-full max-w-[330px] rounded-[30px] bg-white p-5 text-black shadow-[0_30px_80px_rgba(0,0,0,0.35)]"
             >
@@ -303,16 +304,16 @@ export default function FeaturesPage() {
                       const finder =
                         (index < 16 && index % 4 !== 3) ||
                         (index >= 35 && index % 7 !== 3) ||
-                        (index % 7 === 0 && index < 28)
+                        (index % 7 === 0 && index < 28);
 
                       return (
                         <span
                           key={index}
                           className={`rounded-[1px] ${
-                            finder ? 'bg-[#0B0D0C]' : 'bg-black/10'
+                            finder ? "bg-[#0B0D0C]" : "bg-black/10"
                           }`}
                         />
-                      )
+                      );
                     })}
                   </div>
                 </div>
@@ -321,6 +322,7 @@ export default function FeaturesPage() {
               <div className="mt-5 flex items-center justify-between">
                 <div>
                   <p className="text-sm font-semibold">TapQR Profile</p>
+
                   <p className="mt-1 text-xs text-black/45">
                     Your information, one scan away.
                   </p>
@@ -355,14 +357,14 @@ export default function FeaturesPage() {
 
           <div className="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
             {features.map((feature, index) => {
-              const Icon = feature.icon
+              const Icon = feature.icon;
 
               return (
                 <motion.article
                   key={feature.number}
                   initial={{ opacity: 0, y: 25 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: '-60px' }}
+                  viewport={{ once: true, margin: "-60px" }}
                   transition={{
                     duration: 0.5,
                     delay: index * 0.06,
@@ -398,12 +400,13 @@ export default function FeaturesPage() {
                           className="mt-0.5 shrink-0 text-[#2F6BFF]"
                           strokeWidth={2.5}
                         />
+
                         {point}
                       </li>
                     ))}
                   </ul>
                 </motion.article>
-              )
+              );
             })}
           </div>
         </div>
@@ -437,7 +440,7 @@ export default function FeaturesPage() {
                   key={step.number}
                   initial={{ opacity: 0, x: 25 }}
                   whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true, margin: '-50px' }}
+                  viewport={{ once: true, margin: "-50px" }}
                   transition={{
                     duration: 0.5,
                     delay: index * 0.08,
@@ -481,26 +484,26 @@ export default function FeaturesPage() {
             {[
               {
                 icon: UserRound,
-                title: 'Individuals',
-                text: 'Share your contact information and important links instantly.',
+                title: "Individuals",
+                text: "Share your contact information and important links instantly.",
               },
               {
                 icon: Users,
-                title: 'Teams',
-                text: 'Create separate profiles for different people and roles.',
+                title: "Teams",
+                text: "Create separate profiles for different people and roles.",
               },
               {
                 icon: Link2,
-                title: 'Creators',
-                text: 'Bring your social channels and important links together.',
+                title: "Creators",
+                text: "Bring your social channels and important links together.",
               },
               {
                 icon: ShieldCheck,
-                title: 'Businesses',
-                text: 'Use your brand colors and logo to create a branded QR experience.',
+                title: "Businesses",
+                text: "Use your brand colors and logo to create a branded QR experience.",
               },
             ].map((item, index) => {
-              const Icon = item.icon
+              const Icon = item.icon;
 
               return (
                 <motion.div
@@ -526,7 +529,7 @@ export default function FeaturesPage() {
                     {item.text}
                   </p>
                 </motion.div>
-              )
+              );
             })}
           </div>
         </div>
@@ -579,7 +582,10 @@ export default function FeaturesPage() {
           </Link>
 
           <div className="flex flex-wrap gap-5">
-            <Link href="/" className="transition-colors hover:text-black">
+            <Link
+              href="/"
+              className="transition-colors hover:text-black"
+            >
               Home
             </Link>
 
@@ -607,5 +613,5 @@ export default function FeaturesPage() {
         </div>
       </footer>
     </main>
-  )
+  );
 }

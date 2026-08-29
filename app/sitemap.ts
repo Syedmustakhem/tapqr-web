@@ -52,5 +52,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "yearly",
       priority: 0.3,
     },
+    {
+  url: "https://tapqr.shop/resources/what-is-a-dynamic-qr-code",
+  lastModified: new Date(),
+  changeFrequency: "monthly",
+  priority: 0.7,
+},
   ];
 }
