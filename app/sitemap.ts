@@ -64,5 +64,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
   changeFrequency: "monthly",
   priority: 0.8,
 },
+{
+  url: "https://tapqr.shop/resources/qr-code-for-business",
+  lastModified: new Date(),
+  changeFrequency: "monthly",
+  priority: 0.8,
+},
   ];
 }

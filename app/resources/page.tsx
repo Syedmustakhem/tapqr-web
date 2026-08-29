@@ -27,6 +27,14 @@ const resources = [
     "Learn what a digital business card is, how QR business cards work, and why they are useful for professionals and businesses.",
   href: "/resources/digital-business-card",
 },
+{
+  icon: QrCode,
+  category: "Business",
+  title: "QR codes for business",
+  description:
+    "Learn how businesses can use QR codes to connect customers with websites, products, contact information, and digital profiles.",
+  href: "/resources/qr-code-for-business",
+},
   {
     icon: RefreshCw,
     category: "Dynamic QR",
