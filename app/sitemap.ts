@@ -58,5 +58,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
   changeFrequency: "monthly",
   priority: 0.7,
 },
+{
+  url: "https://tapqr.shop/resources/digital-business-card",
+  lastModified: new Date(),
+  changeFrequency: "monthly",
+  priority: 0.8,
+},
   ];
 }

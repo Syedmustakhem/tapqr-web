@@ -20,13 +20,13 @@ import {
 
 const resources = [
   {
-    icon: BookOpen,
-    category: "Getting started",
-    title: "How TapQR works",
-    description:
-      "Learn how to create your profile, generate your dynamic QR, and start sharing your digital identity.",
-    href: "#getting-started",
-  },
+  icon: BookOpen,
+  category: "Digital Identity",
+  title: "Digital business card: complete guide",
+  description:
+    "Learn what a digital business card is, how QR business cards work, and why they are useful for professionals and businesses.",
+  href: "/resources/digital-business-card",
+},
   {
     icon: RefreshCw,
     category: "Dynamic QR",
