@@ -301,6 +301,24 @@ const solutions = [
   ['Organizations & NGOs', Users],
 ] as const
 
+const contentTypes = [
+  ['Profile & contact', 'Name, role, phone, email and the information people need to reach you.', WalletCards],
+  ['Social & web links', 'Bring Instagram, LinkedIn, website and other important links together.', Globe2],
+  ['Products & services', 'Present what you offer in a simple digital destination.', ShoppingBag],
+  ['Location & directions', 'Help visitors find your business, office, store or event location.', MapPin],
+  ['Calls & messages', 'Give people direct actions instead of making them search for your contact details.', Phone],
+  ['Business information', 'Share useful information, updates and other content from one place.', Sparkles],
+] as const
+
+const faqs = [
+  ['What is TapQR?', 'TapQR is a smart QR platform that gives your QR code a useful digital destination. Instead of sending people to scattered links, you can bring your profile, contact details, social links, website, products, services and other information together in one experience.'],
+  ['How is TapQR different from a normal QR code?', 'A normal QR code can simply point to a URL. TapQR is the digital experience behind the scan: people can see useful information and take actions such as calling, emailing, visiting your website, opening social links or finding your location.'],
+  ['Can I update my information after sharing my QR?', 'TapQR is designed around a managed digital experience, so your destination can be updated from your workspace without needing to change every place where the QR has been shared.'],
+  ['Where can I use TapQR?', 'You can use TapQR on business cards, posters, packaging, storefronts, event materials, websites, social media and other physical or digital touchpoints where people need quick access to information.'],
+  ['Who is TapQR for?', 'TapQR can be used by businesses, professionals, creators, retailers, healthcare organizations, educational institutions, events and other organizations that need a simple way to share digital information.'],
+  ['Do people need the TapQR app to scan it?', 'No. The QR experience is designed to be accessed through a normal QR scan and a web browser. A dedicated mobile app is not required for someone to view the experience.'],
+] as const
+
 function Dashboard() {
   return (
     <div className="dashboard">
@@ -463,6 +481,7 @@ export default function TapQRLanding() {
     ['Features', '#features'],
     ['Solutions', '#solutions'],
     ['Pricing', '#pricing'],
+    ['FAQ', '#faq'],
     ['Resources', '/resources'],
     ['About', '/about'],
     ['Contact', '/contact'],
@@ -535,32 +554,30 @@ export default function TapQRLanding() {
               </div>
 
               <h1>
-                One QR.
-                <br />
-                <em>Everything</em>
-                <br />
-                people need.
-              </h1>
+  One Scan.
+  <br />
+  <em>Everything.</em>
+</h1>
 
-              <p>
-                Give people one simple place to discover your business,
-                organization, products, services, links and contact
-                options — all through one smart QR code.
-              </p>
+<p>
+  Turn one smart QR into your complete digital presence.
+  Share your profile, contact details, social links, website,
+  services and more — all from one simple scan.
+</p>
 
-              <div className="hero-actions">
-                <Link href={dashboardHref} className="button button-lime">
-                  {authenticated ? 'Open Dashboard' : 'Create your TapQR'}
-                  <ArrowRight size={16} />
-                </Link>
+             <div className="hero-actions">
+  <Link href={dashboardHref} className="button button-lime">
+    {authenticated ? 'Open Dashboard' : 'Create your TapQR'}
+    <ArrowRight size={16} />
+  </Link>
 
-                <a href="#product" className="text-link">
-                  See how it works
-                  <span>↘</span>
-                </a>
+  <a href="#demo" className="text-link">
+    See TapQR in action
+    <span>↘</span>
+  </a>
 
-                <PlayStoreBadge />
-              </div>
+  <PlayStoreBadge />
+</div>
 
               <div className="hero-proof">
                 <div className="proof-avatars">
@@ -596,6 +613,147 @@ export default function TapQRLanding() {
             <span><CalendarDays size={17} /> Events</span>
             <span><Users size={17} /> Organizations</span>
           </div>
+        </div>
+      </section>
+
+<section id="demo" className="section">
+  <div className="container">
+    <Reveal>
+      <div className="section-heading">
+        <div>
+          <p className="eyebrow">See it in action</p>
+
+          <h2>
+            One scan.
+            <br />
+            <em>Then everything connects.</em>
+          </h2>
+        </div>
+
+        <p className="body-copy">
+          Your QR is only the starting point. TapQR gives every scan
+          a professional digital destination where people can discover,
+          explore and connect.
+        </p>
+      </div>
+    </Reveal>
+
+    <Reveal delay={0.12}>
+      <div className="mt-12 grid items-center gap-10 rounded-[32px] border border-[#E2E8F0] bg-white p-6 shadow-sm md:grid-cols-2 md:p-10">
+        <div>
+          <p className="eyebrow">The TapQR experience</p>
+
+          <h3 className="mt-3 text-3xl font-semibold tracking-tight text-ink md:text-4xl">
+            Replace scattered links with one digital destination.
+          </h3>
+
+          <p className="mt-5 max-w-xl text-base leading-7 text-black/55">
+            Give customers, clients, visitors or connections one place
+            to find the information that matters. From contact details
+            and social profiles to websites, services and business
+            information.
+          </p>
+
+          <div className="mt-7 grid gap-3 sm:grid-cols-2">
+            {[
+              ['Scan', 'Open your TapQR experience'],
+              ['Explore', 'Find useful information instantly'],
+              ['Connect', 'Call, message, visit or follow'],
+              ['Update', 'Keep your experience current'],
+            ].map(([title, text]) => (
+              <div
+                key={title}
+                className="rounded-2xl border border-[#E8EDF3] bg-[#F8FAFC] p-4"
+              >
+                <b className="block text-sm text-ink">{title}</b>
+                <span className="mt-1 block text-xs leading-5 text-black/50">
+                  {text}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex justify-center">
+          <PhoneMockup />
+        </div>
+      </div>
+    </Reveal>
+  </div>
+</section>
+
+
+      <section className="section bg-[#F8FAFC]">
+        <div className="container">
+          <Reveal>
+            <div className="section-heading">
+              <div>
+                <p className="eyebrow">What you can share</p>
+                <h2>
+                  Everything your
+                  <br />
+                  <em>customers need.</em>
+                </h2>
+              </div>
+              <p className="body-copy">
+                TapQR is not just a place for a QR code. Build a useful digital destination around the information and actions that matter to your audience.
+              </p>
+            </div>
+          </Reveal>
+
+          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {contentTypes.map(([title, text, Icon], index) => (
+              <Reveal key={title} delay={index * 0.05}>
+                <div className="group h-full rounded-[24px] border border-[#E2E8F0] bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
+                  <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-2xl bg-[#EEF4FF] text-[#2563EB]">
+                    <Icon size={20} />
+                  </div>
+                  <h3 className="text-lg font-semibold tracking-tight text-ink">{title}</h3>
+                  <p className="mt-2 text-sm leading-6 text-black/55">{text}</p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="container">
+          <Reveal>
+            <div className="rounded-[32px] bg-[#08111F] px-6 py-12 text-white sm:px-10 lg:px-14 lg:py-14">
+              <div className="grid gap-10 lg:grid-cols-[1fr_1.1fr] lg:items-center">
+                <div>
+                  <p className="eyebrow text-[#93C5FD]">Why businesses use TapQR</p>
+                  <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
+                    Stop making people
+                    <br />
+                    <em className="text-[#93C5FD]">search for you.</em>
+                  </h2>
+                  <p className="mt-5 max-w-xl text-sm leading-7 text-white/60 sm:text-base">
+                    Your customers should not have to type your name, search through social profiles, find the right website and then look for your contact details. Give them one clear starting point.
+                  </p>
+                  <Link href={dashboardHref} className="button button-lime mt-7">
+                    {authenticated ? 'Open Dashboard' : 'Create your TapQR'}
+                    <ArrowRight size={15} />
+                  </Link>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {[
+                    ['One destination', 'Bring important information together.'],
+                    ['Easy to update', 'Keep your digital experience current.'],
+                    ['Easy to share', 'Use the same QR across physical and digital touchpoints.'],
+                    ['Built for action', 'Help people call, visit, follow, message or learn more.'],
+                  ].map(([title, text]) => (
+                    <div key={title} className="rounded-2xl border border-white/10 bg-white/[0.04] p-5">
+                      <b className="text-sm">{title}</b>
+                      <p className="mt-2 text-xs leading-5 text-white/50">{text}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </Reveal>
         </div>
       </section>
 
@@ -1028,6 +1186,42 @@ export default function TapQRLanding() {
               </Link>
             </div>
           </Reveal>
+        </div>
+      </section>
+
+      <section id="faq" className="section bg-[#F8FAFC]">
+        <div className="container">
+          <Reveal>
+            <div className="section-heading">
+              <div>
+                <p className="eyebrow">Frequently asked questions</p>
+                <h2>
+                  Everything you need
+                  <br />
+                  <em>to know.</em>
+                </h2>
+              </div>
+              <p className="body-copy">
+                New to TapQR? Here are the answers to the questions people usually have before getting started.
+              </p>
+            </div>
+          </Reveal>
+
+          <div className="mx-auto mt-12 max-w-4xl space-y-3">
+            {faqs.map(([question, answer], index) => (
+              <Reveal key={question} delay={index * 0.04}>
+                <details className="group rounded-2xl border border-[#E2E8F0] bg-white p-5 shadow-sm">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-5 text-left font-semibold text-ink">
+                    <span>{question}</span>
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#F1F5F9] text-black/50 transition-transform duration-300 group-open:rotate-90">
+                      <ChevronRight size={15} />
+                    </span>
+                  </summary>
+                  <p className="max-w-3xl pt-4 text-sm leading-7 text-black/55">{answer}</p>
+                </details>
+              </Reveal>
+            ))}
+          </div>
         </div>
       </section>
 
