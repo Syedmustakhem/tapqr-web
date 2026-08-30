@@ -1,0 +1,38 @@
+import { defineConfig } from "vite";
+import vinext from "vinext";
+import { cloudflare } from "@cloudflare/vite-plugin";
+import { kvDataAdapter } from "@vinext/cloudflare/cache/kv-data-adapter";
+import { cdnAdapter } from "@vinext/cloudflare/cache/cdn-adapter";
+import { imagesOptimizer } from "@vinext/cloudflare/images/images-optimizer";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+export default defineConfig({
+  plugins: [
+    vinext({
+      cache: {
+        data: kvDataAdapter(),
+        cdn: cdnAdapter(),
+      },
+      images: {
+        optimizer: imagesOptimizer(),
+      },
+    }),
+
+    cloudflare({
+      viteEnvironment: {
+        name: "rsc",
+        childEnvironments: ["ssr"],
+      },
+    }),
+  ],
+
+  resolve: {
+    alias: {
+      sharp: path.resolve(__dirname, "empty-stub.js"),
+    },
+  },
+});
