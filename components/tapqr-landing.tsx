@@ -1500,7 +1500,7 @@ export default function TapQRLanding() {
           <div className="footer-bottom">
             <span>© 2026 TapQR. All rights reserved.</span>
 
-            <span>One scan. Everything.</span>
+            <span>One scan. Everything</span>
 
             <span className="socials">
               <Link href="/contact" aria-label="Contact TapQR">
