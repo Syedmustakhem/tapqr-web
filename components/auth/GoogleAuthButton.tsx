@@ -1,7 +1,7 @@
 "use client";
 
 import Script from "next/script";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface GoogleAuthButtonProps {
   disabled?: boolean;
@@ -15,8 +15,8 @@ declare global {
   }
 }
 
-const GOOGLE_SCRIPT =
-  "https://accounts.google.com/gsi/client";
+const GOOGLE_SCRIPT = "https://accounts.google.com/gsi/client";
+const GOOGLE_SCRIPT_ID = "google-identity-services";
 
 export default function GoogleAuthButton({
   disabled = false,
@@ -26,12 +26,11 @@ export default function GoogleAuthButton({
   const containerRef = useRef<HTMLDivElement>(null);
   const initializedRef = useRef(false);
 
-  const [scriptLoaded, setScriptLoaded] = useState(false);
+  const [scriptReady, setScriptReady] = useState(false);
 
-  const clientId =
-    process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+  const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 
-  const renderGoogleButton = () => {
+  const renderGoogleButton = useCallback(() => {
     if (!clientId) {
       console.error(
         "TapQR: NEXT_PUBLIC_GOOGLE_CLIENT_ID is missing."
@@ -55,9 +54,8 @@ export default function GoogleAuthButton({
       return;
     }
 
-    window.google.accounts.id.renderButton(
-      container,
-      {
+    try {
+      window.google.accounts.id.renderButton(container, {
         type: "standard",
         theme: "outline",
         size: "large",
@@ -65,15 +63,16 @@ export default function GoogleAuthButton({
         shape: "pill",
         logo_alignment: "left",
         width: 420,
-      }
-    );
-  };
+      });
+    } catch (error) {
+      console.error("TapQR Google button render error:", error);
+      onError?.("Unable to display Google sign-in.");
+    }
+  }, [clientId, disabled, onError]);
 
-  const initializeGoogle = () => {
+  const initializeGoogle = useCallback(() => {
     if (!clientId) {
-      onError?.(
-        "Google Client ID is missing."
-      );
+      onError?.("Google Client ID is missing.");
       return;
     }
 
@@ -85,9 +84,7 @@ export default function GoogleAuthButton({
       window.google.accounts.id.initialize({
         client_id: clientId,
 
-        callback: (response: {
-          credential?: string;
-        }) => {
+        callback: (response: { credential?: string }) => {
           if (!response?.credential) {
             onError?.(
               "Google did not return a valid credential."
@@ -95,9 +92,7 @@ export default function GoogleAuthButton({
             return;
           }
 
-          onSuccess?.(
-            response.credential
-          );
+          onSuccess?.(response.credential);
         },
 
         auto_select: false,
@@ -108,35 +103,45 @@ export default function GoogleAuthButton({
     }
 
     renderGoogleButton();
-  };
+  }, [clientId, onError, onSuccess, renderGoogleButton]);
+
+  /*
+   * Important:
+   * When navigating Email -> Back -> Login, the Google script
+   * is already loaded. We must detect it ourselves.
+   */
+  useEffect(() => {
+    const checkGoogle = () => {
+      if (window.google?.accounts?.id) {
+        setScriptReady(true);
+        initializeGoogle();
+      }
+    };
+
+    checkGoogle();
+
+    const timer = window.setTimeout(checkGoogle, 100);
+    const timer2 = window.setTimeout(checkGoogle, 400);
+
+    return () => {
+      window.clearTimeout(timer);
+      window.clearTimeout(timer2);
+    };
+  }, [initializeGoogle]);
 
   useEffect(() => {
-    if (!scriptLoaded) {
+    if (!scriptReady) {
       return;
     }
 
     const timer = window.setTimeout(() => {
       initializeGoogle();
-    }, 100);
+    }, 50);
 
     return () => {
       window.clearTimeout(timer);
     };
-  }, [scriptLoaded, disabled]);
-
-  useEffect(() => {
-    if (!scriptLoaded || disabled) {
-      return;
-    }
-
-    const timer = window.setTimeout(() => {
-      renderGoogleButton();
-    }, 200);
-
-    return () => {
-      window.clearTimeout(timer);
-    };
-  }, [scriptLoaded, disabled]);
+  }, [scriptReady, initializeGoogle, disabled]);
 
   useEffect(() => {
     return () => {
@@ -149,10 +154,15 @@ export default function GoogleAuthButton({
   return (
     <>
       <Script
+        id={GOOGLE_SCRIPT_ID}
         src={GOOGLE_SCRIPT}
         strategy="afterInteractive"
-        onLoad={() => {
-          setScriptLoaded(true);
+        onReady={() => {
+          setScriptReady(true);
+
+          window.setTimeout(() => {
+            initializeGoogle();
+          }, 50);
         }}
         onError={() => {
           onError?.(
