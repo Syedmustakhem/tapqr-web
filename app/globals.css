@@ -2154,6 +2154,309 @@ h2 em {
 }
 
 /* ============================================================
+   NAVBAR — SCROLL STATE
+   (added: solid/elevated navbar once the page scrolls, per
+   redesign brief — starts transparent-ish, becomes solid)
+   ============================================================ */
+
+.nav {
+  transition: background .25s ease, border-color .25s ease, box-shadow .25s ease;
+}
+
+.nav.scrolled {
+  background: rgba(255, 255, 255, .97);
+  border-bottom-color: #E2E8F0;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, .06);
+}
+
+/* ============================================================
+   TEAM / STAFF WORKSPACE SHOWCASE
+   ============================================================ */
+
+.team-showcase {
+  background: white;
+}
+
+.team-panel {
+  display: grid;
+  grid-template-columns: .85fr 1.15fr;
+  gap: 0;
+
+  overflow: hidden;
+
+  background: #08111F;
+  border-radius: 28px;
+  box-shadow: var(--shadow-lg);
+}
+
+.team-panel-copy {
+  padding: 56px 48px;
+  color: white;
+}
+
+.team-panel-copy .eyebrow {
+  color: #93C5FD;
+}
+
+.team-panel-copy h2 {
+  color: white;
+  margin: 16px 0 20px;
+  font-size: clamp(32px, 3.4vw, 44px);
+}
+
+.team-panel-copy h2 em {
+  color: #60A5FA;
+}
+
+.team-panel-copy p {
+  max-width: 420px;
+  color: #A8B4C5;
+  font-size: 14px;
+  line-height: 1.75;
+}
+
+.team-perms {
+  display: grid;
+  gap: 10px;
+  margin-top: 30px;
+}
+
+.team-perms div {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+
+  font-size: 12px;
+  color: #CBD5E1;
+}
+
+.team-perms svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: #60A5FA;
+}
+
+.team-roster {
+  padding: 40px;
+  background: rgba(255, 255, 255, .03);
+  display: grid;
+  gap: 12px;
+  align-content: center;
+}
+
+.team-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  padding: 14px 16px;
+
+  background: rgba(255, 255, 255, .04);
+  border: 1px solid rgba(148, 163, 184, .14);
+  border-radius: 14px;
+}
+
+.team-row .mini-avatar {
+  width: 36px;
+  height: 36px;
+  background: #2563EB;
+  color: white;
+  font-size: 11px;
+}
+
+.team-row-name {
+  flex: 1;
+  min-width: 0;
+}
+
+.team-row-name b {
+  display: block;
+  color: white;
+  font-size: 12px;
+}
+
+.team-row-name span {
+  display: block;
+  margin-top: 2px;
+  color: #64748B;
+  font-size: 10px;
+}
+
+.team-role-badge {
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.team-role-badge.owner {
+  background: rgba(37, 99, 235, .18);
+  color: #93C5FD;
+}
+
+.team-role-badge.manager {
+  background: rgba(148, 163, 184, .16);
+  color: #CBD5E1;
+}
+
+.team-role-badge.staff {
+  background: rgba(148, 163, 184, .08);
+  color: #94A3B8;
+}
+
+/* ============================================================
+   INTERACTIVE BUSINESS USE-CASES (tabs + dynamic panel)
+   ============================================================ */
+
+.usecase-layout {
+  display: grid;
+  grid-template-columns: .62fr 1.38fr;
+  gap: 20px;
+
+  margin-top: 12px;
+}
+
+.usecase-tabs {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+}
+
+.usecase-tab {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  padding: 14px 16px;
+
+  background: white;
+  border: 1px solid #E2E8F0;
+  border-radius: 14px;
+
+  text-align: left;
+  color: #64748B;
+  font-size: 13px;
+  font-weight: 600;
+
+  transition: border-color .2s ease, background .2s ease, color .2s ease, transform .2s ease;
+}
+
+.usecase-tab svg {
+  flex-shrink: 0;
+  color: #94A3B8;
+  transition: color .2s ease;
+}
+
+.usecase-tab:hover {
+  transform: translateX(2px);
+  border-color: #BFDBFE;
+}
+
+.usecase-tab.active {
+  background: #08111F;
+  border-color: #08111F;
+  color: white;
+}
+
+.usecase-tab.active svg {
+  color: #60A5FA;
+}
+
+.usecase-panel {
+  padding: 34px;
+
+  background: white;
+  border: 1px solid #E2E8F0;
+  border-radius: 20px;
+
+  box-shadow: var(--shadow-sm);
+}
+
+.usecase-panel-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.usecase-panel-icon {
+  width: 42px;
+  height: 42px;
+
+  display: grid;
+  place-items: center;
+
+  background: #EFF6FF;
+  color: #2563EB;
+  border: 1px solid #DBEAFE;
+  border-radius: 11px;
+}
+
+.usecase-panel-head b {
+  font-size: 18px;
+  color: #0F172A;
+}
+
+.usecase-panel-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.usecase-panel-list div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 12px 14px;
+
+  background: #F8FAFC;
+  border: 1px solid #E8EDF3;
+  border-radius: 12px;
+
+  font-size: 12px;
+  color: #334155;
+}
+
+.usecase-panel-list span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #2563EB;
+  flex-shrink: 0;
+}
+
+@media (max-width: 850px) {
+  .team-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .team-panel-copy {
+    padding: 40px 28px;
+  }
+
+  .team-roster {
+    padding: 24px 28px 36px;
+  }
+
+  .usecase-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .usecase-tabs {
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(140px, 1fr);
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+
+  .usecase-panel {
+    padding: 24px;
+  }
+}
+/* ============================================================
    ACCESSIBILITY / MOTION
    ============================================================ */
 
@@ -2171,4 +2474,5 @@ h2 em {
     transition-duration: .01ms !important;
     scroll-behavior: auto !important;
   }
+  
 }

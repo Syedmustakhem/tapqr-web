@@ -25,6 +25,7 @@ import {
   QrCode,
   ScanLine,
   Share2,
+  ShieldCheck,
   ShoppingBag,
   Sparkles,
   Users,
@@ -301,6 +302,52 @@ const solutions = [
   ['Organizations & NGOs', Users],
 ] as const
 
+// What each type of business/organization typically puts behind
+// their TapQR experience. Used to drive the interactive use-case
+// tabs below — kept to real product capabilities, not invented stats.
+const useCaseDetails: Record<string, string[]> = {
+  'Businesses': [
+    'Business profile & branding',
+    'Contact & location details',
+    'Product or service links',
+  ],
+  'Hospitals & Clinics': [
+    'Department & doctor information',
+    'Appointment & contact details',
+    'Location & directions',
+  ],
+  'Schools & Colleges': [
+    'Institution information',
+    'Admissions & contact details',
+    'Important links & updates',
+  ],
+  'Retail & Stores': [
+    'Product information',
+    'Store location & hours',
+    'Customer contact options',
+  ],
+  'Restaurants & Hotels': [
+    'Digital menu or services',
+    'Business information',
+    'Offers & updates',
+  ],
+  'Professionals': [
+    'Digital profile',
+    'Contact details',
+    'Social & portfolio links',
+  ],
+  'Events & Conferences': [
+    'Event information & schedule',
+    'Location & directions',
+    'Registration or contact links',
+  ],
+  'Organizations & NGOs': [
+    'Mission & information',
+    'Location & contact details',
+    'Ways to connect or reach out',
+  ],
+}
+
 const contentTypes = [
   ['Profile & contact', 'Name, role, phone, email and the information people need to reach you.', WalletCards],
   ['Social & web links', 'Bring Instagram, LinkedIn, website and other important links together.', Globe2],
@@ -439,12 +486,51 @@ function Dashboard() {
   )
 }
 
+// Animates the analytics chart "drawing itself" once it scrolls
+// into view, instead of always being static. No numbers are
+// invented here — it's a motion treatment of the existing UI
+// mock, not a claim about real data.
+function AnimatedChart({ big = false }: { big?: boolean }) {
+  const ref = useRef(null)
+  const visible = useInView(ref, { once: true, margin: '-60px' })
+
+  return (
+    <div ref={ref} className={big ? 'big-chart' : 'chart'}>
+      <motion.div
+        className={big ? 'big-chart-line' : 'chart-line'}
+        initial={{ scaleX: 0, opacity: 0 }}
+        animate={visible ? { scaleX: 1, opacity: 1 } : {}}
+        transition={{ duration: 1.1, ease }}
+        style={{ transformOrigin: 'left' }}
+      />
+
+      <motion.div
+        className={big ? 'big-chart-fill' : 'chart-fill'}
+        initial={{ opacity: 0 }}
+        animate={visible ? { opacity: 1 } : {}}
+        transition={{ duration: 0.9, delay: 0.5, ease }}
+      />
+
+      {!big && (
+        <div className="chart-labels">
+          <span>Mon</span>
+          <span>Wed</span>
+          <span>Fri</span>
+          <span>Sun</span>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function TapQRLanding() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [activeFeature, setActiveFeature] = useState(0)
+  const [activeUseCase, setActiveUseCase] = useState(0)
   const [authenticated, setAuthenticated] = useState(false)
   const [userName, setUserName] = useState<string | null>(null)
   const [authReady, setAuthReady] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
     const syncAuth = () => {
@@ -464,6 +550,15 @@ export default function TapQRLanding() {
     return () => {
       window.removeEventListener('storage', handleStorage)
     }
+  }, [])
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8)
+
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+
+    return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
   const closeMenu = () => setMenuOpen(false)
@@ -487,9 +582,12 @@ export default function TapQRLanding() {
     ['Contact', '/contact'],
   ] as const
 
+  const activeSolution = solutions[activeUseCase]
+  const activeSolutionDetails = useCaseDetails[activeSolution[0]] ?? []
+
   return (
     <main id="top" className="min-h-screen overflow-hidden bg-paper">
-      <nav className="nav">
+      <nav className={`nav ${scrolled ? 'scrolled' : ''}`}>
         <Logo />
 
         <div className={`nav-links ${menuOpen ? 'mobile-open' : ''}`}>
@@ -940,10 +1038,7 @@ export default function TapQRLanding() {
               </span>
             </div>
 
-            <div className="big-chart">
-              <div className="big-chart-line" />
-              <div className="big-chart-fill" />
-            </div>
+            <AnimatedChart big />
 
             <div className="chart-legend">
               <span><i /> Scans</span>
@@ -1020,25 +1115,53 @@ export default function TapQRLanding() {
 
               <p className="body-copy">
                 TapQR isn't limited to restaurants or personal profiles.
-                Use the same foundation anywhere people need quick
-                access to digital information.
+                Select a category to see what businesses like yours
+                typically put behind their TapQR.
               </p>
             </div>
           </Reveal>
 
-          <div className="use-grid">
-            {solutions.map(([name, Icon], index) => (
-              <Reveal key={name} delay={index * 0.04}>
-                <div className={`use-card use-${index}`}>
-                  <span>
-                    <Icon size={18} />
+          <Reveal delay={0.1}>
+            <div className="usecase-layout">
+              <div className="usecase-tabs">
+                {solutions.map(([name, Icon], index) => (
+                  <button
+                    key={name}
+                    type="button"
+                    className={`usecase-tab ${
+                      activeUseCase === index ? 'active' : ''
+                    }`}
+                    onClick={() => setActiveUseCase(index)}
+                    onMouseEnter={() => setActiveUseCase(index)}
+                  >
+                    <Icon size={16} />
                     {name}
+                  </button>
+                ))}
+              </div>
+
+              <div className="usecase-panel">
+                <div className="usecase-panel-head">
+                  <span className="usecase-panel-icon">
+                    {(() => {
+                      const ActiveIcon = activeSolution[1]
+                      return <ActiveIcon size={20} />
+                    })()}
                   </span>
-                  <ArrowRight size={16} />
+                  <b>{activeSolution[0]}</b>
                 </div>
-              </Reveal>
-            ))}
-          </div>
+
+                <div className="usecase-panel-list">
+                  {activeSolutionDetails.map((detail) => (
+                    <div key={detail}>
+                      <span />
+                      {detail}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </Reveal>
 
           <Reveal>
             <div className="mt-10 text-center">
@@ -1046,6 +1169,74 @@ export default function TapQRLanding() {
                 Explore all solutions
                 <ArrowRight size={15} />
               </Link>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      <section className="section team-showcase">
+        <div className="container">
+          <Reveal>
+            <div className="team-panel">
+              <div className="team-panel-copy">
+                <p className="eyebrow">Built for teams</p>
+
+                <h2>
+                  Manage your business
+                  <br />
+                  <em>from one workspace.</em>
+                </h2>
+
+                <p>
+                  Bring your team into TapQR. Give owners, managers
+                  and staff the right level of access to manage QR
+                  experiences and content together.
+                </p>
+
+                <div className="team-perms">
+                  <div>
+                    <ShieldCheck size={14} />
+                    Owners control the full workspace and billing.
+                  </div>
+
+                  <div>
+                    <ShieldCheck size={14} />
+                    Managers can edit content and view analytics.
+                  </div>
+
+                  <div>
+                    <ShieldCheck size={14} />
+                    Staff get limited, scoped access where needed.
+                  </div>
+                </div>
+              </div>
+
+              <div className="team-roster">
+                {[
+                  ['Workspace Owner', 'Full access', 'owner'],
+                  ['Content Manager', 'Edit & analytics', 'manager'],
+                  ['Staff Member', 'Scoped access', 'staff'],
+                ].map(([name, access, role]) => (
+                  <div key={name} className="team-row">
+                    <div className="mini-avatar">
+                      {name
+                        .split(' ')
+                        .map((w) => w[0])
+                        .join('')
+                        .slice(0, 2)}
+                    </div>
+
+                    <div className="team-row-name">
+                      <b>{name}</b>
+                      <span>{access}</span>
+                    </div>
+
+                    <span className={`team-role-badge ${role}`}>
+                      {role}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
           </Reveal>
         </div>
