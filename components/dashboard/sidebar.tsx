@@ -54,7 +54,7 @@ const navigation = [
   },
   {
   label: "Reviews",
-  href: "/dashboard/reviews",
+  href: "/dashboard/review",
   icon: MessageSquare,
 },
   {
