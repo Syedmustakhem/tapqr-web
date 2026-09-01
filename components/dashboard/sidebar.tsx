@@ -17,7 +17,7 @@ import {
   Users,
   X,
 } from "lucide-react";
-
+import { MessageSquare } from "lucide-react";
 import { apiRequest, ApiError } from "@/lib/api";
 import { clearSession, getStoredUser, type AuthUser } from "@/lib/auth";
 
@@ -52,6 +52,11 @@ const navigation = [
     href: "/dashboard/staff",
     icon: Users,
   },
+  {
+  label: "Reviews",
+  href: "/dashboard/reviews",
+  icon: MessageSquare,
+},
   {
     label: "Activity",
     href: "/dashboard/activity",

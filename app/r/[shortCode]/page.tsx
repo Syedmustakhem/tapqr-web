@@ -23,6 +23,8 @@ type Profile = {
   phone?: string | null;
   whatsapp?: string | null;
 
+  externalReviewUrl?: string | null;
+
   address?: {
     line1?: string | null;
     line2?: string | null;

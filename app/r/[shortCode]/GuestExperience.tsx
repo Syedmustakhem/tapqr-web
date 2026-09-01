@@ -8,7 +8,7 @@ import {
 import type {
   GuestExperience,
 } from "./page";
-
+import ReviewsSection from "./ReviewsSection";
 type CatalogItem = GuestExperience["business"]["catalogs"][number]["categories"][number]["items"][number];
 
 type Category =
@@ -1507,7 +1507,15 @@ export default function GuestExperience({
           }
         />
       )}
-
+<ReviewsSection
+  businessId={business.id}
+  qrCodeId={qr.id}
+  externalReviewUrl={
+    profile?.externalReviewUrl
+  }
+  primaryColor={primaryColor}
+  buttonRadius={buttonRadius}
+/>
       {/* =========================
           FOOTER
       ========================== */}
