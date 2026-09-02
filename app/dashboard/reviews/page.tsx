@@ -97,11 +97,6 @@ type ReviewsResponse = {
   data?: PaginatedReviews;
 };
 
-type BasicResponse = {
-  success?: boolean;
-  message?: string;
-  data?: unknown;
-};
 
 type StatusFilter =
   | "ALL"
@@ -114,6 +109,14 @@ const PAGE_SIZE = 20;
 
 function errorMessage(error: unknown) {
   if (error instanceof ApiError) {
+    if (error.status === 404) {
+      return "Reviews API route was not found. Make sure the backend Reviews routes are mounted at /api/reviews and the deployed API is up to date.";
+    }
+
+    if (error.status === 403) {
+      return "You do not have permission to manage reviews for this business.";
+    }
+
     return error.message;
   }
 
@@ -324,13 +327,22 @@ export default function ReviewsPage() {
               )
             : null;
 
+        const usableBusinesses =
+          data.filter(
+            (business) =>
+              business.status ===
+                undefined ||
+              business.status ===
+                "ACTIVE"
+          );
+
         const nextId =
-          data.find(
+          usableBusinesses.find(
             (business) =>
               business.id ===
               storedId
           )?.id ??
-          data[0]?.id ??
+          usableBusinesses[0]?.id ??
           "";
 
         setBusinessId(nextId);
@@ -435,10 +447,10 @@ export default function ReviewsPage() {
             summaryResponse,
           ] = await Promise.all([
             apiRequest<ReviewsResponse>(
-              `/reviews/businesses/${currentBusinessId}/manage?${params.toString()}`
+              `/reviews/businesses/${encodeURIComponent(currentBusinessId)}/manage?${params.toString()}`
             ),
             apiRequest<SummaryResponse>(
-              `/reviews/businesses/${currentBusinessId}/summary`
+              `/reviews/businesses/${encodeURIComponent(currentBusinessId)}/summary`
             ),
           ]);
 

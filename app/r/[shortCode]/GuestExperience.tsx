@@ -3,6 +3,7 @@
 import {
   useMemo,
   useState,
+  useEffect,
 } from "react";
 
 import type {
@@ -358,6 +359,23 @@ function getActionStyle(
 }
 
 
+const PUBLIC_API_BASE =
+  (process.env.NEXT_PUBLIC_API_URL ||
+    "https://api.tapqr.shop")
+    .replace(/\/+$/, "")
+    .replace(/\/api$/, "");
+
+const PUBLIC_API_ROOT =
+  `${PUBLIC_API_BASE}/api`;
+
+type ScanVerificationResponse = {
+  success?: boolean;
+  data?: {
+    recorded?: boolean;
+    verificationToken?: string | null;
+  };
+};
+
 export default function GuestExperience({
   experience,
 }: {
@@ -415,6 +433,83 @@ export default function GuestExperience({
 
   const catalogs =
     business.catalogs || [];
+
+  /*
+   * Short-lived review verification proof.
+   *
+   * It intentionally lives only in React memory. It is never
+   * persisted to localStorage/sessionStorage and never placed
+   * into a URL.
+   */
+  const [
+    reviewVerificationToken,
+    setReviewVerificationToken,
+  ] = useState<string | null>(null);
+
+  const [
+    scanVerificationReady,
+    setScanVerificationReady,
+  ] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const recordPublicScan = async () => {
+      try {
+        const response = await fetch(
+          `${PUBLIC_API_ROOT}/qrcodes/public/${encodeURIComponent(
+            qr.shortCode
+          )}/scan`,
+          {
+            method: "POST",
+            headers: {
+              Accept: "application/json",
+            },
+            cache: "no-store",
+          }
+        );
+
+        if (!response.ok) {
+          console.warn(
+            `TapQR scan endpoint returned ${response.status}.`
+          );
+          return;
+        }
+
+        const result =
+          (await response.json()) as ScanVerificationResponse;
+
+        if (
+          !cancelled &&
+          result.success &&
+          result.data?.verificationToken
+        ) {
+          setReviewVerificationToken(
+            result.data.verificationToken
+          );
+        }
+      } catch (error) {
+        /*
+         * Analytics/review verification must never prevent
+         * the public QR experience from rendering.
+         */
+        console.warn(
+          "TapQR public scan registration failed:",
+          error
+        );
+      } finally {
+        if (!cancelled) {
+          setScanVerificationReady(true);
+        }
+      }
+    };
+
+    void recordPublicScan();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [qr.shortCode]);
 
   /*
    * Search state
@@ -1510,6 +1605,12 @@ export default function GuestExperience({
 <ReviewsSection
   businessId={business.id}
   qrCodeId={qr.id}
+  verificationToken={
+    reviewVerificationToken
+  }
+  verificationReady={
+    scanVerificationReady
+  }
   externalReviewUrl={
     profile?.externalReviewUrl
   }

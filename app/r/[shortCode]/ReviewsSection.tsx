@@ -45,14 +45,21 @@ type ApiEnvelope<T> = {
 interface ReviewsSectionProps {
   businessId: string;
   qrCodeId?: string | null;
+  verificationToken?: string | null;
+  verificationReady?: boolean;
   externalReviewUrl?: string | null;
   primaryColor: string;
   buttonRadius: number;
 }
 
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL ||
-  "https://api.tapqr.shop";
+const API_BASE =
+  (process.env.NEXT_PUBLIC_API_URL ||
+    "https://api.tapqr.shop")
+    .replace(/\/+$/, "")
+    .replace(/\/api$/, "");
+
+const API_ROOT =
+  `${API_BASE}/api`;
 
 function formatDate(value: string) {
   const date = new Date(value);
@@ -93,6 +100,8 @@ function initials(
 export default function ReviewsSection({
   businessId,
   qrCodeId,
+  verificationToken,
+  verificationReady = false,
   externalReviewUrl,
   primaryColor,
   buttonRadius,
@@ -166,7 +175,7 @@ export default function ReviewsSection({
         reviewsResponse,
       ] = await Promise.all([
         fetch(
-          `${API_URL}/api/reviews/businesses/${encodeURIComponent(
+          `${API_ROOT}/reviews/businesses/${encodeURIComponent(
             businessId
           )}/summary`,
           {
@@ -179,7 +188,7 @@ export default function ReviewsSection({
           }
         ),
         fetch(
-          `${API_URL}/api/reviews/businesses/${encodeURIComponent(
+          `${API_ROOT}/reviews/businesses/${encodeURIComponent(
             businessId
           )}?page=1&limit=5`,
           {
@@ -264,7 +273,7 @@ export default function ReviewsSection({
 
       const response =
         await fetch(
-          `${API_URL}/api/reviews/businesses/${encodeURIComponent(
+          `${API_ROOT}/reviews/businesses/${encodeURIComponent(
             businessId
           )}`,
           {
@@ -278,6 +287,8 @@ export default function ReviewsSection({
             body: JSON.stringify({
               qrCodeId:
                 qrCodeId || null,
+              verificationToken:
+                verificationToken || null,
               reviewerName:
                 name.trim() || null,
               reviewerEmail:
@@ -866,14 +877,19 @@ export default function ReviewsSection({
                   "#94a3b8",
               }}
             >
-              Reviews are moderated before publication.
+              {!verificationReady
+                ? "Preparing a secure QR interaction..."
+                : verificationToken
+                  ? "This review can be marked as verified after moderation."
+                  : "Reviews are moderated before publication."}
             </span>
 
             <button
               type="submit"
               disabled={
                 submitting ||
-                rating === 0
+                rating === 0 ||
+                !verificationReady
               }
               style={{
                 border: "none",
