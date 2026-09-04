@@ -1,13 +1,21 @@
-"use client";
+ "use client";
 
 import {
   Bell,
+  BarChart3,
+  Building2,
+  CheckCheck,
   ChevronDown,
+  Info,
   LogOut,
   Menu,
+  QrCode,
   Search,
   Settings,
+  ShieldAlert,
+  Star,
   User,
+  Users,
   X,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -22,8 +30,73 @@ import {
 
 import { apiRequest } from "@/lib/api";
 
+import {
+  extractNotifications,
+  extractUnreadCount,
+  formatNotificationTime,
+  getNotifications,
+  getUnreadNotificationCount,
+  markAllNotificationsRead,
+  markNotificationRead,
+  type Notification,
+} from "@/lib/notifications";
+
 interface TopbarProps {
   onMenuClick: () => void;
+}
+
+function getNotificationIcon(type: Notification["type"]) {
+  switch (type) {
+    case "SECURITY":
+      return <ShieldAlert className="h-4 w-4" />;
+    case "BUSINESS":
+      return <Building2 className="h-4 w-4" />;
+    case "QR":
+      return <QrCode className="h-4 w-4" />;
+    case "STAFF":
+      return <Users className="h-4 w-4" />;
+    case "REVIEW":
+      return <Star className="h-4 w-4" />;
+    case "ANALYTICS":
+      return <BarChart3 className="h-4 w-4" />;
+    case "AUTH":
+      return <ShieldAlert className="h-4 w-4" />;
+    case "BILLING":
+      return <Info className="h-4 w-4" />;
+    case "SYSTEM":
+    default:
+      return <Bell className="h-4 w-4" />;
+  }
+}
+
+function getNotificationIconClasses(
+  type: Notification["type"]
+) {
+  switch (type) {
+    case "SECURITY":
+    case "AUTH":
+      return "bg-red-50 text-red-600";
+    case "BUSINESS":
+    case "QR":
+      return "bg-blue-50 text-blue-600";
+    case "STAFF":
+      return "bg-violet-50 text-violet-600";
+    case "REVIEW":
+      return "bg-amber-50 text-amber-600";
+    case "ANALYTICS":
+      return "bg-emerald-50 text-emerald-600";
+    case "BILLING":
+      return "bg-orange-50 text-orange-600";
+    case "SYSTEM":
+    default:
+      return "bg-slate-100 text-slate-600";
+  }
+}
+
+function getNotificationTypeLabel(
+  type: Notification["type"]
+) {
+  return type.charAt(0) + type.slice(1).toLowerCase();
 }
 
 export default function Topbar({
@@ -40,6 +113,24 @@ export default function Topbar({
   const [notificationsOpen, setNotificationsOpen] =
     useState(false);
 
+  const [notifications, setNotifications] =
+    useState<Notification[]>([]);
+
+  const [unreadCount, setUnreadCount] =
+    useState(0);
+
+  const [notificationsLoading, setNotificationsLoading] =
+    useState(false);
+
+  const [notificationsError, setNotificationsError] =
+    useState("");
+
+  const [markingAllRead, setMarkingAllRead] =
+    useState(false);
+
+  const [markingReadId, setMarkingReadId] =
+    useState<string | null>(null);
+
   const [search, setSearch] =
     useState("");
 
@@ -52,12 +143,93 @@ export default function Topbar({
   const notificationRef =
     useRef<HTMLDivElement | null>(null);
 
-  /*
-   * Load currently stored authenticated user.
-   */
   useEffect(() => {
     setUser(getStoredUser());
   }, []);
+
+  /*
+   * Load unread count when the dashboard shell mounts.
+   * Poll periodically so notifications created elsewhere
+   * become visible without requiring a full page refresh.
+   */
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadUnreadCount() {
+      try {
+        const response =
+          await getUnreadNotificationCount();
+
+        if (!cancelled) {
+          setUnreadCount(
+            extractUnreadCount(response)
+          );
+        }
+      } catch {
+        // Notification loading should never break the dashboard.
+      }
+    }
+
+    void loadUnreadCount();
+
+    const interval = window.setInterval(
+      () => {
+        void loadUnreadCount();
+      },
+      30000
+    );
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
+  }, []);
+
+  /*
+   * Load the notification list when the dropdown opens.
+   */
+  useEffect(() => {
+    if (!notificationsOpen) {
+      return;
+    }
+
+    let cancelled = false;
+
+    async function loadNotifications() {
+      setNotificationsLoading(true);
+      setNotificationsError("");
+
+      try {
+        const response =
+          await getNotifications({
+            page: 1,
+            limit: 8,
+          });
+
+        if (!cancelled) {
+          setNotifications(
+            extractNotifications(response)
+          );
+        }
+      } catch {
+        if (!cancelled) {
+          setNotificationsError(
+            "Unable to load notifications."
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          setNotificationsLoading(false);
+        }
+      }
+    }
+
+    void loadNotifications();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [notificationsOpen]);
 
   /*
    * Close menus when clicking outside.
@@ -97,8 +269,7 @@ export default function Topbar({
   }, []);
 
   /*
-   * Keyboard shortcut:
-   * "/" focuses dashboard search.
+   * Keyboard shortcuts.
    */
   useEffect(() => {
     const handleKeyDown = (
@@ -176,10 +347,6 @@ export default function Topbar({
       ? user.role.toLowerCase()
       : "member";
 
-  /*
-   * Search is intentionally local for now.
-   * We don't invent a backend search API.
-   */
   function handleSearchSubmit(
     event: React.FormEvent<HTMLFormElement>
   ) {
@@ -191,69 +358,141 @@ export default function Topbar({
       return;
     }
 
-    /*
-     * Basic dashboard search routing.
-     * This can later be connected to a real search index
-     * when a backend search endpoint exists.
-     */
     const normalized =
       query.toLowerCase();
 
-    if (
-      normalized.includes("business")
-    ) {
+    if (normalized.includes("business")) {
       router.push(
         "/dashboard/business"
       );
       return;
     }
 
-    if (
-      normalized.includes("qr")
-    ) {
-      router.push(
-        "/dashboard/qr"
-      );
+    if (normalized.includes("qr")) {
+      router.push("/dashboard/qr");
       return;
     }
 
-    if (
-      normalized.includes("analytic")
-    ) {
+    if (normalized.includes("analytic")) {
       router.push(
         "/dashboard/analytics"
       );
       return;
     }
 
-    if (
-      normalized.includes("staff")
-    ) {
-      router.push(
-        "/dashboard/staff"
-      );
+    if (normalized.includes("staff")) {
+      router.push("/dashboard/staff");
       return;
     }
 
-    if (
-      normalized.includes("setting")
-    ) {
+    if (normalized.includes("setting")) {
       router.push(
         "/dashboard/settings"
       );
     }
   }
 
-  /*
-   * Logout:
-   *
-   * 1. Attempt backend logout.
-   * 2. Always clear local session.
-   * 3. Redirect to login.
-   *
-   * This is intentionally defensive because local
-   * session cleanup must happen even if the API call fails.
-   */
+  async function handleNotificationClick(
+    notification: Notification
+  ) {
+    if (!notification.readAt) {
+      setMarkingReadId(notification.id);
+
+      setNotifications((current) =>
+        current.map((item) =>
+          item.id === notification.id
+            ? {
+                ...item,
+                readAt: new Date().toISOString(),
+              }
+            : item
+        )
+      );
+
+      setUnreadCount((current) =>
+        Math.max(0, current - 1)
+      );
+
+      try {
+        await markNotificationRead(
+          notification.id
+        );
+      } catch {
+        /*
+         * Restore the unread state if the backend
+         * rejected the operation.
+         */
+        setNotifications((current) =>
+          current.map((item) =>
+            item.id === notification.id
+              ? {
+                  ...item,
+                  readAt: null,
+                }
+              : item
+          )
+        );
+
+        setUnreadCount((current) =>
+          current + 1
+        );
+      } finally {
+        setMarkingReadId(null);
+      }
+    }
+
+    setNotificationsOpen(false);
+
+    if (notification.actionUrl) {
+      const actionUrl =
+        notification.actionUrl.trim();
+
+      if (
+        actionUrl.startsWith("/") &&
+        !actionUrl.startsWith("//")
+      ) {
+        router.push(actionUrl);
+      }
+    }
+  }
+
+  async function handleMarkAllRead() {
+    if (
+      markingAllRead ||
+      unreadCount === 0
+    ) {
+      return;
+    }
+
+    setMarkingAllRead(true);
+
+    const previous =
+      notifications;
+
+    const previousCount =
+      unreadCount;
+
+    setNotifications((current) =>
+      current.map((notification) => ({
+        ...notification,
+        readAt:
+          notification.readAt ??
+          new Date().toISOString(),
+      }))
+    );
+
+    setUnreadCount(0);
+
+    try {
+      await markAllNotificationsRead();
+    } catch {
+      setNotifications(previous);
+      setUnreadCount(previousCount);
+    } finally {
+      setMarkingAllRead(false);
+    }
+  }
+
   async function handleLogout() {
     if (loggingOut) {
       return;
@@ -269,10 +508,7 @@ export default function Topbar({
         }
       );
     } catch {
-      /*
-       * Do not keep the browser session alive merely
-       * because the logout request failed.
-       */
+      // Local session cleanup still happens.
     } finally {
       clearSession();
       router.replace("/login");
@@ -289,7 +525,6 @@ export default function Topbar({
     <header className="sticky top-0 z-40 flex h-[76px] items-center justify-between border-b border-slate-200/80 bg-white/90 px-4 backdrop-blur-xl sm:px-6 lg:px-8">
       {/* LEFT */}
       <div className="flex min-w-0 items-center gap-3">
-        {/* Mobile menu */}
         <button
           type="button"
           onClick={onMenuClick}
@@ -299,7 +534,6 @@ export default function Topbar({
           <Menu className="h-5 w-5" />
         </button>
 
-        {/* Mobile brand */}
         <Link
           href="/dashboard"
           className="shrink-0 md:hidden"
@@ -312,7 +546,6 @@ export default function Topbar({
           </span>
         </Link>
 
-        {/* Search */}
         <form
           onSubmit={handleSearchSubmit}
           className="hidden md:block"
@@ -367,7 +600,11 @@ export default function Topbar({
               );
               setProfileOpen(false);
             }}
-            aria-label="Notifications"
+            aria-label={
+              unreadCount > 0
+                ? `${unreadCount} unread notifications`
+                : "Notifications"
+            }
             aria-expanded={
               notificationsOpen
             }
@@ -375,11 +612,17 @@ export default function Topbar({
           >
             <Bell className="h-[19px] w-[19px]" />
 
-            <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-blue-600 ring-2 ring-white" />
+            {unreadCount > 0 && (
+              <span className="absolute -right-1 -top-1 flex min-h-[18px] min-w-[18px] items-center justify-center rounded-full bg-blue-600 px-1 text-[9px] font-black leading-none text-white ring-2 ring-white">
+                {unreadCount > 99
+                  ? "99+"
+                  : unreadCount}
+              </span>
+            )}
           </button>
 
           {notificationsOpen && (
-            <div className="absolute right-0 top-full mt-3 w-[320px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-slate-950/10">
+            <div className="absolute right-0 top-full mt-3 w-[360px] max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-slate-950/10">
               <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
                 <div>
                   <p className="text-sm font-bold text-slate-950">
@@ -391,23 +634,171 @@ export default function Topbar({
                   </p>
                 </div>
 
-                <span className="rounded-full bg-blue-50 px-2 py-1 text-[10px] font-bold text-blue-600">
-                  New
-                </span>
+                {unreadCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      void handleMarkAllRead();
+                    }}
+                    disabled={markingAllRead}
+                    className="inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-[10px] font-bold text-blue-600 transition hover:bg-blue-50 disabled:opacity-50"
+                  >
+                    <CheckCheck className="h-3.5 w-3.5" />
+                    {markingAllRead
+                      ? "Updating..."
+                      : "Mark all read"}
+                  </button>
+                )}
               </div>
 
-              <div className="px-4 py-6 text-center">
-                <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 text-slate-400">
-                  <Bell className="h-4 w-4" />
+              {notificationsLoading ? (
+                <div className="space-y-2 px-4 py-4">
+                  {[1, 2, 3].map(
+                    (item) => (
+                      <div
+                        key={item}
+                        className="flex gap-3 rounded-xl p-2"
+                      >
+                        <div className="h-9 w-9 shrink-0 animate-pulse rounded-xl bg-slate-100" />
+                        <div className="min-w-0 flex-1 space-y-2">
+                          <div className="h-3 w-3/4 animate-pulse rounded bg-slate-100" />
+                          <div className="h-2.5 w-full animate-pulse rounded bg-slate-100" />
+                          <div className="h-2.5 w-1/3 animate-pulse rounded bg-slate-100" />
+                        </div>
+                      </div>
+                    )
+                  )}
                 </div>
+              ) : notificationsError ? (
+                <div className="px-4 py-7 text-center">
+                  <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-red-50 text-red-500">
+                    <Info className="h-4 w-4" />
+                  </div>
 
-                <p className="mt-3 text-sm font-semibold text-slate-700">
-                  No notifications yet
-                </p>
+                  <p className="mt-3 text-sm font-semibold text-slate-700">
+                    {notificationsError}
+                  </p>
 
-                <p className="mt-1 text-xs leading-5 text-slate-400">
-                  Important workspace alerts will appear here.
-                </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setNotificationsOpen(false);
+                      window.setTimeout(
+                        () =>
+                          setNotificationsOpen(
+                            true
+                          ),
+                        0
+                      );
+                    }}
+                    className="mt-3 text-xs font-bold text-blue-600 hover:text-blue-700"
+                  >
+                    Try again
+                  </button>
+                </div>
+              ) : notifications.length === 0 ? (
+                <div className="px-4 py-8 text-center">
+                  <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-slate-50 text-slate-400">
+                    <Bell className="h-4 w-4" />
+                  </div>
+
+                  <p className="mt-3 text-sm font-semibold text-slate-700">
+                    No notifications yet
+                  </p>
+
+                  <p className="mt-1 text-xs leading-5 text-slate-400">
+                    Important workspace alerts will appear here.
+                  </p>
+                </div>
+              ) : (
+                <div className="max-h-[430px] overflow-y-auto">
+                  {notifications.map(
+                    (notification) => {
+                      const unread =
+                        !notification.readAt;
+
+                      const isReading =
+                        markingReadId ===
+                        notification.id;
+
+                      return (
+                        <button
+                          key={notification.id}
+                          type="button"
+                          onClick={() => {
+                            void handleNotificationClick(
+                              notification
+                            );
+                          }}
+                          disabled={isReading}
+                          className={`group flex w-full gap-3 border-b border-slate-100 px-4 py-3 text-left transition last:border-b-0 hover:bg-slate-50 disabled:cursor-wait ${
+                            unread
+                              ? "bg-blue-50/40"
+                              : "bg-white"
+                          }`}
+                        >
+                          <div
+                            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${getNotificationIconClasses(
+                              notification.type
+                            )}`}
+                          >
+                            {getNotificationIcon(
+                              notification.type
+                            )}
+                          </div>
+
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-start gap-2">
+                              <p
+                                className={`min-w-0 flex-1 truncate text-xs ${
+                                  unread
+                                    ? "font-bold text-slate-950"
+                                    : "font-semibold text-slate-700"
+                                }`}
+                              >
+                                {notification.title}
+                              </p>
+
+                              {unread && (
+                                <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-blue-600" />
+                              )}
+                            </div>
+
+                            <p className="mt-1 line-clamp-2 text-[11px] leading-5 text-slate-500">
+                              {notification.message}
+                            </p>
+
+                            <div className="mt-1.5 flex items-center gap-2 text-[9px] font-medium uppercase tracking-[0.08em] text-slate-400">
+                              <span>
+                                {getNotificationTypeLabel(
+                                  notification.type
+                                )}
+                              </span>
+                              <span>·</span>
+                              <span className="normal-case tracking-normal">
+                                {formatNotificationTime(
+                                  notification.createdAt
+                                )}
+                              </span>
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    }
+                  )}
+                </div>
+              )}
+
+              <div className="border-t border-slate-100 px-4 py-3">
+                <Link
+                  href="/dashboard/notifications"
+                  onClick={() =>
+                    setNotificationsOpen(false)
+                  }
+                  className="flex w-full items-center justify-center rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs font-bold text-slate-700 transition hover:bg-slate-50"
+                >
+                  View all notifications
+                </Link>
               </div>
             </div>
           )}
@@ -426,9 +817,7 @@ export default function Topbar({
               setProfileOpen(
                 (open) => !open
               );
-              setNotificationsOpen(
-                false
-              );
+              setNotificationsOpen(false);
             }}
             aria-expanded={profileOpen}
             aria-haspopup="menu"
@@ -462,7 +851,6 @@ export default function Topbar({
               role="menu"
               className="absolute right-0 top-full mt-3 w-[250px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-slate-950/10"
             >
-              {/* User summary */}
               <div className="border-b border-slate-100 px-4 py-4">
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-xs font-bold text-white">
@@ -484,7 +872,6 @@ export default function Topbar({
                 </div>
               </div>
 
-              {/* Menu */}
               <div className="p-2">
                 <Link
                   href="/dashboard/settings"
@@ -507,7 +894,6 @@ export default function Topbar({
                 </Link>
               </div>
 
-              {/* Logout */}
               <div className="border-t border-slate-100 p-2">
                 <button
                   type="button"
