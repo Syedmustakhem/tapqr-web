@@ -50,6 +50,21 @@ type QRExperienceType =
   | "CONTACT"
   | "REDIRECT";
 
+type QRSourceType =
+  | "TABLE"
+  | "COUNTER"
+  | "TAKEAWAY"
+  | "PACKAGING"
+  | "POSTER"
+  | "FLYER"
+  | "BUSINESS_CARD"
+  | "RECEIPT"
+  | "WEBSITE"
+  | "SOCIAL_MEDIA"
+  | "ADVERTISEMENT"
+  | "EVENT"
+  | "OTHER";
+
 type QRCodeRecord = {
   id: string;
   businessId?: string;
@@ -61,6 +76,10 @@ type QRCodeRecord = {
   shortCode: string;
   status: QRStatus;
   experienceType: QRExperienceType;
+  sourceType?: QRSourceType;
+  placementLabel?: string | null;
+  locationLabel?: string | null;
+  campaignName?: string | null;
   enabledSections?: unknown;
   scanCount?: number;
   createdAt?: string;
@@ -101,6 +120,10 @@ type FormState = {
   experienceType: QRExperienceType;
   catalogId: string;
   destinationUrl: string;
+  sourceType: QRSourceType;
+  placementLabel: string;
+  locationLabel: string;
+  campaignName: string;
 };
 
 const EXPERIENCE_LABELS: Record<
@@ -130,7 +153,29 @@ const EMPTY_FORM: FormState = {
   experienceType: "BUSINESS",
   catalogId: "",
   destinationUrl: "",
+  sourceType: "OTHER",
+  placementLabel: "",
+  locationLabel: "",
+  campaignName: "",
 };
+
+const SOURCE_LABELS: Record<QRSourceType, string> = {
+  TABLE: "Table",
+  COUNTER: "Counter",
+  TAKEAWAY: "Takeaway",
+  PACKAGING: "Packaging",
+  POSTER: "Poster",
+  FLYER: "Flyer",
+  BUSINESS_CARD: "Business card",
+  RECEIPT: "Receipt",
+  WEBSITE: "Website",
+  SOCIAL_MEDIA: "Social media",
+  ADVERTISEMENT: "Advertisement",
+  EVENT: "Event",
+  OTHER: "Other",
+};
+
+const SOURCE_OPTIONS = Object.entries(SOURCE_LABELS) as [QRSourceType, string][];
 
 function publicQRUrl(shortCode: string) {
   return `https://tapqr.shop/r/${encodeURIComponent(
@@ -427,7 +472,13 @@ export default function QRPage() {
           qr.experienceType
         ]
           .toLowerCase()
-          .includes(normalized);
+          .includes(normalized) ||
+        SOURCE_LABELS[qr.sourceType ?? "OTHER"]
+          .toLowerCase()
+          .includes(normalized) ||
+        qr.placementLabel?.toLowerCase().includes(normalized) ||
+        qr.locationLabel?.toLowerCase().includes(normalized) ||
+        qr.campaignName?.toLowerCase().includes(normalized);
 
       const matchesStatus =
         statusFilter === "ALL" ||
@@ -587,6 +638,13 @@ export default function QRPage() {
                     : null,
                 experienceType:
                   form.experienceType,
+                sourceType: form.sourceType,
+                placementLabel:
+                  form.placementLabel.trim() || null,
+                locationLabel:
+                  form.locationLabel.trim() || null,
+                campaignName:
+                  form.campaignName.trim() || null,
               }),
             }
           );
@@ -624,6 +682,19 @@ export default function QRPage() {
                 type: form.type,
                 experienceType:
                   form.experienceType,
+                sourceType: form.sourceType,
+                ...(form.placementLabel.trim() && {
+                  placementLabel:
+                    form.placementLabel.trim(),
+                }),
+                ...(form.locationLabel.trim() && {
+                  locationLabel:
+                    form.locationLabel.trim(),
+                }),
+                ...(form.campaignName.trim() && {
+                  campaignName:
+                    form.campaignName.trim(),
+                }),
                 ...(form.catalogId.trim() && {
                   catalogId:
                     form.catalogId.trim(),
@@ -1536,6 +1607,22 @@ function QRRow({
               : "Static"}
           </p>
 
+          <div className="mt-2 flex flex-wrap gap-2">
+            <span className="rounded-full border border-blue-100 bg-blue-50 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.08em] text-blue-700">
+              {SOURCE_LABELS[qr.sourceType ?? "OTHER"]}
+            </span>
+            {qr.placementLabel && (
+              <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[9px] font-semibold text-slate-600">
+                {qr.placementLabel}
+              </span>
+            )}
+            {qr.locationLabel && (
+              <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[9px] font-semibold text-slate-600">
+                {qr.locationLabel}
+              </span>
+            )}
+          </div>
+
           <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-slate-400">
             <span className="font-mono">
               /r/{qr.shortCode}
@@ -1769,6 +1856,61 @@ function QRModal({
             placeholder="Where this QR is used"
             disabled={saving}
           />
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="mb-2 block text-xs font-semibold text-slate-700">
+                Source / placement type
+              </label>
+              <select
+                value={form.sourceType}
+                disabled={saving}
+                onChange={(event) =>
+                  setForm((current) => ({
+                    ...current,
+                    sourceType: event.target.value as QRSourceType,
+                  }))
+                }
+                className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-sm outline-none transition focus:border-blue-300 focus:ring-4 focus:ring-blue-500/5 disabled:opacity-60"
+              >
+                {SOURCE_OPTIONS.map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <Field
+              label="Placement label"
+              value={form.placementLabel}
+              onChange={(value) =>
+                setForm((current) => ({ ...current, placementLabel: value }))
+              }
+              placeholder="Table 12, Main entrance, Product box"
+              disabled={saving}
+            />
+
+            <Field
+              label="Location label"
+              value={form.locationLabel}
+              onChange={(value) =>
+                setForm((current) => ({ ...current, locationLabel: value }))
+              }
+              placeholder="Main branch, Floor 2, Reception"
+              disabled={saving}
+            />
+
+            <Field
+              label="Campaign name"
+              value={form.campaignName}
+              onChange={(value) =>
+                setForm((current) => ({ ...current, campaignName: value }))
+              }
+              placeholder="September campaign"
+              disabled={saving}
+            />
+          </div>
 
           {!editing && (
             <div>
