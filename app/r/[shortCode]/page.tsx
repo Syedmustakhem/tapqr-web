@@ -1,198 +1,179 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import GuestExperience from "./GuestExperience";
 
-type Params = {
-  shortCode: string;
-};
+const API_BASE =
+  (process.env.NEXT_PUBLIC_API_URL || "https://api.tapqr.shop")
+    .replace(/\/+$/, "")
+    .replace(/\/api$/, "");
 
-type Branding = {
-  primaryColor?: string | null;
-  secondaryColor?: string | null;
-  backgroundColor?: string | null;
-  logoUrl?: string | null;
-  coverImageUrl?: string | null;
-  buttonStyle?: string | null;
-  fontFamily?: string | null;
-};
+const API_ROOT = `${API_BASE}/api`;
 
-type Profile = {
-  tagline?: string | null;
-  description?: string | null;
-  website?: string | null;
-  email?: string | null;
-  phone?: string | null;
-  whatsapp?: string | null;
-
-  externalReviewUrl?: string | null;
-
-  address?: {
-    line1?: string | null;
-    line2?: string | null;
-    city?: string | null;
-    state?: string | null;
-    postalCode?: string | null;
-    country?: string | null;
-  } | null;
-
-  location?: {
-    latitude?: number | null;
-    longitude?: number | null;
-  } | null;
-
-  openingHours?: unknown;
-  socialLinks?: unknown;
-  coverImage?: string | null;
-};
-
-type Option = {
-  id: string;
-  name: string;
-  price: string | number;
-  isAvailable: boolean;
-};
-
-type OptionGroup = {
-  id: string;
-  name: string;
-  required: boolean;
-  minSelect: number;
-  maxSelect: number;
-  options: Option[];
-};
-
-type Variant = {
-  id: string;
-  name: string;
-  price: string | number | null;
-  compareAtPrice: string | number | null;
-  sku?: string | null;
-  stock?: string | number | null;
-  isAvailable: boolean;
-};
-
-type CatalogItem = {
-  id: string;
-  name: string;
-  description?: string | null;
-  type: string;
-  price: string | number | null;
-  compareAtPrice: string | number | null;
-  currency: string;
-  image?: string | null;
-  gallery?: unknown;
-  sku?: string | null;
-  unit?: string | null;
-  stock?: string | number | null;
-  durationMinutes?: number | null;
-  isAvailable: boolean;
-  isFeatured: boolean;
-  metadata?: unknown;
-  variants: Variant[];
-  optionGroups: OptionGroup[];
-};
-
-type Category = {
-  id: string;
-  name: string;
-  description?: string | null;
-  image?: string | null;
-  items: CatalogItem[];
-};
-
-type Catalog = {
-  id: string;
-  name: string;
-  description?: string | null;
-  type: string;
-  categories: Category[];
-};
-
-export type GuestExperience = {
+export interface GuestExperience {
   qr: {
     id: string;
     name: string;
-    description?: string | null;
+    description: string | null;
     type: string;
     experienceType: string;
     shortCode: string;
-    enabledSections?: string[];
+    enabledSections: unknown;
+    catalogId: string | null;
+    sourceType: string;
+    placementLabel: string | null;
+    locationLabel: string | null;
+    campaignName: string | null;
   };
 
-  branding: Branding | null;
+  branding: {
+    primaryColor: string | null;
+    secondaryColor: string | null;
+    backgroundColor: string | null;
+    qrForegroundColor: string | null;
+    qrBackgroundColor: string | null;
+    logoUrl: string | null;
+    coverImageUrl: string | null;
+    buttonStyle: string | null;
+    fontFamily: string | null;
+  } | null;
 
   business: {
     id: string;
     name: string;
-    slug: string;
-    email?: string | null;
-    phone?: string | null;
-    logo?: string | null;
-    description?: string | null;
-    profile: Profile | null;
-    catalogs: Catalog[];
+    slug: string | null;
+    email: string | null;
+    phone: string | null;
+    logo: string | null;
+    description: string | null;
+
+    profile: {
+      tagline: string | null;
+      description: string | null;
+      website: string | null;
+      email: string | null;
+      phone: string | null;
+      whatsapp: string | null;
+      externalReviewUrl: string | null;
+
+      address: {
+        line1: string | null;
+        line2: string | null;
+        city: string | null;
+        state: string | null;
+        postalCode: string | null;
+        country: string | null;
+      };
+
+      location: {
+        latitude: number | null;
+        longitude: number | null;
+      };
+
+      openingHours: unknown;
+      socialLinks: unknown;
+      coverImage: string | null;
+    } | null;
+
+    catalogs: Array<{
+      id: string;
+      name: string;
+      description: string | null;
+      type: string;
+
+      categories: Array<{
+        id: string;
+        name: string;
+        description: string | null;
+        image: string | null;
+
+        items: Array<{
+          id: string;
+          name: string;
+          description: string | null;
+          type: string;
+          price: string | number | null;
+          compareAtPrice: string | number | null;
+          currency: string;
+          image: string | null;
+          gallery: unknown;
+          sku: string | null;
+          unit: string | null;
+          stock: number | null;
+          durationMinutes: number | null;
+          isAvailable: boolean;
+          isFeatured: boolean;
+          metadata: unknown;
+
+          variants: Array<{
+            id: string;
+            name: string;
+            price: string | number | null;
+            compareAtPrice: string | number | null;
+            sku: string | null;
+            stock: number | null;
+            isAvailable: boolean;
+          }>;
+
+          optionGroups: Array<{
+            id: string;
+            name: string;
+            required: boolean;
+            minSelect: number;
+            maxSelect: number;
+
+            options: Array<{
+              id: string;
+              name: string;
+              price: string | number;
+              isAvailable: boolean;
+            }>;
+          }>;
+        }>;
+      }>;
+    }>;
   };
-};
+}
 
-type ApiResponse = {
-  success: boolean;
-  message?: string;
-  data?: GuestExperience;
+type PageProps = {
+  params: Promise<{
+    shortCode: string;
+  }>;
 };
-
-const API_URL =
-  process.env.NEXT_PUBLIC_API_URL ||
-  "https://api.tapqr.shop";
 
 async function getGuestExperience(
   shortCode: string
 ): Promise<GuestExperience | null> {
-  try {
-    const response = await fetch(
-      `${API_URL}/api/qrcodes/public/${encodeURIComponent(
-        shortCode
-      )}`,
-      {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-        },
-        cache: "no-store",
-      }
-    );
+  const code = shortCode.trim();
 
-    if (response.status === 404) {
-      return null;
-    }
-
-    if (!response.ok) {
-      throw new Error(
-        `Guest API returned ${response.status}`
-      );
-    }
-
-    const result =
-      (await response.json()) as ApiResponse;
-
-    if (!result.success || !result.data) {
-      return null;
-    }
-
-    return result.data;
-  } catch (error) {
-    console.error(
-      "TapQR Guest Experience error:",
-      error
-    );
-
+  if (!code) {
     return null;
   }
+
+  const response = await fetch(
+    `${API_ROOT}/qrcodes/public/${encodeURIComponent(code)}`,
+    {
+      method: "GET",
+      cache: "no-store",
+    }
+  );
+
+  if (response.status === 404 || response.status === 410) {
+    return null;
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      `Failed to load QR experience: ${response.status}`
+    );
+  }
+
+  const payload = await response.json();
+
+  return payload?.data ?? payload ?? null;
 }
 
 export default async function QRGuestPage({
   params,
-}: {
-  params: Promise<Params>;
-}) {
+}: PageProps) {
   const { shortCode } = await params;
 
   const code = String(shortCode || "").trim();
@@ -201,11 +182,32 @@ export default async function QRGuestPage({
     notFound();
   }
 
-  const experience =
-    await getGuestExperience(code);
+  const experience = await getGuestExperience(code);
 
   if (!experience) {
     notFound();
+  }
+
+  /*
+   * REDIRECT QR support.
+   *
+   * The Smart Rule Engine may return routing metadata,
+   * but the public API experience still contains the QR's
+   * configured destination when applicable.
+   *
+   * We intentionally only redirect when the QR itself is
+   * configured as a REDIRECT QR and a destination exists.
+   */
+  if (
+    experience.qr.type === "REDIRECT"
+  ) {
+    /*
+     * The current public experience response does not expose
+     * destinationUrl, so we do not redirect here yet.
+     *
+     * This keeps the public experience safe until redirect
+     * routing is returned explicitly by the backend.
+     */
   }
 
   return (
