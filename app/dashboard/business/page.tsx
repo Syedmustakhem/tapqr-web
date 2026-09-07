@@ -6,6 +6,8 @@ import {
   useMemo,
   useState,
 } from "react";
+import Link from "next/link";
+
 import {
   AlertCircle,
   Building2,
@@ -15,6 +17,10 @@ import {
   Globe,
   Loader2,
   MapPin,
+  QrCode,
+  SlidersHorizontal,
+  Sparkles,
+  BarChart3,
   Pencil,
   Phone,
   Plus,
@@ -690,10 +696,52 @@ export default function BusinessPage() {
       </section>
 
       <section className="grid gap-4 md:grid-cols-4">
-        <Metric title="Businesses" value={String(businesses.length)} helper="Your active workspaces" />
+        <Metric title="Businesses" value={String(businesses.length)} helper="Your workspaces" />
         <Metric title="Active" value={String(activeCount)} helper="Currently active" />
         <Metric title="QR codes" value={String(selectedBusiness.qrCodes?.length ?? 0)} helper="This workspace" />
         <Metric title="Total scans" value={String(totalScans)} helper="Across your workspaces" />
+      </section>
+
+      <section className="rounded-[24px] border border-slate-200/80 bg-white p-5 shadow-[0_8px_30px_rgba(15,23,42,0.03)] sm:p-6">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-slate-500" />
+              <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">
+                TapQR growth controls
+              </p>
+            </div>
+            <h2 className="mt-1 text-base font-bold text-slate-950">
+              Manage the QR experience from one workspace
+            </h2>
+            <p className="mt-1 max-w-2xl text-xs leading-5 text-slate-500">
+              QR codes, Smart Rules and A/B Experiments now work together. Configure the business profile here, then control customer routing from the QR tools.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href="/dashboard/qr"
+              className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-slate-800"
+            >
+              <QrCode className="h-4 w-4" />
+              QR codes
+            </Link>
+            <Link
+              href="/dashboard/qr/rules"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 transition hover:bg-slate-50"
+            >
+              <SlidersHorizontal className="h-4 w-4" />
+              Smart Rules
+            </Link>
+            <Link
+              href="/dashboard/qr/experiments"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 transition hover:bg-slate-50"
+            >
+              <BarChart3 className="h-4 w-4" />
+              Experiments
+            </Link>
+          </div>
+        </div>
       </section>
 
       <section className="rounded-[22px] border border-blue-100 bg-blue-50/60 p-5 sm:p-6">
@@ -797,10 +845,12 @@ export default function BusinessPage() {
           <Panel title="Workspace health" subtitle="Key profile areas ready for your customers.">
             <div className="space-y-3">
               <HealthRow label="Business identity" complete={Boolean(form.name.trim())} />
-              <HealthRow label="Contact information" complete={Boolean(form.email.trim() || form.phone.trim())} />
+              <HealthRow label="Contact information" complete={Boolean(form.email.trim() || form.phone.trim() || form.whatsapp.trim())} />
               <HealthRow label="Public website" complete={Boolean(form.website.trim())} />
               <HealthRow label="Address" complete={Boolean(form.addressLine1.trim() && form.city.trim())} />
+              <HealthRow label="Brand assets" complete={Boolean(form.logo.trim() || form.coverImage.trim())} />
               <HealthRow label="Social presence" complete={Boolean(form.instagram.trim() || form.facebook.trim() || form.linkedin.trim())} />
+              <HealthRow label="QR setup" complete={(selectedBusiness.qrCodes?.length ?? 0) > 0} />
             </div>
           </Panel>
 
@@ -809,6 +859,49 @@ export default function BusinessPage() {
               <SummaryRow icon={<Globe className="h-4 w-4" />} label="Public URL" value={selectedBusiness.slug ? `tapqr.shop/${selectedBusiness.slug}` : "Not published"} />
               <SummaryRow icon={<Phone className="h-4 w-4" />} label="Contact" value={form.whatsapp || form.phone || "Not added"} />
               <SummaryRow icon={<MapPin className="h-4 w-4" />} label="Location" value={[form.city, form.state].filter(Boolean).join(", ") || "Not added"} />
+            </div>
+          </Panel>
+
+          <Panel title="Next steps" subtitle="Continue configuring this workspace after your profile is ready.">
+            <div className="space-y-2">
+              <Link
+                href="/dashboard/qr"
+                className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-3 transition hover:bg-slate-100"
+              >
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-slate-600">
+                  <QrCode className="h-4 w-4" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-xs font-bold text-slate-800">Create or manage QR codes</span>
+                  <span className="block text-[10px] text-slate-400">Configure source, placement and campaign metadata.</span>
+                </span>
+              </Link>
+
+              <Link
+                href="/dashboard/qr/rules"
+                className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-3 transition hover:bg-slate-100"
+              >
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-slate-600">
+                  <SlidersHorizontal className="h-4 w-4" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-xs font-bold text-slate-800">Configure Smart Rules</span>
+                  <span className="block text-[10px] text-slate-400">Route visitors using device, location, time and source context.</span>
+                </span>
+              </Link>
+
+              <Link
+                href="/dashboard/qr/experiments"
+                className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-3 transition hover:bg-slate-100"
+              >
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-slate-600">
+                  <BarChart3 className="h-4 w-4" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-xs font-bold text-slate-800">Run A/B Experiments</span>
+                  <span className="block text-[10px] text-slate-400">Compare variants and measure conversion performance.</span>
+                </span>
+              </Link>
             </div>
           </Panel>
 
