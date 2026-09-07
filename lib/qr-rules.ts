@@ -3,6 +3,31 @@ import { apiRequest } from "@/lib/api";
 /* ============================================================
    ENUMS
 ============================================================ */
+/* ============================================================
+   RULE VERSION
+============================================================ */
+
+export type QRRuleVersionStatus =
+  | "DRAFT"
+  | "TESTING"
+  | "PUBLISHED"
+  | "ARCHIVED";
+
+export type QRRuleVersion = {
+  id: string;
+  ruleId: string;
+  version: number;
+  status: QRRuleVersionStatus;
+
+  snapshot: unknown;
+
+  createdBy?: string | null;
+  publishedBy?: string | null;
+  rollbackFromVersion?: number | null;
+
+  publishedAt?: string | null;
+  createdAt?: string;
+};
 
 export type QRRuleStatus =
   | "DRAFT"
@@ -233,6 +258,7 @@ export type QRRule = {
 
   conditions?: QRRuleCondition[];
   groups?: QRRuleConditionGroup[];
+  versions?: QRRuleVersion[];
 
   matchCount?: number;
   lastMatchedAt?: string | null;
