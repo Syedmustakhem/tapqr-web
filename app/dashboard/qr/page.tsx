@@ -536,18 +536,26 @@ export default function QRPage() {
   }
 
   function openEdit(qr: QRCodeRecord) {
-    setForm({
-      name: qr.name ?? "",
-      description:
-        qr.description ?? "",
-      type: qr.type ?? "DYNAMIC",
-      experienceType:
-        qr.experienceType ?? "BUSINESS",
-      catalogId:
-        qr.catalogId ?? "",
-      destinationUrl:
-        qr.destinationUrl ?? "",
-    });
+  setForm({
+    name: qr.name ?? "",
+    description:
+      qr.description ?? "",
+    type: qr.type ?? "DYNAMIC",
+    experienceType:
+      qr.experienceType ?? "BUSINESS",
+    catalogId:
+      qr.catalogId ?? "",
+    destinationUrl:
+      qr.destinationUrl ?? "",
+    sourceType:
+      qr.sourceType ?? "OTHER",
+    placementLabel:
+      qr.placementLabel ?? "",
+    locationLabel:
+      qr.locationLabel ?? "",
+    campaignName:
+      qr.campaignName ?? "",
+  });
 
     setEditingQR(qr);
     setShowCreate(false);
@@ -858,11 +866,18 @@ export default function QRPage() {
 
         return;
       }
+const clipboard =
+  typeof window !== "undefined"
+    ? window.navigator?.clipboard
+    : undefined;
 
-      await navigator.clipboard.writeText(
-        url
-      );
-
+if (clipboard) {
+  await clipboard.writeText(url);
+} else {
+  throw new Error(
+    "Clipboard is not available in this browser."
+  );
+}
       setCopiedId(qr.id);
 
       window.setTimeout(

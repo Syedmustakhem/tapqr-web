@@ -3169,9 +3169,8 @@ function InvitationStatusBadge({
   const label =
     status === "REJECTED"
       ? "Revoked"
-      : statusLabel(
-          status
-        );
+      : status.charAt(0) +
+        status.slice(1).toLowerCase();
 
   return (
     <span
