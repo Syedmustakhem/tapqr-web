@@ -2476,3 +2476,921 @@ h2 em {
   }
   
 }
+
+/* ============================================================
+   TAPQR — PRODUCTION UI SYSTEM
+   ------------------------------------------------------------
+   Consolidated overrides for:
+   • consistent brand tokens
+   • dashboard/workspace layout safety
+   • professional sidebar behaviour
+   • active navigation visibility
+   • responsive/mobile drawer support
+   • forms, focus states and touch targets
+   • reduced-motion accessibility
+   ============================================================ */
+
+/* ------------------------------
+   BRAND TOKENS
+   ------------------------------ */
+
+:root {
+  --tapqr-ink: #0B1220;
+  --tapqr-ink-2: #111827;
+  --tapqr-primary: #2563EB;
+  --tapqr-primary-hover: #1D4ED8;
+  --tapqr-primary-soft: #EFF6FF;
+  --tapqr-accent: #0F766E;
+
+  --tapqr-success: #15803D;
+  --tapqr-success-soft: #F0FDF4;
+  --tapqr-warning: #B45309;
+  --tapqr-warning-soft: #FFFBEB;
+  --tapqr-danger: #B91C1C;
+  --tapqr-danger-soft: #FEF2F2;
+
+  --tapqr-white: #FFFFFF;
+  --tapqr-bg: #F8FAFC;
+  --tapqr-surface: #FFFFFF;
+  --tapqr-surface-subtle: #F1F5F9;
+  --tapqr-border: #E2E8F0;
+  --tapqr-border-strong: #CBD5E1;
+  --tapqr-text: #0F172A;
+  --tapqr-text-secondary: #475569;
+  --tapqr-text-muted: #64748B;
+  --tapqr-text-faint: #94A3B8;
+
+  --tapqr-radius-sm: 8px;
+  --tapqr-radius-md: 12px;
+  --tapqr-radius-lg: 16px;
+  --tapqr-radius-xl: 20px;
+
+  --tapqr-shadow-sm: 0 1px 2px rgba(15, 23, 42, .04);
+  --tapqr-shadow-md: 0 8px 24px rgba(15, 23, 42, .07);
+  --tapqr-shadow-lg: 0 18px 48px rgba(15, 23, 42, .10);
+
+  --tapqr-ease: cubic-bezier(.2, .8, .2, 1);
+  --tapqr-duration: 180ms;
+
+  /* Keep existing project variables compatible. */
+  --background: var(--tapqr-bg);
+  --foreground: var(--tapqr-text);
+  --border: var(--tapqr-border);
+  --radius: var(--tapqr-radius-lg);
+  --blue: var(--tapqr-primary);
+  --blue-dark: var(--tapqr-primary-hover);
+  --blue-light: var(--tapqr-primary-soft);
+  --navy: var(--tapqr-ink);
+  --navy-2: var(--tapqr-ink-2);
+  --slate: var(--tapqr-text-muted);
+  --white: var(--tapqr-white);
+  --surface: var(--tapqr-bg);
+  --surface-2: var(--tapqr-surface-subtle);
+  --shadow-sm: var(--tapqr-shadow-sm);
+  --shadow-md: var(--tapqr-shadow-md);
+  --shadow-lg: var(--tapqr-shadow-lg);
+}
+
+/* ------------------------------
+   GLOBAL SAFETY
+   ------------------------------ */
+
+html,
+body {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: hidden;
+}
+
+body {
+  background: var(--tapqr-bg);
+  color: var(--tapqr-text);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+}
+
+button,
+input,
+textarea,
+select {
+  min-width: 0;
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:focus-visible {
+  outline: 2px solid rgba(37, 99, 235, .48);
+  outline-offset: 2px;
+}
+
+/* ------------------------------
+   GLOBAL COMPONENT POLISH
+   ------------------------------ */
+
+.container {
+  width: min(1180px, calc(100% - 40px));
+}
+
+.nav {
+  min-width: 0;
+  height: 72px;
+  padding-inline: max(20px, calc((100vw - 1180px) / 2));
+  background: rgba(255, 255, 255, .94);
+  border-bottom-color: rgba(226, 232, 240, .9);
+  box-shadow: 0 1px 0 rgba(15, 23, 42, .02);
+}
+
+.nav.scrolled {
+  background: rgba(255, 255, 255, .98);
+  border-bottom-color: var(--tapqr-border);
+  box-shadow: var(--tapqr-shadow-md);
+}
+
+.logo-mark {
+  background: var(--tapqr-ink);
+  border-radius: 10px;
+  box-shadow: 0 6px 16px rgba(11, 18, 32, .16);
+}
+
+.nav-links,
+.login {
+  color: var(--tapqr-text-secondary);
+}
+
+.nav-links a:hover,
+.login:hover {
+  color: var(--tapqr-ink);
+}
+
+.nav-links a::after {
+  background: var(--tapqr-primary);
+}
+
+.button {
+  min-height: 42px;
+  padding-inline: 17px;
+  border-radius: var(--tapqr-radius-sm);
+  transition:
+    transform var(--tapqr-duration) var(--tapqr-ease),
+    box-shadow var(--tapqr-duration) var(--tapqr-ease),
+    background var(--tapqr-duration) var(--tapqr-ease),
+    border-color var(--tapqr-duration) var(--tapqr-ease);
+}
+
+.button:active {
+  transform: translateY(0);
+}
+
+.button-dark {
+  background: var(--tapqr-ink);
+  box-shadow: 0 5px 14px rgba(11, 18, 32, .14);
+}
+
+.button-dark:hover {
+  background: #172033;
+  box-shadow: 0 8px 20px rgba(11, 18, 32, .18);
+}
+
+.button-lime {
+  background: var(--tapqr-primary);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, .18);
+}
+
+.button-lime:hover {
+  background: var(--tapqr-primary-hover);
+  box-shadow: 0 9px 22px rgba(37, 99, 235, .24);
+}
+
+/* ------------------------------
+   HERO / BRAND ACCENTS
+   ------------------------------ */
+
+.hero {
+  background:
+    radial-gradient(circle at 78% 14%, rgba(37, 99, 235, .16), transparent 28%),
+    radial-gradient(circle at 95% 80%, rgba(15, 118, 110, .08), transparent 28%),
+    var(--tapqr-ink);
+}
+
+.hero h1 em,
+h2 em {
+  color: #60A5FA;
+}
+
+.pulse-dot {
+  background: #60A5FA;
+  box-shadow: 0 0 0 5px rgba(96, 165, 250, .10);
+}
+
+.text-link {
+  color: #93C5FD;
+}
+
+.metric-icon {
+  background: var(--tapqr-primary);
+}
+
+.metric-icon.peach {
+  background: var(--tapqr-primary-soft);
+  color: var(--tapqr-primary-hover);
+}
+
+.trend {
+  color: var(--tapqr-accent);
+}
+
+/* ------------------------------
+   SURFACES / CARDS
+   ------------------------------ */
+
+.feature-card,
+.chart-card,
+.profile-card,
+.analytics-card,
+.usecase-tab,
+.usecase-panel {
+  background: var(--tapqr-surface);
+  border-color: var(--tapqr-border);
+}
+
+.feature-card,
+.use-card {
+  border-radius: var(--tapqr-radius-lg);
+}
+
+.feature-card {
+  box-shadow: var(--tapqr-shadow-sm);
+}
+
+.feature-card:hover,
+.feature-card.selected {
+  border-color: #BFDBFE;
+  box-shadow: var(--tapqr-shadow-lg);
+}
+
+.feature-icon,
+.step-icon,
+.usecase-panel-icon {
+  background: var(--tapqr-primary-soft);
+  color: var(--tapqr-primary);
+  border-color: #DBEAFE;
+}
+
+.feature-text,
+.body-copy,
+.text-muted {
+  color: var(--tapqr-text-secondary);
+}
+
+.feature-arrow {
+  color: var(--tapqr-text-faint);
+}
+
+/* ------------------------------
+   DASHBOARD SHOWCASE
+   ------------------------------ */
+
+.dashboard {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  background: var(--tapqr-bg);
+  border-color: var(--tapqr-border);
+  border-radius: var(--tapqr-radius-xl);
+  box-shadow: var(--tapqr-shadow-lg);
+}
+
+.dash-sidebar {
+  width: 190px;
+  min-width: 190px;
+  flex: 0 0 190px;
+  background: var(--tapqr-surface-subtle);
+  border-right: 1px solid var(--tapqr-border);
+}
+
+.dash-main {
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+
+.dash-nav span {
+  color: var(--tapqr-text-secondary);
+}
+
+.dash-nav span.active {
+  background: var(--tapqr-ink);
+  color: var(--tapqr-white);
+}
+
+.dash-stats > div,
+.chart-card,
+.profile-card {
+  border-color: var(--tapqr-border);
+  box-shadow: var(--tapqr-shadow-sm);
+}
+
+.dash-share,
+.outline-button,
+.select-pill {
+  background: var(--tapqr-white);
+  border-color: var(--tapqr-border);
+  color: var(--tapqr-text-secondary);
+}
+
+.dash-share:hover,
+.outline-button:hover,
+.select-pill:hover {
+  border-color: var(--tapqr-border-strong);
+  background: #FCFDFE;
+}
+
+.positive,
+.analytics-number strong {
+  color: var(--tapqr-success);
+}
+
+.chart-line,
+.big-chart-line {
+  border-top-color: var(--tapqr-primary);
+  background: rgba(37, 99, 235, .08);
+}
+
+.chart-fill,
+.big-chart-fill {
+  background: linear-gradient(180deg, rgba(37, 99, 235, .10), transparent);
+}
+
+.chart-legend i {
+  background: var(--tapqr-primary);
+}
+
+.analytics {
+  background: #F1F5FF;
+}
+
+.analytics-card {
+  border-color: #DCE7FA;
+  box-shadow: var(--tapqr-shadow-md);
+}
+
+/* ------------------------------
+   BUSINESS USE CASES
+   ------------------------------ */
+
+.use-0,
+.use-3,
+.use-1,
+.use-6,
+.use-2,
+.use-5,
+.use-4,
+.use-7 {
+  border: 1px solid var(--tapqr-border);
+}
+
+.use-0,
+.use-3 {
+  background: #F0F6FF;
+  color: #1E40AF;
+}
+
+.use-1,
+.use-6,
+.use-4,
+.use-7 {
+  background: #F8FAFC;
+  color: var(--tapqr-text-secondary);
+}
+
+.use-2,
+.use-5 {
+  background: #F0FDFA;
+  color: #115E59;
+}
+
+/* ------------------------------
+   TEAM / WORKSPACE
+   ------------------------------ */
+
+.team-panel,
+.cta {
+  background:
+    radial-gradient(circle at 70% 0%, rgba(37, 99, 235, .16), transparent 38%),
+    var(--tapqr-ink);
+}
+
+.team-row {
+  background: rgba(255, 255, 255, .045);
+  border-color: rgba(148, 163, 184, .14);
+}
+
+.team-row .mini-avatar {
+  background: var(--tapqr-primary);
+}
+
+.team-role-badge.owner {
+  background: rgba(37, 99, 235, .16);
+  color: #93C5FD;
+}
+
+/* ------------------------------
+   FORMS / INTERACTION
+   ------------------------------ */
+
+input,
+textarea,
+select {
+  color: var(--tapqr-text);
+  background: var(--tapqr-white);
+  border-color: var(--tapqr-border);
+  border-radius: var(--tapqr-radius-sm);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--tapqr-text-faint);
+}
+
+input:hover,
+textarea:hover,
+select:hover {
+  border-color: var(--tapqr-border-strong);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: #93C5FD;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, .10);
+}
+
+/* ------------------------------
+   DASHBOARD APPLICATION SHELL
+   ------------------------------ */
+
+.app-layout,
+.dashboard-layout,
+.workspace-layout {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+.app-main,
+.workspace-main,
+.main-content,
+.dashboard-content {
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 0;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background: var(--tapqr-bg);
+}
+
+/* Generic fallback for older dashboard shells. */
+.app-sidebar,
+.workspace-sidebar,
+.sidebar {
+  width: 320px;
+  min-width: 320px;
+  flex: 0 0 320px;
+  min-height: 100vh;
+  overflow: hidden;
+  background: var(--tapqr-white);
+  border-right: 1px solid var(--tapqr-border);
+}
+
+.sidebar-content,
+.app-sidebar-content,
+.workspace-sidebar-content {
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.sidebar-footer,
+.app-sidebar-footer,
+.workspace-sidebar-footer {
+  flex: 0 0 auto;
+}
+
+/* ------------------------------
+   TAPQR WORKSPACE SIDEBAR
+   ------------------------------------------------------------
+   This is the primary fix for the current Sidebar component.
+   It uses the stable .tapqr-sidebar class from the component,
+   not broad generic selectors that can affect other pages.
+   ------------------------------ */
+
+aside.tapqr-sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 50;
+
+  width: 272px !important;
+  min-width: 272px !important;
+  max-width: 272px !important;
+  height: 100dvh;
+  max-height: 100dvh;
+
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+
+  overflow: hidden;
+  overscroll-behavior: contain;
+
+  background: var(--tapqr-white);
+  border-right: 1px solid var(--tapqr-border);
+
+  box-shadow: 0 0 40px rgba(15, 23, 42, .05);
+}
+
+/* Brand header remains fixed while navigation scrolls. */
+aside.tapqr-sidebar > div:first-of-type {
+  flex: 0 0 76px;
+  min-height: 76px;
+}
+
+/* Workspace card remains above the scroll region. */
+aside.tapqr-sidebar > div:nth-of-type(2) {
+  flex: 0 0 auto;
+}
+
+/* Only navigation scrolls. */
+aside.tapqr-sidebar > nav {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  max-width: 100%;
+
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+
+  scrollbar-width: thin;
+  scrollbar-color: #CBD5E1 transparent;
+}
+
+aside.tapqr-sidebar > nav::-webkit-scrollbar {
+  width: 6px;
+}
+
+aside.tapqr-sidebar > nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+aside.tapqr-sidebar > nav::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 999px;
+}
+
+aside.tapqr-sidebar > nav > div {
+  width: 100%;
+  min-width: 0;
+}
+
+/* Navigation rows: never allow active state to hide/collapse text. */
+aside.tapqr-sidebar nav a {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+
+  color: var(--tapqr-text-secondary);
+  border: 1px solid transparent;
+
+  transition:
+    background-color var(--tapqr-duration) var(--tapqr-ease),
+    color var(--tapqr-duration) var(--tapqr-ease),
+    border-color var(--tapqr-duration) var(--tapqr-ease),
+    transform var(--tapqr-duration) var(--tapqr-ease);
+}
+
+aside.tapqr-sidebar nav a:hover {
+  color: var(--tapqr-text);
+  background: #F8FAFC;
+  border-color: #EEF2F7;
+}
+
+aside.tapqr-sidebar nav a:active {
+  transform: scale(.99);
+}
+
+aside.tapqr-sidebar nav a > span:first-child {
+  flex: 0 0 32px;
+  min-width: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+aside.tapqr-sidebar nav a > .tapqr-sidebar-label {
+  display: block;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: inherit;
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Current page: strong contrast, but still professional. */
+aside.tapqr-sidebar nav a[aria-current="page"] {
+  background: var(--tapqr-ink) !important;
+  color: var(--tapqr-white) !important;
+  border-color: var(--tapqr-ink) !important;
+  box-shadow: 0 5px 14px rgba(11, 18, 32, .10);
+}
+
+aside.tapqr-sidebar nav a[aria-current="page"] > .tapqr-sidebar-label {
+  color: var(--tapqr-white) !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+aside.tapqr-sidebar nav a[aria-current="page"] svg {
+  color: #93C5FD;
+}
+
+/* Footer is visually separated and never competes with the scroll area. */
+aside.tapqr-sidebar > div:last-of-type {
+  position: relative;
+  z-index: 2;
+  flex: 0 0 auto;
+
+  width: 100%;
+  max-width: 100%;
+
+  background: rgba(248, 250, 252, .98);
+  border-top: 1px solid var(--tapqr-border);
+}
+
+/* Prevent long account names/emails from breaking the footer. */
+aside.tapqr-sidebar > div:last-of-type > div:first-child {
+  width: 100%;
+  min-width: 0;
+}
+
+aside.tapqr-sidebar > div:last-of-type > div:first-child > div:nth-child(2) {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+}
+
+aside.tapqr-sidebar > div:last-of-type > div:nth-child(2) {
+  min-width: 0;
+}
+
+/* ------------------------------
+   GENERIC SIDEBAR POLISH
+   ------------------------------ */
+
+.app-sidebar a,
+.workspace-sidebar a,
+.sidebar a {
+  color: var(--tapqr-text-secondary);
+}
+
+.app-sidebar a:hover,
+.workspace-sidebar a:hover,
+.sidebar a:hover {
+  color: var(--tapqr-text);
+  background: #F8FAFC;
+}
+
+.app-sidebar .active,
+.workspace-sidebar .active,
+.sidebar .active {
+  background: var(--tapqr-ink);
+  color: var(--tapqr-white);
+}
+
+.app-sidebar .active svg,
+.workspace-sidebar .active svg,
+.sidebar .active svg {
+  color: #93C5FD;
+}
+
+/* ------------------------------
+   RESPONSIVE — TABLET
+   ------------------------------ */
+
+@media (max-width: 1023px) {
+  aside.tapqr-sidebar {
+    width: min(272px, calc(100vw - 24px)) !important;
+    min-width: min(272px, calc(100vw - 24px)) !important;
+    max-width: min(272px, calc(100vw - 24px)) !important;
+  }
+}
+
+@media (max-width: 850px) {
+  .container {
+    width: min(100% - 32px, 680px);
+  }
+
+  .hero-grid,
+  .intro-grid,
+  .analytics-grid {
+    min-width: 0;
+  }
+
+  .feature-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dash-main {
+    padding: 22px;
+  }
+
+  .dash-stats,
+  .dash-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .app-sidebar,
+  .workspace-sidebar,
+  .sidebar {
+    width: 280px;
+    min-width: 280px;
+    flex-basis: 280px;
+  }
+}
+
+/* ------------------------------
+   RESPONSIVE — MOBILE
+   ------------------------------ */
+
+@media (max-width: 640px) {
+  html,
+  body {
+    overflow-x: hidden;
+  }
+
+  .container {
+    width: min(100% - 28px, 560px);
+  }
+
+  .nav {
+    height: 64px;
+    padding-inline: 14px;
+  }
+
+  .hero h1 {
+    letter-spacing: -.045em;
+  }
+
+  .feature-grid,
+  .dash-stats,
+  .dash-grid,
+  .usecase-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard {
+    display: block;
+  }
+
+  .dash-sidebar {
+    display: none;
+  }
+
+  .dash-main {
+    width: 100%;
+    padding: 18px;
+  }
+
+  .team-panel-copy {
+    padding: 36px 24px;
+  }
+
+  .team-roster {
+    padding: 22px;
+  }
+
+  .app-layout,
+  .dashboard-layout,
+  .workspace-layout {
+    display: block;
+    overflow-x: hidden;
+  }
+
+  /*
+   * The current Sidebar component controls its own open/closed
+   * transform with Next/Tailwind classes. We therefore only size
+   * the drawer here and intentionally do not override transform.
+   */
+  aside.tapqr-sidebar {
+    width: min(272px, calc(100vw - 16px)) !important;
+    min-width: min(272px, calc(100vw - 16px)) !important;
+    max-width: calc(100vw - 16px) !important;
+    box-shadow: 16px 0 40px rgba(15, 23, 42, .14);
+  }
+
+  .app-sidebar,
+  .workspace-sidebar,
+  .sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 1000;
+    width: min(320px, 88vw);
+    min-width: min(320px, 88vw);
+    max-width: 88vw;
+    transform: translateX(-105%);
+    transition: transform 220ms var(--tapqr-ease);
+    box-shadow: 16px 0 40px rgba(15, 23, 42, .14);
+  }
+
+  .app-sidebar.open,
+  .workspace-sidebar.open,
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  .app-main,
+  .workspace-main,
+  .main-content,
+  .dashboard-content {
+    width: 100%;
+    min-width: 0;
+    min-height: 100vh;
+  }
+
+  .usecase-tabs {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    max-width: 100%;
+    padding-bottom: 6px;
+    scrollbar-width: thin;
+  }
+
+  .usecase-tab {
+    flex: 0 0 auto;
+  }
+}
+
+/* ------------------------------
+   VERY SMALL DEVICES
+   ------------------------------ */
+
+@media (max-width: 380px) {
+  .container {
+    width: calc(100% - 24px);
+  }
+
+  .hero h1 {
+    font-size: clamp(42px, 13vw, 54px);
+  }
+
+  .dash-main {
+    padding: 14px;
+  }
+
+  .team-panel-copy {
+    padding-inline: 20px;
+  }
+
+  aside.tapqr-sidebar {
+    width: calc(100vw - 12px) !important;
+    min-width: calc(100vw - 12px) !important;
+    max-width: calc(100vw - 12px) !important;
+  }
+}
+
+/* ------------------------------
+   REDUCED MOTION
+   ------------------------------ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

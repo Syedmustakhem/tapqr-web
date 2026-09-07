@@ -139,7 +139,7 @@ export default function Sidebar({
 
       <aside
         aria-label="Dashboard navigation"
-        className={`fixed inset-y-0 left-0 z-50 flex w-[272px] flex-col border-r border-slate-200 bg-white shadow-[0_0_40px_rgba(15,23,42,0.05)] transition-transform duration-300 lg:translate-x-0 ${
+        className={`tapqr-sidebar fixed inset-y-0 left-0 z-50 flex h-dvh w-[272px] min-w-[272px] max-w-[272px] shrink-0 flex-col overflow-hidden border-r border-slate-200 bg-white shadow-[0_0_40px_rgba(15,23,42,0.05)] transition-transform duration-300 lg:translate-x-0 ${
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -241,7 +241,7 @@ export default function Sidebar({
                     />
                   </span>
 
-                  <span className="flex-1">{item.label}</span>
+                  <span className="tapqr-sidebar-label min-w-0 flex-1 overflow-hidden truncate whitespace-nowrap !text-inherit">{item.label}</span>
 
                   {item.label === "Analytics" && (
                     <span
@@ -293,7 +293,7 @@ export default function Sidebar({
                       }`}
                     />
                   </span>
-                  <span>{item.label}</span>
+                  <span className="tapqr-sidebar-label min-w-0 overflow-hidden truncate whitespace-nowrap !text-inherit">{item.label}</span>
                 </Link>
               );
             })}
