@@ -8,7 +8,7 @@ import React, {
 } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-
+import RuleVersions from "@/components/qr-rules/RuleVersions";
 import {
   activateQRRule,
   deleteQRRule,
