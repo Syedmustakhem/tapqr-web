@@ -125,107 +125,156 @@ export default function NewQRRulePage() {
      ========================================================== */
 
   useEffect(() => {
-    let mounted = true;
+  let mounted = true;
 
-    async function loadData() {
+  async function loadData() {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Load businesses first.
+      const businessesResponse =
+        await apiRequest<BusinessesResponse>(
+          "/businesses"
+        );
+
+      if (!mounted) return;
+
+      const loadedBusinesses =
+        extractBusinesses(businessesResponse);
+
+      setBusinesses(loadedBusinesses);
+
+      if (loadedBusinesses.length === 0) {
+        setQRCodes([]);
+        setError(
+          "No businesses found. Create a business before creating a Smart Rule."
+        );
+        return;
+      }
+
+      /*
+       * Use the business selected in the TapQR workspace.
+       * Business page stores this value here.
+       */
+      let currentBusinessId = "";
+
       try {
-        setLoading(true);
-        setError(null);
+        currentBusinessId =
+          window.localStorage.getItem(
+            "tapqr_current_business_id"
+          ) ?? "";
+      } catch {
+        currentBusinessId = "";
+      }
 
-        const [
-          businessesResponse,
-          qrCodesResponse,
-        ] = await Promise.all([
-          apiRequest<BusinessesResponse>(
-            "/businesses"
-          ),
+      /*
+       * If a QR ID is present, try to preserve it.
+       * Otherwise use the current workspace business.
+       */
+      const selectedBusiness =
+        loadedBusinesses.find(
+          (business) =>
+            business.id === currentBusinessId
+        ) ?? loadedBusinesses[0];
 
-          apiRequest<QRCodesResponse>(
-            "/qrcodes"
-          ),
-        ]);
+      if (!selectedBusiness) {
+        setQRCodes([]);
+        setError(
+          "No business is available."
+        );
+        return;
+      }
 
-        if (!mounted) {
-          return;
-        }
-
-        const loadedBusinesses =
-          extractBusinesses(
-            businessesResponse
-          );
-
-        const loadedQRCodes =
-          extractQRCodes(
-            qrCodesResponse
-          );
-
-        setBusinesses(
-          loadedBusinesses
+      /*
+       * IMPORTANT:
+       * Backend route is:
+       *
+       * GET /api/qrcodes/business/:businessId
+       */
+      const qrCodesResponse =
+        await apiRequest<QRCodesResponse>(
+          `/qrcodes/business/${encodeURIComponent(
+            selectedBusiness.id
+          )}`
         );
 
-        setQRCodes(
-          loadedQRCodes
-        );
+      if (!mounted) return;
 
-        /*
-         * If a QR ID was provided in the URL,
-         * automatically select its business.
-         */
+      const loadedQRCodes =
+        extractQRCodes(qrCodesResponse);
 
-        if (initialQRCodeId) {
-          const selectedQR =
-            loadedQRCodes.find(
-              (qr) =>
-                qr.id ===
-                initialQRCodeId
-            );
+      setQRCodes(loadedQRCodes);
 
-          if (selectedQR) {
-            setBuilder(
-              (current) => ({
-                ...current,
-                qrCodeId:
-                  selectedQR.id,
-                businessId:
-                  selectedQR.businessId ??
-                  current.businessId,
-              })
-            );
-          }
-        }
-      } catch (err) {
-        if (!mounted) {
-          return;
-        }
-
-        if (err instanceof ApiError) {
-          setError(
-            err.message ||
-              "Unable to load rule builder data."
+      /*
+       * If qrId was supplied in the URL,
+       * make sure it belongs to the selected business.
+       */
+      if (initialQRCodeId) {
+        const selectedQR =
+          loadedQRCodes.find(
+            (qr) =>
+              qr.id === initialQRCodeId
           );
-        } else if (err instanceof Error) {
-          setError(
-            err.message
-          );
+
+        if (selectedQR) {
+          setBuilder((current) => ({
+            ...current,
+            qrCodeId: selectedQR.id,
+            businessId:
+              selectedQR.businessId ??
+              selectedBusiness.id,
+          }));
         } else {
+          /*
+           * QR ID does not belong to the current
+           * workspace business.
+           */
+          setBuilder((current) => ({
+            ...current,
+            businessId:
+              selectedBusiness.id,
+            qrCodeId: "",
+          }));
+
           setError(
-            "Unable to load rule builder data."
+            "The selected QR code does not belong to the current business."
           );
         }
-      } finally {
-        if (mounted) {
-          setLoading(false);
-        }
+      } else {
+        setBuilder((current) => ({
+          ...current,
+          businessId:
+            selectedBusiness.id,
+        }));
+      }
+    } catch (err) {
+      console.error(
+        "Failed to load Smart Rule data:",
+        err
+      );
+
+      if (!mounted) return;
+
+      setQRCodes([]);
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to load businesses and QR codes."
+      );
+    } finally {
+      if (mounted) {
+        setLoading(false);
       }
     }
+  }
 
-    loadData();
+  loadData();
 
-    return () => {
-      mounted = false;
-    };
-  }, [initialQRCodeId]);
-
+  return () => {
+    mounted = false;
+  };
+}, [initialQRCodeId]);
   /* ==========================================================
      FILTER QR CODES BY BUSINESS
      ========================================================== */
