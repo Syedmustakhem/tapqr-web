@@ -7,6 +7,7 @@ import {
 } from "react";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
 import {
   Activity,
@@ -237,6 +238,8 @@ function conditionSummary(
 ============================================================ */
 
 export default function SmartRulesPage() {
+  const searchParams = useSearchParams();
+  const requestedQrId = searchParams.get("qrId");
   const [
     businesses,
     setBusinesses,
@@ -492,19 +495,20 @@ export default function SmartRulesPage() {
       setSelectedQrId(
         (current) => {
           if (
+            requestedQrId &&
+            data.some((qr) => qr.id === requestedQrId)
+          ) {
+            return requestedQrId;
+          }
+
+          if (
             current &&
-            data.some(
-              (qr) =>
-                qr.id ===
-                current
-            )
+            data.some((qr) => qr.id === current)
           ) {
             return current;
           }
 
-          return (
-            data[0]?.id ?? ""
-          );
+          return data[0]?.id ?? "";
         }
       );
     } catch (err) {
@@ -577,6 +581,7 @@ export default function SmartRulesPage() {
     }
   }, [
     selectedBusinessId,
+    requestedQrId,
   ]);
 
   /* ==========================================================
@@ -1164,15 +1169,27 @@ export default function SmartRulesPage() {
                 "EXPERIENCE"}
             </span>
 
-            <Link
-              href={`/dashboard/qr/studio?qrId=${encodeURIComponent(
-                selectedQR.id
-              )}`}
-              className="ml-auto inline-flex items-center gap-2 text-xs font-bold text-blue-600 hover:text-blue-700"
-            >
-              QR Studio
-              <Eye className="h-3.5 w-3.5" />
-            </Link>
+            <div className="ml-auto flex flex-wrap items-center gap-2">
+              <Link
+                href={`/dashboard/qr/studio?qrId=${encodeURIComponent(selectedQR.id)}`}
+                className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50"
+              >
+                QR Studio
+                <Eye className="h-3.5 w-3.5" />
+              </Link>
+              <Link
+                href={`/dashboard/qr/experiments?qrCodeId=${encodeURIComponent(selectedQR.id)}`}
+                className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50"
+              >
+                Experiments
+              </Link>
+              <Link
+                href={`/dashboard/qr/rules/new?qrId=${encodeURIComponent(selectedQR.id)}`}
+                className="inline-flex items-center gap-2 rounded-lg bg-slate-950 px-3 py-2 text-xs font-bold text-white hover:bg-slate-800"
+              >
+                New rule
+              </Link>
+            </div>
           </div>
         )}
       </section>

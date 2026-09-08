@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   Activity,
   Beaker,
@@ -107,9 +108,11 @@ function conversionRate(experiment: QRExperiment) {
 }
 
 export default function QRExperimentsPage() {
+  const searchParams = useSearchParams();
+  const requestedQrCodeId = searchParams.get("qrCodeId") ?? searchParams.get("qrId");
   const [experiments, setExperiments] = useState<QRExperiment[]>([]);
   const [qrCodes, setQrCodes] = useState<QRCodeOption[]>([]);
-  const [selectedQr, setSelectedQr] = useState("");
+  const [selectedQr, setSelectedQr] = useState(requestedQrCodeId ?? "");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"ALL" | QRExperimentStatus>(
     "ALL"
@@ -160,7 +163,12 @@ export default function QRExperimentsPage() {
       const payload = (await response.json()) as ApiEnvelope<QRCodeOption[]>;
       const data = unwrap<QRCodeOption[]>(payload);
 
-      if (Array.isArray(data)) setQrCodes(data);
+      if (Array.isArray(data)) {
+        setQrCodes(data);
+        if (requestedQrCodeId && data.some((qr) => qr.id === requestedQrCodeId)) {
+          setSelectedQr(requestedQrCodeId);
+        }
+      }
     } catch {
       // QR filtering remains optional; experiment loading should not fail.
     }
@@ -168,7 +176,7 @@ export default function QRExperimentsPage() {
 
   useEffect(() => {
     void loadQrCodes();
-  }, []);
+  }, [requestedQrCodeId]);
 
   useEffect(() => {
     void loadExperiments();
@@ -291,7 +299,11 @@ export default function QRExperimentsPage() {
             </button>
 
             <a
-              href="/dashboard/qr/experiments/new"
+              href={
+                selectedQr
+                  ? `/dashboard/qr/experiments/new?qrId=${encodeURIComponent(selectedQr)}`
+                  : "/dashboard/qr/experiments/new"
+              }
               className="inline-flex h-10 items-center gap-2 rounded-xl bg-slate-950 px-4 text-xs font-bold text-white shadow-sm transition hover:bg-slate-800"
             >
               <Plus className="h-4 w-4" />
@@ -299,6 +311,26 @@ export default function QRExperimentsPage() {
             </a>
           </div>
         </section>
+
+        {selectedQr ? (
+          <section className="flex flex-wrap items-center gap-2 rounded-2xl border border-slate-200/80 bg-white px-4 py-3 shadow-sm">
+            <span className="mr-auto text-xs font-semibold text-slate-500">
+              Viewing QR <span className="font-bold text-slate-900">{selectedQr.slice(0, 8)}</span>
+            </span>
+            <a
+              href={`/dashboard/qr/studio?qrId=${encodeURIComponent(selectedQr)}`}
+              className="rounded-lg border border-slate-200 px-3 py-2 text-[11px] font-bold text-slate-600 hover:bg-slate-50"
+            >
+              QR Studio
+            </a>
+            <a
+              href={`/dashboard/qr/rules?qrId=${encodeURIComponent(selectedQr)}`}
+              className="rounded-lg border border-slate-200 px-3 py-2 text-[11px] font-bold text-slate-600 hover:bg-slate-50"
+            >
+              Smart Rules
+            </a>
+          </section>
+        ) : null}
 
         {error ? (
           <section className="flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 px-4 py-3">
