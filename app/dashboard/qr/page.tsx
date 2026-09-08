@@ -19,6 +19,9 @@ import {
   Filter,
   Loader2,
   MoreHorizontal,
+  Palette,
+  Beaker,
+  Zap,
   Pencil,
   Plus,
   QrCode,
@@ -1730,6 +1733,32 @@ function QRRow({
 
             {menuOpen && (
               <div className="absolute right-0 top-full z-40 mt-2 w-48 overflow-hidden rounded-2xl border border-slate-200 bg-white p-1.5 shadow-2xl">
+                <a
+                  href={`/dashboard/qr/studio?qrId=${encodeURIComponent(qr.id)}`}
+                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                >
+                  <Palette className="h-4 w-4 text-slate-400" />
+                  QR Studio
+                </a>
+
+                <a
+                  href={`/dashboard/qr/rules?qrId=${encodeURIComponent(qr.id)}`}
+                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                >
+                  <Zap className="h-4 w-4 text-slate-400" />
+                  Smart Rules
+                </a>
+
+                <a
+                  href={`/dashboard/qr/experiments?qrCodeId=${encodeURIComponent(qr.id)}`}
+                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                >
+                  <Beaker className="h-4 w-4 text-slate-400" />
+                  A/B Experiments
+                </a>
+
+                <div className="my-1 border-t border-slate-100" />
+
                 <button
                   type="button"
                   onClick={onEdit}
