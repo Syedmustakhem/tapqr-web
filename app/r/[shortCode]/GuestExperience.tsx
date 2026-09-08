@@ -378,8 +378,10 @@ type ScanVerificationResponse = {
 
 export default function GuestExperience({
   experience,
+  visitorKey,
 }: {
   experience: GuestExperience;
+  visitorKey?: string;
 }) {
   const {
     qr,
@@ -464,6 +466,11 @@ export default function GuestExperience({
             method: "POST",
             headers: {
               Accept: "application/json",
+              ...(visitorKey
+                ? {
+                    "x-tapqr-visitor-key": visitorKey,
+                  }
+                : {}),
             },
             cache: "no-store",
           }
@@ -509,7 +516,7 @@ export default function GuestExperience({
     return () => {
       cancelled = true;
     };
-  }, [qr.shortCode]);
+  }, [qr.shortCode, visitorKey]);
 
   /*
    * Search state

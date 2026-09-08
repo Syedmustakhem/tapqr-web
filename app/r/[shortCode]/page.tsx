@@ -1,10 +1,13 @@
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
+import { cookies } from "next/headers";
+
 import GuestExperience from "./GuestExperience";
 
-const API_BASE =
-  (process.env.NEXT_PUBLIC_API_URL || "https://api.tapqr.shop")
-    .replace(/\/+$/, "")
-    .replace(/\/api$/, "");
+const API_BASE = (
+  process.env.NEXT_PUBLIC_API_URL || "https://api.tapqr.shop"
+)
+  .replace(/\/+$/, "")
+  .replace(/\/api$/, "");
 
 const API_ROOT = `${API_BASE}/api`;
 
@@ -18,6 +21,7 @@ export interface GuestExperience {
     shortCode: string;
     enabledSections: unknown;
     catalogId: string | null;
+
     sourceType: string;
     placementLabel: string | null;
     locationLabel: string | null;
@@ -90,32 +94,41 @@ export interface GuestExperience {
           name: string;
           description: string | null;
           type: string;
+
           price: string | number | null;
           compareAtPrice: string | number | null;
           currency: string;
+
           image: string | null;
           gallery: unknown;
+
           sku: string | null;
           unit: string | null;
           stock: number | null;
           durationMinutes: number | null;
+
           isAvailable: boolean;
           isFeatured: boolean;
+
           metadata: unknown;
 
           variants: Array<{
             id: string;
             name: string;
+
             price: string | number | null;
             compareAtPrice: string | number | null;
+
             sku: string | null;
             stock: number | null;
+
             isAvailable: boolean;
           }>;
 
           optionGroups: Array<{
             id: string;
             name: string;
+
             required: boolean;
             minSelect: number;
             maxSelect: number;
@@ -139,8 +152,19 @@ type PageProps = {
   }>;
 };
 
+/**
+ * Load the public QR experience.
+ *
+ * IMPORTANT:
+ * The visitor key is read from the cookie on the server
+ * and forwarded to the QR routing engine.
+ *
+ * This allows A/B experiments to assign the visitor
+ * before GuestExperience is rendered on the client.
+ */
 async function getGuestExperience(
-  shortCode: string
+  shortCode: string,
+  visitorKey?: string
 ): Promise<GuestExperience | null> {
   const code = shortCode.trim();
 
@@ -148,10 +172,19 @@ async function getGuestExperience(
     return null;
   }
 
+  const headers: HeadersInit = {
+    Accept: "application/json",
+  };
+
+  if (visitorKey) {
+    headers["x-tapqr-visitor-key"] = visitorKey;
+  }
+
   const response = await fetch(
     `${API_ROOT}/qrcodes/public/${encodeURIComponent(code)}`,
     {
       method: "GET",
+      headers,
       cache: "no-store",
     }
   );
@@ -182,37 +215,32 @@ export default async function QRGuestPage({
     notFound();
   }
 
-  const experience = await getGuestExperience(code);
+  /**
+   * Read the anonymous visitor identity.
+   *
+   * The middleware will create this cookie for new visitors.
+   * We intentionally do not generate it here because a value
+   * generated only during server rendering would not persist
+   * to the next request.
+   */
+  const cookieStore = await cookies();
+
+  const visitorKey =
+    cookieStore.get("tapqr_visitor_key")?.value?.trim() || undefined;
+
+  const experience = await getGuestExperience(
+    code,
+    visitorKey
+  );
 
   if (!experience) {
     notFound();
   }
 
-  /*
-   * REDIRECT QR support.
-   *
-   * The Smart Rule Engine may return routing metadata,
-   * but the public API experience still contains the QR's
-   * configured destination when applicable.
-   *
-   * We intentionally only redirect when the QR itself is
-   * configured as a REDIRECT QR and a destination exists.
-   */
-  if (
-    experience.qr.type === "REDIRECT"
-  ) {
-    /*
-     * The current public experience response does not expose
-     * destinationUrl, so we do not redirect here yet.
-     *
-     * This keeps the public experience safe until redirect
-     * routing is returned explicitly by the backend.
-     */
-  }
-
   return (
     <GuestExperience
       experience={experience}
+      visitorKey={visitorKey}
     />
   );
 }
