@@ -10,6 +10,7 @@ import type {
   GuestExperience,
 } from "./page";
 import ReviewsSection from "./ReviewsSection";
+import { trackQRConversion } from "@/lib/qr-conversion";
 type CatalogItem = GuestExperience["business"]["catalogs"][number]["categories"][number]["items"][number];
 
 type Category =
@@ -518,6 +519,18 @@ export default function GuestExperience({
     };
   }, [qr.shortCode, visitorKey]);
 
+  const recordConversion = (
+    conversionType: string,
+    metadata?: Record<string, unknown>
+  ) => {
+    void trackQRConversion({
+      shortCode: qr.shortCode,
+      conversionType,
+      visitorKey,
+      metadata,
+    });
+  };
+
   /*
    * Search state
    */
@@ -901,6 +914,7 @@ export default function GuestExperience({
             {profile?.phone && (
               <a
                 href={`tel:${profile.phone}`}
+                onClick={() => recordConversion("CALL")}
                 style={{
                   padding:
                     "11px 17px",
@@ -924,6 +938,7 @@ export default function GuestExperience({
                 href={
                   whatsappUrl
                 }
+                onClick={() => recordConversion("WHATSAPP")}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
@@ -949,6 +964,7 @@ export default function GuestExperience({
                 href={
                   websiteUrl
                 }
+                onClick={() => recordConversion("WEBSITE")}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
@@ -972,6 +988,7 @@ export default function GuestExperience({
             {mapsUrl && (
               <a
                 href={mapsUrl}
+                onClick={() => recordConversion("DIRECTIONS")}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
@@ -1564,11 +1581,13 @@ export default function GuestExperience({
                                   experienceType={
                                     qr.experienceType
                                   }
-                                  onOpen={() =>
-                                    setSelectedItem(
-                                      item
-                                    )
-                                  }
+                                  onOpen={() => {
+                                    recordConversion("ITEM_VIEW", {
+                                      itemId: item.id,
+                                      itemName: item.name,
+                                    });
+                                    setSelectedItem(item);
+                                  }}
                                 />
                               )
                             )}
