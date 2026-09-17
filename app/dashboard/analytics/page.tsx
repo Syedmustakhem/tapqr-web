@@ -67,6 +67,88 @@ type RecentScan = {
   scannedAt: string;
 };
 
+type VisitorAnalytics = {
+  uniqueVisitors?: number;
+  newVisitors?: number;
+  returningVisitors?: number;
+  repeatScans?: number;
+  averageScansPerVisitor?: number;
+  visitorConversionRate?: number;
+  repeatVisitorConversions?: number;
+};
+
+type JourneyAnalytics = {
+  overview?: {
+    uniqueVisitors?: number;
+    firstTimeVisitors?: number;
+    repeatVisitors?: number;
+    repeatVisitorRate?: number;
+    totalIdentifiedScans?: number;
+    averageScansPerVisitor?: number;
+    totalConversions?: number;
+    uniqueConverters?: number;
+    visitorConversionRate?: number;
+    conversionsAfterRepeatVisit?: number;
+    averageTimeToConversionSeconds?: number;
+  };
+  funnel?: Array<{ stage?: string; visitors?: number | string }>;
+  dailyJourney?: Array<{
+    date: string;
+    visitors?: number | string;
+    repeatVisitors?: number | string;
+    converters?: number | string;
+  }>;
+  byQr?: Array<{
+    qrCodeId?: string;
+    qrName?: string;
+    visitors?: number | string;
+    repeatVisitors?: number | string;
+    converters?: number | string;
+    conversionRate?: number | string;
+  }>;
+};
+
+type BehavioralAnalytics = {
+  overview?: {
+    visitors?: number;
+    oneTimeVisitors?: number;
+    returningVisitors?: number;
+    returningVisitorRate?: number;
+    highlyEngagedVisitors?: number;
+    highlyEngagedRate?: number;
+    converters?: number;
+    repeatConverters?: number;
+    repeatConverterRate?: number;
+    averageVisitIntervalSeconds?: number;
+    averageTimeToConversionSeconds?: number;
+  };
+  segments?: Array<{
+    segment?: string;
+    visitors?: number | string;
+    conversions?: number | string;
+  }>;
+  scanIntervalDistribution?: Array<{
+    range?: string;
+    visitors?: number | string;
+  }>;
+  byQr?: Array<{
+    qrCodeId?: string;
+    qrName?: string;
+    visitors?: number | string;
+    returningVisitors?: number | string;
+    converters?: number | string;
+    returningRate?: number | string;
+    conversionRate?: number | string;
+  }>;
+};
+
+type SourceAnalytics = {
+  bySource?: BreakdownRow[];
+  byPlacement?: BreakdownRow[];
+  byLocation?: BreakdownRow[];
+  byCampaign?: BreakdownRow[];
+};
+
 type AnalyticsData = {
   totalScans?: number;
   uniqueVisitors?: number;
@@ -101,6 +183,10 @@ type AnalyticsData = {
   valuesByCurrency?: BreakdownRow[];
 
   recentScans?: RecentScan[];
+  visitorAnalytics?: VisitorAnalytics;
+  journeyAnalytics?: JourneyAnalytics;
+  behavioralAnalytics?: BehavioralAnalytics;
+  sourceAnalytics?: SourceAnalytics;
 };
 
 const EXPERIENCE_LABELS: Record<string, string> = {
@@ -322,6 +408,197 @@ function unwrapAnalytics(payload: unknown): AnalyticsData {
   };
 }
 
+function unwrapModuleData(payload: unknown): Record<string, unknown> {
+  const root = (payload ?? {}) as Record<string, unknown>;
+  const data =
+    root.data && typeof root.data === "object"
+      ? (root.data as Record<string, unknown>)
+      : root;
+  return data;
+}
+
+function normalizeVisitorAnalytics(payload: unknown): VisitorAnalytics {
+  const data = unwrapModuleData(payload);
+  const overview =
+    data.overview && typeof data.overview === "object"
+      ? (data.overview as Record<string, unknown>)
+      : data;
+
+  return {
+    uniqueVisitors: numberValue(
+      overview.uniqueVisitors ?? overview.visitors
+    ),
+    newVisitors: numberValue(
+      overview.newVisitors ?? overview.firstTimeVisitors
+    ),
+    returningVisitors: numberValue(
+      overview.returningVisitors ?? overview.repeatVisitors
+    ),
+    repeatScans: numberValue(
+      overview.repeatScans ??
+        overview.totalRepeatScans ??
+        overview.repeatVisitors
+    ),
+    averageScansPerVisitor: numberValue(
+      overview.averageScansPerVisitor
+    ),
+    visitorConversionRate: numberValue(
+      overview.visitorConversionRate
+    ),
+    repeatVisitorConversions: numberValue(
+      overview.repeatVisitorConversions ??
+        overview.conversionsAfterRepeatVisit
+    ),
+  };
+}
+
+function normalizeJourneyAnalytics(payload: unknown): JourneyAnalytics {
+  const data = unwrapModuleData(payload);
+
+  const overview =
+    data.overview && typeof data.overview === "object"
+      ? (data.overview as Record<string, unknown>)
+      : undefined;
+
+  const funnel = Array.isArray(data.funnel)
+    ? (data.funnel as Array<Record<string, unknown>>).map((row) => ({
+        stage: typeof row.stage === "string" ? row.stage : "Unknown",
+        visitors: numberValue(row.visitors),
+      }))
+    : [];
+
+  const dailyJourney = Array.isArray(data.dailyJourney)
+    ? (data.dailyJourney as Array<Record<string, unknown>>).map((row) => ({
+        date: String(row.date ?? ""),
+        visitors: numberValue(row.visitors),
+        repeatVisitors: numberValue(row.repeatVisitors),
+        converters: numberValue(row.converters),
+      }))
+    : [];
+
+  const byQr = Array.isArray(data.byQr)
+    ? (data.byQr as Array<Record<string, unknown>>).map((row) => ({
+        qrCodeId: typeof row.qrCodeId === "string" ? row.qrCodeId : undefined,
+        qrName: typeof row.qrName === "string" ? row.qrName : "Unknown",
+        visitors: numberValue(row.visitors),
+        repeatVisitors: numberValue(row.repeatVisitors),
+        converters: numberValue(row.converters),
+        conversionRate: numberValue(row.conversionRate),
+      }))
+    : [];
+
+  return {
+    overview: overview
+      ? {
+          uniqueVisitors: numberValue(overview.uniqueVisitors),
+          firstTimeVisitors: numberValue(overview.firstTimeVisitors),
+          repeatVisitors: numberValue(overview.repeatVisitors),
+          repeatVisitorRate: numberValue(overview.repeatVisitorRate),
+          totalIdentifiedScans: numberValue(overview.totalIdentifiedScans),
+          averageScansPerVisitor: numberValue(
+            overview.averageScansPerVisitor
+          ),
+          totalConversions: numberValue(overview.totalConversions),
+          uniqueConverters: numberValue(overview.uniqueConverters),
+          visitorConversionRate: numberValue(
+            overview.visitorConversionRate
+          ),
+          conversionsAfterRepeatVisit: numberValue(
+            overview.conversionsAfterRepeatVisit
+          ),
+          averageTimeToConversionSeconds: numberValue(
+            overview.averageTimeToConversionSeconds
+          ),
+        }
+      : undefined,
+    funnel,
+    dailyJourney,
+    byQr,
+  };
+}
+
+function normalizeBehavioralAnalytics(
+  payload: unknown
+): BehavioralAnalytics {
+  const data = unwrapModuleData(payload);
+  const overview =
+    data.overview && typeof data.overview === "object"
+      ? (data.overview as Record<string, unknown>)
+      : undefined;
+
+  const segments = Array.isArray(data.segments)
+    ? (data.segments as Array<Record<string, unknown>>).map((row) => ({
+        segment: typeof row.segment === "string" ? row.segment : "UNKNOWN",
+        visitors: numberValue(row.visitors),
+        conversions: numberValue(row.conversions),
+      }))
+    : [];
+
+  const scanIntervalDistribution = Array.isArray(
+    data.scanIntervalDistribution
+  )
+    ? (
+        data.scanIntervalDistribution as Array<Record<string, unknown>>
+      ).map((row) => ({
+        range: typeof row.range === "string" ? row.range : "Unknown",
+        visitors: numberValue(row.visitors),
+      }))
+    : [];
+
+  const byQr = Array.isArray(data.byQr)
+    ? (data.byQr as Array<Record<string, unknown>>).map((row) => ({
+        qrCodeId: typeof row.qrCodeId === "string" ? row.qrCodeId : undefined,
+        qrName: typeof row.qrName === "string" ? row.qrName : "Unknown",
+        visitors: numberValue(row.visitors),
+        returningVisitors: numberValue(row.returningVisitors),
+        converters: numberValue(row.converters),
+        returningRate: numberValue(row.returningRate),
+        conversionRate: numberValue(row.conversionRate),
+      }))
+    : [];
+
+  return {
+    overview: overview
+      ? {
+          visitors: numberValue(overview.visitors),
+          oneTimeVisitors: numberValue(overview.oneTimeVisitors),
+          returningVisitors: numberValue(overview.returningVisitors),
+          returningVisitorRate: numberValue(
+            overview.returningVisitorRate
+          ),
+          highlyEngagedVisitors: numberValue(
+            overview.highlyEngagedVisitors
+          ),
+          highlyEngagedRate: numberValue(overview.highlyEngagedRate),
+          converters: numberValue(overview.converters),
+          repeatConverters: numberValue(overview.repeatConverters),
+          repeatConverterRate: numberValue(
+            overview.repeatConverterRate
+          ),
+          averageVisitIntervalSeconds: numberValue(
+            overview.averageVisitIntervalSeconds
+          ),
+          averageTimeToConversionSeconds: numberValue(
+            overview.averageTimeToConversionSeconds
+          ),
+        }
+      : undefined,
+    segments,
+    scanIntervalDistribution,
+    byQr,
+  };
+}
+
+function normalizeSourceAnalytics(payload: unknown): SourceAnalytics {
+  const data = unwrapModuleData(payload);
+  return {
+    bySource: normalizeRows(data.bySource),
+    byPlacement: normalizeRows(data.byPlacement),
+    byLocation: normalizeRows(data.byLocation),
+    byCampaign: normalizeRows(data.byCampaign),
+  };
+}
+
 function getBusinessIdFromBrowser(searchParams: URLSearchParams): string {
   const fromQuery =
     searchParams.get("businessId")?.trim() ||
@@ -356,6 +633,14 @@ export default function AnalyticsPage() {
   const [rangeOpen, setRangeOpen] = useState(false);
 
   const [analytics, setAnalytics] = useState<AnalyticsData>({});
+  const [visitorAnalytics, setVisitorAnalytics] =
+    useState<VisitorAnalytics>({});
+  const [journeyAnalytics, setJourneyAnalytics] =
+    useState<JourneyAnalytics>({});
+  const [behavioralAnalytics, setBehavioralAnalytics] =
+    useState<BehavioralAnalytics>({});
+  const [sourceAnalytics, setSourceAnalytics] =
+    useState<SourceAnalytics>({});
   const [loadingAnalytics, setLoadingAnalytics] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState("");
@@ -392,7 +677,53 @@ export default function AnalyticsPage() {
           )}?${query.toString()}`
         );
 
-        setAnalytics(unwrapAnalytics(payload));
+        const baseAnalytics = unwrapAnalytics(payload);
+        setAnalytics(baseAnalytics);
+
+        const advancedResults = await Promise.allSettled([
+          apiRequest(
+            `/analytics/business/${encodeURIComponent(
+              businessId
+            )}/visitors?days=${range}`
+          ),
+          apiRequest(
+            `/analytics/business/${encodeURIComponent(
+              businessId
+            )}/journey?days=${range}`
+          ),
+          apiRequest(
+            `/analytics/business/${encodeURIComponent(
+              businessId
+            )}/behavior?days=${range}`
+          ),
+          apiRequest(
+            `/analytics/business/${encodeURIComponent(
+              businessId
+            )}/sources?days=${range}`
+          ),
+        ]);
+
+        if (advancedResults[0].status === "fulfilled") {
+          setVisitorAnalytics(
+            normalizeVisitorAnalytics(advancedResults[0].value)
+          );
+        }
+        if (advancedResults[1].status === "fulfilled") {
+          setJourneyAnalytics(
+            normalizeJourneyAnalytics(advancedResults[1].value)
+          );
+        }
+        if (advancedResults[2].status === "fulfilled") {
+          setBehavioralAnalytics(
+            normalizeBehavioralAnalytics(advancedResults[2].value)
+          );
+        }
+        if (advancedResults[3].status === "fulfilled") {
+          setSourceAnalytics(
+            normalizeSourceAnalytics(advancedResults[3].value)
+          );
+        }
+
         if (showRefresh) {
           setSuccess("Analytics refreshed successfully.");
         }
@@ -476,6 +807,54 @@ export default function AnalyticsPage() {
         .slice(0, 10),
     [analytics.qrPerformance]
   );
+
+  const visitorMetrics = {
+    uniqueVisitors: numberValue(
+      visitorAnalytics.uniqueVisitors ??
+        journeyAnalytics.overview?.uniqueVisitors ??
+        uniqueVisitors
+    ),
+    newVisitors: numberValue(
+      visitorAnalytics.newVisitors ??
+        journeyAnalytics.overview?.firstTimeVisitors
+    ),
+    returningVisitors: numberValue(
+      visitorAnalytics.returningVisitors ??
+        journeyAnalytics.overview?.repeatVisitors
+    ),
+    repeatScans: numberValue(visitorAnalytics.repeatScans),
+    averageScansPerVisitor: numberValue(
+      visitorAnalytics.averageScansPerVisitor ??
+        journeyAnalytics.overview?.averageScansPerVisitor
+    ),
+    visitorConversionRate: numberValue(
+      visitorAnalytics.visitorConversionRate ??
+        journeyAnalytics.overview?.visitorConversionRate
+    ),
+    repeatVisitorConversions: numberValue(
+      visitorAnalytics.repeatVisitorConversions ??
+        journeyAnalytics.overview?.conversionsAfterRepeatVisit
+    ),
+  };
+
+  const behaviorOverview = behavioralAnalytics.overview ?? {};
+  const journeyFunnel = journeyAnalytics.funnel ?? [];
+  const journeyByQr = journeyAnalytics.byQr ?? [];
+  const behaviorSegments = behavioralAnalytics.segments ?? [];
+  const scanIntervals = behavioralAnalytics.scanIntervalDistribution ?? [];
+  const sourceRows = sourceAnalytics.bySource ?? [];
+  const placementRows = sourceAnalytics.byPlacement ?? [];
+  const locationRows = sourceAnalytics.byLocation ?? [];
+  const campaignRows = sourceAnalytics.byCampaign ?? [];
+
+  const formatDuration = (seconds: number) => {
+    if (!seconds || seconds < 1) return "—";
+    const minutes = Math.round(seconds / 60);
+    if (minutes < 60) return `${minutes}m`;
+    const hours = Math.round(minutes / 60);
+    if (hours < 24) return `${hours}h`;
+    return `${Math.round(hours / 24)}d`;
+  };
 
   if (loadingAnalytics && !analytics.dailySeries) {
     return <AnalyticsSkeleton />;
@@ -876,7 +1255,265 @@ export default function AnalyticsPage() {
         />
       </section>
 
+      {/* VISITOR INTELLIGENCE */}
+      <section>
+        <div className="mb-3">
+          <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-violet-600">
+            Visitor intelligence
+          </p>
+          <h2 className="mt-1 text-lg font-bold text-slate-950">
+            Visitor behavior
+          </h2>
+          <p className="mt-1 text-xs text-slate-400">
+            New visitors, repeat behavior, and visitor-level conversion.
+          </p>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <MetricCard
+            label="New visitors"
+            value={formatNumber(visitorMetrics.newVisitors)}
+            helper="First-time visitors in this period"
+            icon={<Users className="h-5 w-5" />}
+            tone="violet"
+            loading={loadingAnalytics}
+          />
+          <MetricCard
+            label="Returning visitors"
+            value={formatNumber(visitorMetrics.returningVisitors)}
+            helper={`${formatRate(behaviorOverview.returningVisitorRate)} of visitors`}
+            icon={<RefreshCw className="h-5 w-5" />}
+            tone="blue"
+            loading={loadingAnalytics}
+          />
+          <MetricCard
+            label="Scans / visitor"
+            value={visitorMetrics.averageScansPerVisitor.toFixed(2)}
+            helper="Average identified scans per visitor"
+            icon={<Eye className="h-5 w-5" />}
+            tone="amber"
+            loading={loadingAnalytics}
+          />
+          <MetricCard
+            label="Visitor conversion"
+            value={formatRate(visitorMetrics.visitorConversionRate)}
+            helper="Unique converters ÷ visitors"
+            icon={<MousePointerClick className="h-5 w-5" />}
+            tone="green"
+            loading={loadingAnalytics}
+          />
+        </div>
+      </section>
+
+      {/* JOURNEY FUNNEL */}
+      <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(320px,0.8fr)]">
+        <section className="overflow-hidden rounded-[24px] border border-slate-200/80 bg-white p-5 shadow-[0_8px_30px_rgba(15,23,42,0.03)] sm:p-6">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-blue-600">
+              Journey
+            </p>
+            <h2 className="mt-1 text-lg font-bold text-slate-950">
+              Visitor funnel
+            </h2>
+            <p className="mt-1 text-xs text-slate-400">
+              Identified visitors moving through repeat visits to conversion.
+            </p>
+          </div>
+
+          <div className="mt-6">
+            {journeyFunnel.length === 0 ? (
+              <div className="rounded-2xl bg-slate-50 px-4 py-10 text-center">
+                <p className="text-xs font-semibold text-slate-600">
+                  No visitor journey data yet.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {journeyFunnel.map((row, index) => {
+                  const value = numberValue(row.visitors);
+                  const first = numberValue(
+                    journeyFunnel[0]?.visitors
+                  );
+                  const width =
+                    first > 0
+                      ? Math.max(6, Math.round((value / first) * 100))
+                      : 6;
+
+                  return (
+                    <div key={`${row.stage}-${index}`}>
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="text-xs font-bold text-slate-700">
+                          {(row.stage ?? "Unknown")
+                            .replaceAll("_", " ")
+                            .toLowerCase()
+                            .replace(/\b\w/g, (char) => char.toUpperCase())}
+                        </span>
+                        <span className="text-xs font-black text-slate-950">
+                          {formatNumber(value)}
+                        </span>
+                      </div>
+                      <div className="mt-2 h-3 overflow-hidden rounded-full bg-slate-100">
+                        <div
+                          className="h-full rounded-full bg-blue-500 transition-all duration-500"
+                          style={{ width: `${width}%` }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </section>
+
+        <section className="rounded-[24px] border border-slate-200/80 bg-white p-5 shadow-[0_8px_30px_rgba(15,23,42,0.03)] sm:p-6">
+          <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-emerald-600">
+            Journey timing
+          </p>
+          <h2 className="mt-1 text-lg font-bold text-slate-950">
+            Conversion journey
+          </h2>
+
+          <div className="mt-6 space-y-3">
+            <JourneyStat
+              label="Repeat-visit conversions"
+              value={formatNumber(
+                visitorMetrics.repeatVisitorConversions
+              )}
+            />
+            <JourneyStat
+              label="Avg. time to conversion"
+              value={formatDuration(
+                numberValue(
+                  journeyAnalytics.overview
+                    ?.averageTimeToConversionSeconds
+                )
+              )}
+            />
+            <JourneyStat
+              label="Avg. visit interval"
+              value={formatDuration(
+                numberValue(
+                  behaviorOverview.averageVisitIntervalSeconds
+                )
+              )}
+            />
+            <JourneyStat
+              label="Identified scans"
+              value={formatNumber(
+                numberValue(
+                  journeyAnalytics.overview?.totalIdentifiedScans
+                )
+              )}
+            />
+          </div>
+        </section>
+      </section>
+
+      {/* BEHAVIOR */}
+      <section>
+        <div className="mb-3">
+          <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-amber-600">
+            Advanced behavior
+          </p>
+          <h2 className="mt-1 text-lg font-bold text-slate-950">
+            Behavioral segments
+          </h2>
+        </div>
+
+        <div className="grid gap-5 lg:grid-cols-2 xl:grid-cols-3">
+          <BreakdownCard
+            title="Visitor segments"
+            subtitle="Behavioral classification"
+            icon={<Users className="h-5 w-5" />}
+            rows={behaviorSegments.map((row) => ({
+              name: row.segment,
+              scans: row.visitors,
+              conversions: row.conversions,
+            }))}
+            loading={loadingAnalytics}
+            metric="scans"
+          />
+
+          <BreakdownCard
+            title="Scan intervals"
+            subtitle="Time between identified visits"
+            icon={<RefreshCw className="h-5 w-5" />}
+            rows={scanIntervals.map((row) => ({
+              name: row.range,
+              scans: row.visitors,
+            }))}
+            loading={loadingAnalytics}
+            metric="scans"
+          />
+
+          <BreakdownCard
+            title="Behavior by QR"
+            subtitle="Returning visitors and converters"
+            icon={<QrCode className="h-5 w-5" />}
+            rows={behavioralAnalytics.byQr?.map((row) => ({
+              name: row.qrName,
+              scans: row.visitors,
+              conversions: row.converters,
+            })) ?? []}
+            loading={loadingAnalytics}
+            metric="scans"
+          />
+        </div>
+      </section>
+
+      {/* SOURCE / PLACEMENT / LOCATION / CAMPAIGN */}
+      <section>
+        <div className="mb-3">
+          <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-blue-600">
+            Acquisition intelligence
+          </p>
+          <h2 className="mt-1 text-lg font-bold text-slate-950">
+            QR source performance
+          </h2>
+          <p className="mt-1 text-xs text-slate-400">
+            Compare where QR traffic and conversions originate.
+          </p>
+        </div>
+
+        <div className="grid gap-5 lg:grid-cols-2 xl:grid-cols-4">
+          <BreakdownCard
+            title="Sources"
+            subtitle="QR source types"
+            icon={<QrCode className="h-5 w-5" />}
+            rows={sourceRows}
+            loading={loadingAnalytics}
+            metric="scans"
+          />
+          <BreakdownCard
+            title="Placements"
+            subtitle="Physical/digital placements"
+            icon={<MousePointerClick className="h-5 w-5" />}
+            rows={placementRows}
+            loading={loadingAnalytics}
+            metric="scans"
+          />
+          <BreakdownCard
+            title="Locations"
+            subtitle="QR location performance"
+            icon={<Globe2 className="h-5 w-5" />}
+            rows={locationRows}
+            loading={loadingAnalytics}
+            metric="scans"
+          />
+          <BreakdownCard
+            title="Campaigns"
+            subtitle="Campaign-attributed traffic"
+            icon={<BarChart3 className="h-5 w-5" />}
+            rows={campaignRows}
+            loading={loadingAnalytics}
+            metric="scans"
+          />
+        </div>
+      </section>
+
       {/* NOTE */}
+
       <section className="rounded-[24px] border border-blue-100 bg-blue-50/60 px-5 py-5 sm:px-6">
         <div className="flex items-start gap-3">
           <TrendingUp className="mt-0.5 h-5 w-5 shrink-0 text-blue-600" />
@@ -1702,9 +2339,29 @@ function RecentScansCard({
   );
 }
 
+function JourneyStat({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-4 rounded-2xl border border-slate-100 bg-slate-50/70 px-4 py-3">
+      <span className="text-xs font-semibold text-slate-600">
+        {label}
+      </span>
+      <span className="text-sm font-black text-slate-950">
+        {value}
+      </span>
+    </div>
+  );
+}
+
 /* -------------------------------------------------------------------------- */
 /* Alerts                                                                     */
 /* -------------------------------------------------------------------------- */
+
 
 function Alert({
   tone,
