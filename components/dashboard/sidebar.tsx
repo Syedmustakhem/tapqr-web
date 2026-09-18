@@ -10,6 +10,7 @@ import {
   CheckCircle2,
   LayoutDashboard,
   LogOut,
+  Megaphone,
   QrCode,
   Settings,
   ShieldCheck,
@@ -36,6 +37,11 @@ const navigation = [
     label: "Business",
     href: "/dashboard/business",
     icon: Building2,
+  },
+  {
+    label: "Campaigns",
+    href: "/dashboard/campaigns",
+    icon: Megaphone,
   },
   {
     label: "QR Studio",

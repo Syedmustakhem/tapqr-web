@@ -11,6 +11,7 @@ import Link from "next/link";
 import {
   AlertCircle,
   BarChart3,
+  Megaphone,
   Building2,
   Check,
   CheckCircle2,
@@ -1479,6 +1480,13 @@ export default function BusinessPage() {
               <BarChart3 className="h-4 w-4" />
               Experiments
             </Link>
+            <Link
+              href="/dashboard/campaigns"
+              className="inline-flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-2.5 text-xs font-bold text-blue-700 transition hover:bg-blue-100"
+            >
+              <Megaphone className="h-4 w-4" />
+              Campaigns
+            </Link>
           </div>
         </div>
       </section>
@@ -2441,6 +2449,18 @@ export default function BusinessPage() {
                   <span className="block text-[10px] text-slate-400">
                     Compare variants and measure conversion performance.
                   </span>
+                </span>
+              </Link>
+              <Link
+                href="/dashboard/campaigns"
+                className="flex w-full items-center gap-3 rounded-xl border border-blue-100 bg-blue-50/60 p-3 transition hover:bg-blue-100/70"
+              >
+                <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-blue-600">
+                  <Megaphone className="h-4 w-4" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-xs font-bold text-slate-800">Manage Campaigns</span>
+                  <span className="block text-[10px] text-slate-400">Group QR activity, scheduling and campaign analytics.</span>
                 </span>
               </Link>
             </div>
