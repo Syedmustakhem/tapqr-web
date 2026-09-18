@@ -10,6 +10,7 @@ import Link from "next/link";
 
 import {
   AlertCircle,
+  BarChart3,
   Building2,
   Check,
   CheckCircle2,
@@ -17,15 +18,14 @@ import {
   Globe,
   Loader2,
   MapPin,
-  QrCode,
-  SlidersHorizontal,
-  Sparkles,
-  BarChart3,
   Pencil,
   Phone,
   Plus,
+  QrCode,
   RefreshCw,
   Save,
+  SlidersHorizontal,
+  Sparkles,
   Trash2,
   X,
 } from "lucide-react";
@@ -48,32 +48,71 @@ type BusinessProfile = {
   email?: string | null;
   phone?: string | null;
   whatsapp?: string | null;
+
   addressLine1?: string | null;
   addressLine2?: string | null;
   city?: string | null;
   state?: string | null;
   postalCode?: string | null;
+
+  /**
+   * This is the public profile/address country.
+   * It is intentionally separate from Business.country.
+   */
   country?: string | null;
+
   latitude?: number | string | null;
   longitude?: number | string | null;
+
   openingHours?: OpeningHours | null;
   socialLinks?: SocialLinks | null;
+
   coverImage?: string | null;
 };
 
 type Business = {
   id: string;
+  ownerId?: string | null;
+
+  // Identity
   name: string;
+  legalName?: string | null;
+  displayName?: string | null;
   slug?: string | null;
+
+  // Classification
+  businessType?: string | null;
+  industry?: string | null;
+  category?: string | null;
+  subcategory?: string | null;
+
+  // Business-level contact / branding
   email?: string | null;
   phone?: string | null;
+  website?: string | null;
+  whatsapp?: string | null;
   logo?: string | null;
+  coverImage?: string | null;
   description?: string | null;
+
+  // Localization
+  timezone?: string | null;
+  currency?: string | null;
+  language?: string | null;
+  country?: string | null;
+
+  // Lifecycle / state
   status?: BusinessStatus;
+  isVerified?: boolean;
+  isPublished?: boolean;
+  onboardingCompleted?: boolean;
+
   createdAt?: string;
   updatedAt?: string;
   deletedAt?: string | null;
+
   profile?: BusinessProfile | null;
+
   qrCodes?: Array<{
     id: string;
     scanCount?: number;
@@ -94,29 +133,58 @@ type ItemResponse = {
 };
 
 type FormState = {
+  // Business identity
   name: string;
+  legalName: string;
+  displayName: string;
+
+  // Business classification
+  businessType: string;
+  industry: string;
+  category: string;
+  subcategory: string;
+
+  // Business-level contact
   email: string;
   phone: string;
-  logo: string;
-  description: string;
-  tagline: string;
   website: string;
   whatsapp: string;
+
+  // Branding
+  logo: string;
+  coverImage: string;
+  description: string;
+
+  // Business localization
+  businessCountry: string;
+  timezone: string;
+  currency: string;
+  language: string;
+
+  // Public profile
+  tagline: string;
+
+  // Public address
   addressLine1: string;
   addressLine2: string;
   city: string;
   state: string;
   postalCode: string;
-  country: string;
+  profileCountry: string;
+
+  // Location
   latitude: string;
   longitude: string;
-  coverImage: string;
+
+  // Social
   instagram: string;
   facebook: string;
   linkedin: string;
   youtube: string;
   twitter: string;
   tiktok: string;
+
+  // Opening hours
   openingHours: OpeningHours;
 };
 
@@ -130,37 +198,134 @@ const DAYS = [
   "sunday",
 ] as const;
 
+const BUSINESS_TYPES = [
+  "RETAIL",
+  "RESTAURANT",
+  "CAFE",
+  "SALON",
+  "HEALTHCARE",
+  "EDUCATION",
+  "SERVICES",
+  "HOSPITALITY",
+  "REAL_ESTATE",
+  "PROFESSIONAL_SERVICES",
+  "MANUFACTURING",
+  "OTHER",
+];
+
+const INDUSTRIES = [
+  "Retail",
+  "Food & Beverage",
+  "Healthcare",
+  "Education",
+  "Beauty & Wellness",
+  "Hospitality",
+  "Real Estate",
+  "Professional Services",
+  "Technology",
+  "Finance",
+  "Automotive",
+  "Manufacturing",
+  "Other",
+];
+
+const CURRENCIES = [
+  "INR",
+  "USD",
+  "EUR",
+  "GBP",
+  "AED",
+  "SGD",
+];
+
+const LANGUAGES = [
+  "en",
+  "hi",
+  "te",
+  "ta",
+  "kn",
+  "ml",
+  "bn",
+  "mr",
+];
+
+const TIMEZONES = [
+  "Asia/Kolkata",
+  "Asia/Dubai",
+  "Asia/Singapore",
+  "Europe/London",
+  "Europe/Berlin",
+  "America/New_York",
+  "America/Los_Angeles",
+  "UTC",
+];
+
 const EMPTY_FORM = (): FormState => ({
+  // Identity
   name: "",
+  legalName: "",
+  displayName: "",
+
+  // Classification
+  businessType: "",
+  industry: "",
+  category: "",
+  subcategory: "",
+
+  // Contact
   email: "",
   phone: "",
-  logo: "",
-  description: "",
-  tagline: "",
   website: "",
   whatsapp: "",
+
+  // Branding
+  logo: "",
+  coverImage: "",
+  description: "",
+
+  // Localization
+  businessCountry: "India",
+  timezone: "Asia/Kolkata",
+  currency: "INR",
+  language: "en",
+
+  // Public profile
+  tagline: "",
+
+  // Address
   addressLine1: "",
   addressLine2: "",
   city: "",
   state: "",
   postalCode: "",
-  country: "India",
+  profileCountry: "India",
+
+  // Coordinates
   latitude: "",
   longitude: "",
-  coverImage: "",
+
+  // Social
   instagram: "",
   facebook: "",
   linkedin: "",
   youtube: "",
   twitter: "",
   tiktok: "",
+
+  // Hours
   openingHours: {},
 });
 
 function getInitials(name?: string) {
-  const parts = name?.trim().split(/\s+/).filter(Boolean) ?? [];
+  const parts =
+    name?.trim().split(/\s+/).filter(Boolean) ?? [];
+
   if (parts.length === 0) return "B";
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+
+  if (parts.length === 1) {
+    return parts[0].slice(0, 2).toUpperCase();
+  }
+
   return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
 }
 
@@ -169,60 +334,139 @@ function toForm(business: Business): FormState {
   const social = profile.socialLinks ?? {};
 
   return {
+    // Business identity
     name: business.name ?? "",
+    legalName: business.legalName ?? "",
+    displayName: business.displayName ?? "",
+
+    // Classification
+    businessType: business.businessType ?? "",
+    industry: business.industry ?? "",
+    category: business.category ?? "",
+    subcategory: business.subcategory ?? "",
+
+    // Business-level contact
     email: business.email ?? "",
     phone: business.phone ?? "",
+    website: business.website ?? profile.website ?? "",
+    whatsapp: business.whatsapp ?? profile.whatsapp ?? "",
+
+    // Branding
     logo: business.logo ?? "",
-    description: business.description ?? "",
+    coverImage: business.coverImage ?? profile.coverImage ?? "",
+    description: business.description ?? profile.description ?? "",
+
+    // Localization
+    businessCountry: business.country ?? "India",
+    timezone: business.timezone ?? "Asia/Kolkata",
+    currency: business.currency ?? "INR",
+    language: business.language ?? "en",
+
+    // Public profile
     tagline: profile.tagline ?? "",
-    website: profile.website ?? "",
-    whatsapp: profile.whatsapp ?? "",
+
+    // Address
     addressLine1: profile.addressLine1 ?? "",
     addressLine2: profile.addressLine2 ?? "",
     city: profile.city ?? "",
     state: profile.state ?? "",
     postalCode: profile.postalCode ?? "",
-    country: profile.country ?? "India",
+    profileCountry: profile.country ?? "India",
+
+    // Coordinates
     latitude:
-      profile.latitude === null || profile.latitude === undefined
+      profile.latitude === null ||
+      profile.latitude === undefined
         ? ""
         : String(profile.latitude),
+
     longitude:
-      profile.longitude === null || profile.longitude === undefined
+      profile.longitude === null ||
+      profile.longitude === undefined
         ? ""
         : String(profile.longitude),
-    coverImage: profile.coverImage ?? "",
+
+    // Social
     instagram: social.instagram ?? "",
     facebook: social.facebook ?? "",
     linkedin: social.linkedin ?? "",
     youtube: social.youtube ?? "",
     twitter: social.twitter ?? social.x ?? "",
     tiktok: social.tiktok ?? "",
+
+    // Hours
     openingHours: profile.openingHours ?? {},
   };
 }
 
 function getStatusClasses(status?: string) {
-  if (status === "ACTIVE") return "border-emerald-100 bg-emerald-50 text-emerald-700";
-  if (status === "SUSPENDED") return "border-red-100 bg-red-50 text-red-700";
+  if (status === "ACTIVE") {
+    return "border-emerald-100 bg-emerald-50 text-emerald-700";
+  }
+
+  if (status === "SUSPENDED") {
+    return "border-red-100 bg-red-50 text-red-700";
+  }
+
+  if (status === "INACTIVE") {
+    return "border-amber-100 bg-amber-50 text-amber-700";
+  }
+
   return "border-slate-200 bg-slate-100 text-slate-600";
+}
+
+function formatBusinessType(value?: string | null) {
+  if (!value) return "Not configured";
+
+  return value
+    .toLowerCase()
+    .split("_")
+    .map(
+      (part) =>
+        part.charAt(0).toUpperCase() + part.slice(1)
+    )
+    .join(" ");
+}
+
+function formatLanguage(value?: string | null) {
+  if (!value) return "Not configured";
+
+  const map: Record<string, string> = {
+    en: "English",
+    hi: "Hindi",
+    te: "Telugu",
+    ta: "Tamil",
+    kn: "Kannada",
+    ml: "Malayalam",
+    bn: "Bengali",
+    mr: "Marathi",
+  };
+
+  return map[value] ?? value;
 }
 
 export default function BusinessPage() {
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [selectedId, setSelectedId] = useState("");
+
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
+
   const [creating, setCreating] = useState(false);
   const [deactivating, setDeactivating] = useState(false);
+
   const [showCreate, setShowCreate] = useState(false);
   const [showDeactivate, setShowDeactivate] = useState(false);
   const [switcherOpen, setSwitcherOpen] = useState(false);
+
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
+
   const [createForm, setCreateForm] = useState({
     name: "",
     email: "",
@@ -232,12 +476,18 @@ export default function BusinessPage() {
   });
 
   const selectedBusiness = useMemo(
-    () => businesses.find((item) => item.id === selectedId) ?? null,
+    () =>
+      businesses.find(
+        (item) => item.id === selectedId
+      ) ?? null,
     [businesses, selectedId]
   );
 
   const activeCount = useMemo(
-    () => businesses.filter((item) => item.status === "ACTIVE").length,
+    () =>
+      businesses.filter(
+        (item) => item.status === "ACTIVE"
+      ).length,
     [businesses]
   );
 
@@ -247,7 +497,8 @@ export default function BusinessPage() {
         (businessTotal, business) =>
           businessTotal +
           (business.qrCodes ?? []).reduce(
-            (qrTotal, qr) => qrTotal + Number(qr.scanCount ?? 0),
+            (qrTotal, qr) =>
+              qrTotal + Number(qr.scanCount ?? 0),
             0
           ),
         0
@@ -259,52 +510,98 @@ export default function BusinessPage() {
     if (!selectedBusiness) return 0;
 
     const fields = [
+      // Identity
       selectedBusiness.name,
+      selectedBusiness.legalName,
+      selectedBusiness.displayName,
+
+      // Classification
+      selectedBusiness.businessType,
+      selectedBusiness.industry,
+      selectedBusiness.category,
+
+      // Contact
       selectedBusiness.email,
       selectedBusiness.phone,
+      selectedBusiness.website,
+      selectedBusiness.whatsapp,
+
+      // Branding
       selectedBusiness.logo,
+      selectedBusiness.coverImage,
       selectedBusiness.description,
+
+      // Localization
+      selectedBusiness.country,
+      selectedBusiness.timezone,
+      selectedBusiness.currency,
+      selectedBusiness.language,
+
+      // Public profile
       selectedBusiness.profile?.tagline,
-      selectedBusiness.profile?.website,
-      selectedBusiness.profile?.whatsapp,
       selectedBusiness.profile?.addressLine1,
       selectedBusiness.profile?.city,
       selectedBusiness.profile?.state,
       selectedBusiness.profile?.country,
-      selectedBusiness.profile?.coverImage,
     ];
 
-    const completed = fields.filter((value) => Boolean(value?.toString().trim())).length;
-    return Math.round((completed / fields.length) * 100);
+    const completed = fields.filter((value) =>
+      Boolean(value?.toString().trim())
+    ).length;
+
+    return Math.round(
+      (completed / fields.length) * 100
+    );
   }, [selectedBusiness]);
 
   async function loadBusinesses(showRefresh = false) {
     try {
       setError("");
-      if (showRefresh) setRefreshing(true);
-      else setLoading(true);
 
-      const response = await apiRequest<ListResponse>("/businesses");
+      if (showRefresh) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
+
+      const response =
+        await apiRequest<ListResponse>("/businesses");
+
       const data = response.data ?? [];
+
       setBusinesses(data);
 
       const storedId =
         typeof window !== "undefined"
-          ? localStorage.getItem("tapqr_current_business_id")
+          ? localStorage.getItem(
+              "tapqr_current_business_id"
+            )
           : null;
 
       const nextId =
-        data.find((business) => business.id === storedId)?.id ??
+        data.find(
+          (business) => business.id === storedId
+        )?.id ??
         data[0]?.id ??
         "";
 
       setSelectedId(nextId);
 
-      if (nextId && typeof window !== "undefined") {
-        localStorage.setItem("tapqr_current_business_id", nextId);
+      if (
+        nextId &&
+        typeof window !== "undefined"
+      ) {
+        localStorage.setItem(
+          "tapqr_current_business_id",
+          nextId
+        );
       }
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Unable to load businesses.");
+      setError(
+        err instanceof ApiError
+          ? err.message
+          : "Unable to load businesses."
+      );
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -316,21 +613,35 @@ export default function BusinessPage() {
   }, []);
 
   useEffect(() => {
-    if (selectedBusiness) setForm(toForm(selectedBusiness));
+    if (selectedBusiness) {
+      setForm(toForm(selectedBusiness));
+    }
   }, [selectedBusiness]);
 
-  function setField(field: keyof FormState, value: string) {
-    setForm((current) => ({ ...current, [field]: value }));
+  function setField(
+    field: keyof FormState,
+    value: string
+  ) {
+    setForm((current) => ({
+      ...current,
+      [field]: value,
+    }));
   }
 
-  function setDayHours(day: string, key: "open" | "close", value: string) {
+  function setDayHours(
+    day: string,
+    key: "open" | "close",
+    value: string
+  ) {
     setForm((current) => ({
       ...current,
       openingHours: {
         ...current.openingHours,
         [day]: {
-          open: current.openingHours[day]?.open ?? "",
-          close: current.openingHours[day]?.close ?? "",
+          open:
+            current.openingHours[day]?.open ?? "",
+          close:
+            current.openingHours[day]?.close ?? "",
           [key]: value,
         },
       },
@@ -339,9 +650,16 @@ export default function BusinessPage() {
 
   function clearDay(day: string) {
     setForm((current) => {
-      const next = { ...current.openingHours };
+      const next = {
+        ...current.openingHours,
+      };
+
       delete next[day];
-      return { ...current, openingHours: next };
+
+      return {
+        ...current,
+        openingHours: next,
+      };
     });
   }
 
@@ -351,31 +669,60 @@ export default function BusinessPage() {
     setEditing(false);
     setError("");
     setSuccess("");
+
     if (typeof window !== "undefined") {
-      localStorage.setItem("tapqr_current_business_id", id);
+      localStorage.setItem(
+        "tapqr_current_business_id",
+        id
+      );
     }
   }
 
-  async function saveBusiness(event: FormEvent<HTMLFormElement>) {
+  async function saveBusiness(
+    event: FormEvent<HTMLFormElement>
+  ) {
     event.preventDefault();
+
     if (!selectedBusiness) return;
 
     const name = form.name.trim();
+
     if (name.length < 2) {
-      setError("Business name must be at least 2 characters.");
+      setError(
+        "Business name must be at least 2 characters."
+      );
       return;
     }
 
-    const latitude = form.latitude.trim() ? Number(form.latitude) : null;
-    const longitude = form.longitude.trim() ? Number(form.longitude) : null;
+    const latitude = form.latitude.trim()
+      ? Number(form.latitude)
+      : null;
 
-    if (latitude !== null && (!Number.isFinite(latitude) || latitude < -90 || latitude > 90)) {
-      setError("Latitude must be between -90 and 90.");
+    const longitude = form.longitude.trim()
+      ? Number(form.longitude)
+      : null;
+
+    if (
+      latitude !== null &&
+      (!Number.isFinite(latitude) ||
+        latitude < -90 ||
+        latitude > 90)
+    ) {
+      setError(
+        "Latitude must be between -90 and 90."
+      );
       return;
     }
 
-    if (longitude !== null && (!Number.isFinite(longitude) || longitude < -180 || longitude > 180)) {
-      setError("Longitude must be between -180 and 180.");
+    if (
+      longitude !== null &&
+      (!Number.isFinite(longitude) ||
+        longitude < -180 ||
+        longitude > 180)
+    ) {
+      setError(
+        "Longitude must be between -180 and 180."
+      );
       return;
     }
 
@@ -384,65 +731,202 @@ export default function BusinessPage() {
       setError("");
       setSuccess("");
 
-      await apiRequest<ItemResponse>(`/businesses/${selectedBusiness.id}`, {
-        method: "PATCH",
-        body: JSON.stringify({
-          name,
-          email: form.email.trim() || null,
-          phone: form.phone.trim() || null,
-          logo: form.logo.trim() || null,
-          description: form.description.trim() || null,
-        }),
-      });
+      /*
+       * Business-level fields.
+       *
+       * These belong to Business, not BusinessProfile.
+       */
+      await apiRequest<ItemResponse>(
+        `/businesses/${selectedBusiness.id}`,
+        {
+          method: "PATCH",
+          body: JSON.stringify({
+            name,
+            legalName:
+              form.legalName.trim() || null,
 
-      await apiRequest(`/businesses/${selectedBusiness.id}/profile`, {
-        method: "PATCH",
-        body: JSON.stringify({
-          tagline: form.tagline.trim() || null,
-          description: form.description.trim() || null,
-          website: form.website.trim() || null,
-          email: form.email.trim() || null,
-          phone: form.phone.trim() || null,
-          whatsapp: form.whatsapp.trim() || null,
-          addressLine1: form.addressLine1.trim() || null,
-          addressLine2: form.addressLine2.trim() || null,
-          city: form.city.trim() || null,
-          state: form.state.trim() || null,
-          postalCode: form.postalCode.trim() || null,
-          country: form.country.trim() || null,
-          latitude,
-          longitude,
-          coverImage: form.coverImage.trim() || null,
-          openingHours:
-            Object.keys(form.openingHours).length > 0
-              ? form.openingHours
-              : null,
-          socialLinks: {
-            ...(form.instagram.trim() ? { instagram: form.instagram.trim() } : {}),
-            ...(form.facebook.trim() ? { facebook: form.facebook.trim() } : {}),
-            ...(form.linkedin.trim() ? { linkedin: form.linkedin.trim() } : {}),
-            ...(form.youtube.trim() ? { youtube: form.youtube.trim() } : {}),
-            ...(form.twitter.trim() ? { twitter: form.twitter.trim() } : {}),
-            ...(form.tiktok.trim() ? { tiktok: form.tiktok.trim() } : {}),
-          },
-        }),
-      });
+            displayName:
+              form.displayName.trim() || null,
+
+            businessType:
+              form.businessType.trim() || null,
+
+            industry:
+              form.industry.trim() || null,
+
+            category:
+              form.category.trim() || null,
+
+            subcategory:
+              form.subcategory.trim() || null,
+
+            email:
+              form.email.trim() || null,
+
+            phone:
+              form.phone.trim() || null,
+
+            website:
+              form.website.trim() || null,
+
+            whatsapp:
+              form.whatsapp.trim() || null,
+
+            logo:
+              form.logo.trim() || null,
+
+            coverImage:
+              form.coverImage.trim() || null,
+
+            description:
+              form.description.trim() || null,
+
+            country:
+              form.businessCountry.trim() || "India",
+
+            timezone:
+              form.timezone.trim() || "Asia/Kolkata",
+
+            currency:
+              form.currency.trim() || "INR",
+
+            language:
+              form.language.trim() || "en",
+          }),
+        }
+      );
+
+      /*
+       * BusinessProfile fields.
+       *
+       * Keep these separate from Business fields.
+       */
+      await apiRequest(
+        `/businesses/${selectedBusiness.id}/profile`,
+        {
+          method: "PATCH",
+          body: JSON.stringify({
+            tagline:
+              form.tagline.trim() || null,
+
+            description:
+              form.description.trim() || null,
+
+            website:
+              form.website.trim() || null,
+
+            email:
+              form.email.trim() || null,
+
+            phone:
+              form.phone.trim() || null,
+
+            whatsapp:
+              form.whatsapp.trim() || null,
+
+            addressLine1:
+              form.addressLine1.trim() || null,
+
+            addressLine2:
+              form.addressLine2.trim() || null,
+
+            city:
+              form.city.trim() || null,
+
+            state:
+              form.state.trim() || null,
+
+            postalCode:
+              form.postalCode.trim() || null,
+
+            country:
+              form.profileCountry.trim() || null,
+
+            latitude,
+            longitude,
+
+            coverImage:
+              form.coverImage.trim() || null,
+
+            openingHours:
+              Object.keys(form.openingHours).length > 0
+                ? form.openingHours
+                : null,
+
+            socialLinks: {
+              ...(form.instagram.trim()
+                ? {
+                    instagram:
+                      form.instagram.trim(),
+                  }
+                : {}),
+
+              ...(form.facebook.trim()
+                ? {
+                    facebook:
+                      form.facebook.trim(),
+                  }
+                : {}),
+
+              ...(form.linkedin.trim()
+                ? {
+                    linkedin:
+                      form.linkedin.trim(),
+                  }
+                : {}),
+
+              ...(form.youtube.trim()
+                ? {
+                    youtube:
+                      form.youtube.trim(),
+                  }
+                : {}),
+
+              ...(form.twitter.trim()
+                ? {
+                    twitter:
+                      form.twitter.trim(),
+                  }
+                : {}),
+
+              ...(form.tiktok.trim()
+                ? {
+                    tiktok:
+                      form.tiktok.trim(),
+                  }
+                : {}),
+            },
+          }),
+        }
+      );
 
       await loadBusinesses(true);
+
       setEditing(false);
-      setSuccess("Business profile updated successfully.");
+
+      setSuccess(
+        "Business profile updated successfully."
+      );
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Unable to update business.");
+      setError(
+        err instanceof ApiError
+          ? err.message
+          : "Unable to update business."
+      );
     } finally {
       setSaving(false);
     }
   }
 
-  async function createBusiness(event: FormEvent<HTMLFormElement>) {
+  async function createBusiness(
+    event: FormEvent<HTMLFormElement>
+  ) {
     event.preventDefault();
 
     if (createForm.name.trim().length < 2) {
-      setError("Business name must be at least 2 characters.");
+      setError(
+        "Business name must be at least 2 characters."
+      );
       return;
     }
 
@@ -451,30 +935,63 @@ export default function BusinessPage() {
       setError("");
       setSuccess("");
 
-      const response = await apiRequest<ItemResponse>("/businesses", {
-        method: "POST",
-        body: JSON.stringify({
-          name: createForm.name.trim(),
-          email: createForm.email.trim() || undefined,
-          phone: createForm.phone.trim() || undefined,
-          logo: createForm.logo.trim() || undefined,
-          description: createForm.description.trim() || undefined,
-        }),
-      });
+      const response =
+        await apiRequest<ItemResponse>("/businesses", {
+          method: "POST",
+          body: JSON.stringify({
+            name: createForm.name.trim(),
+
+            email:
+              createForm.email.trim() || undefined,
+
+            phone:
+              createForm.phone.trim() || undefined,
+
+            logo:
+              createForm.logo.trim() || undefined,
+
+            description:
+              createForm.description.trim() ||
+              undefined,
+          }),
+        });
 
       if (response.data) {
-        setBusinesses((current) => [response.data!, ...current]);
+        setBusinesses((current) => [
+          response.data!,
+          ...current,
+        ]);
+
         setSelectedId(response.data.id);
-        localStorage.setItem("tapqr_current_business_id", response.data.id);
+
+        localStorage.setItem(
+          "tapqr_current_business_id",
+          response.data.id
+        );
       } else {
         await loadBusinesses();
       }
 
-      setCreateForm({ name: "", email: "", phone: "", logo: "", description: "" });
+      setCreateForm({
+        name: "",
+        email: "",
+        phone: "",
+        logo: "",
+        description: "",
+      });
+
       setShowCreate(false);
-      setSuccess(response.message ?? "Business created successfully.");
+
+      setSuccess(
+        response.message ??
+          "Business created successfully."
+      );
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Unable to create business.");
+      setError(
+        err instanceof ApiError
+          ? err.message
+          : "Unable to create business."
+      );
     } finally {
       setCreating(false);
     }
@@ -488,23 +1005,48 @@ export default function BusinessPage() {
       setError("");
       setSuccess("");
 
-      await apiRequest(`/businesses/${selectedBusiness.id}`, {
-        method: "DELETE",
-      });
+      await apiRequest(
+        `/businesses/${selectedBusiness.id}`,
+        {
+          method: "DELETE",
+        }
+      );
 
-      const remaining = businesses.filter((item) => item.id !== selectedBusiness.id);
+      const remaining = businesses.filter(
+        (item) =>
+          item.id !== selectedBusiness.id
+      );
+
       setBusinesses(remaining);
 
-      const nextId = remaining[0]?.id ?? "";
+      const nextId =
+        remaining[0]?.id ?? "";
+
       setSelectedId(nextId);
-      if (nextId) localStorage.setItem("tapqr_current_business_id", nextId);
-      else localStorage.removeItem("tapqr_current_business_id");
+
+      if (nextId) {
+        localStorage.setItem(
+          "tapqr_current_business_id",
+          nextId
+        );
+      } else {
+        localStorage.removeItem(
+          "tapqr_current_business_id"
+        );
+      }
 
       setShowDeactivate(false);
       setEditing(false);
-      setSuccess("Business deactivated successfully.");
+
+      setSuccess(
+        "Business deactivated successfully."
+      );
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Unable to deactivate business.");
+      setError(
+        err instanceof ApiError
+          ? err.message
+          : "Unable to deactivate business."
+      );
     } finally {
       setDeactivating(false);
     }
@@ -514,12 +1056,15 @@ export default function BusinessPage() {
     return (
       <main className="space-y-6">
         <div className="h-44 animate-pulse rounded-[28px] bg-white" />
-        <div className="grid gap-4 md:grid-cols-3">
+
+        <div className="grid gap-4 md:grid-cols-4">
+          <div className="h-32 animate-pulse rounded-[22px] bg-white" />
           <div className="h-32 animate-pulse rounded-[22px] bg-white" />
           <div className="h-32 animate-pulse rounded-[22px] bg-white" />
           <div className="h-32 animate-pulse rounded-[22px] bg-white" />
         </div>
-        <div className="h-[560px] animate-pulse rounded-[28px] bg-white" />
+
+        <div className="h-[650px] animate-pulse rounded-[28px] bg-white" />
       </main>
     );
   }
@@ -531,10 +1076,17 @@ export default function BusinessPage() {
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100">
             <Building2 className="h-8 w-8 text-slate-500" />
           </div>
-          <h1 className="mt-5 text-2xl font-bold text-slate-950">Create your first business</h1>
+
+          <h1 className="mt-5 text-2xl font-bold text-slate-950">
+            Create your first business
+          </h1>
+
           <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
-            Create a TapQR workspace to manage your public profile, QR codes, analytics and team.
+            Create a TapQR workspace to manage your
+            business identity, public profile, QR
+            codes, analytics and team.
           </p>
+
           <button
             type="button"
             onClick={() => setShowCreate(true)}
@@ -560,8 +1112,25 @@ export default function BusinessPage() {
 
   return (
     <main className="space-y-6">
-      {error && <Banner tone="error" message={error} onClose={() => setError("")} />}
-      {success && <Banner tone="success" message={success} onClose={() => setSuccess("")} />}
+      {error && (
+        <Banner
+          tone="error"
+          message={error}
+          onClose={() => setError("")}
+        />
+      )}
+
+      {success && (
+        <Banner
+          tone="success"
+          message={success}
+          onClose={() => setSuccess("")}
+        />
+      )}
+
+      {/* =========================================================
+          BUSINESS HEADER
+      ========================================================= */}
 
       <section className="relative overflow-visible rounded-[28px] border border-slate-200/80 bg-white p-6 shadow-[0_8px_30px_rgba(15,23,42,0.04)] sm:p-8">
         <div className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-blue-100/50 blur-3xl" />
@@ -573,82 +1142,192 @@ export default function BusinessPage() {
                 <Building2 className="h-3.5 w-3.5" />
                 Business workspace
               </span>
-              <span className={`rounded-full border px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] ${getStatusClasses(selectedBusiness.status)}`}>
-                {selectedBusiness.status ?? "UNKNOWN"}
+
+              <span
+                className={`rounded-full border px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] ${getStatusClasses(
+                  selectedBusiness.status
+                )}`}
+              >
+                {selectedBusiness.status ??
+                  "UNKNOWN"}
               </span>
+
+              {selectedBusiness.isVerified && (
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-emerald-700">
+                  <CheckCircle2 className="h-3.5 w-3.5" />
+                  Verified
+                </span>
+              )}
+
+              {selectedBusiness.isPublished && (
+                <span className="rounded-full border border-violet-100 bg-violet-50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-violet-700">
+                  Published
+                </span>
+              )}
             </div>
 
             <div className="flex items-center gap-4">
               <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
                 {selectedBusiness.logo ? (
-                  <img src={selectedBusiness.logo} alt="" className="h-full w-full object-cover" />
+                  <img
+                    src={selectedBusiness.logo}
+                    alt=""
+                    className="h-full w-full object-cover"
+                  />
                 ) : (
-                  <span className="text-lg font-black text-slate-500">{getInitials(selectedBusiness.name)}</span>
+                  <span className="text-lg font-black text-slate-500">
+                    {getInitials(
+                      selectedBusiness.name
+                    )}
+                  </span>
                 )}
               </div>
+
               <div className="min-w-0">
                 <h1 className="truncate text-3xl font-bold tracking-[-0.035em] text-slate-950 sm:text-4xl">
-                  {selectedBusiness.name}
+                  {selectedBusiness.displayName ||
+                    selectedBusiness.name}
                 </h1>
+
                 <p className="mt-1 truncate text-sm text-slate-500">
                   {selectedBusiness.slug
                     ? `tapqr.shop/${selectedBusiness.slug}`
                     : "Complete your profile to publish your public experience."}
                 </p>
+
+                {selectedBusiness.businessType && (
+                  <p className="mt-1 text-xs font-medium text-slate-400">
+                    {formatBusinessType(
+                      selectedBusiness.businessType
+                    )}
+                    {selectedBusiness.industry
+                      ? ` · ${selectedBusiness.industry}`
+                      : ""}
+                  </p>
+                )}
               </div>
             </div>
+
+            {/* BUSINESS SWITCHER */}
 
             <div className="relative mt-6">
               <button
                 type="button"
-                onClick={() => setSwitcherOpen((open) => !open)}
+                onClick={() =>
+                  setSwitcherOpen(
+                    (open) => !open
+                  )
+                }
                 aria-expanded={switcherOpen}
                 aria-haspopup="listbox"
                 className="inline-flex max-w-full items-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-left text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
               >
                 <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-950 text-[10px] font-black text-white">
-                  {getInitials(selectedBusiness.name)}
+                  {getInitials(
+                    selectedBusiness.name
+                  )}
                 </span>
-                <span className="max-w-[220px] truncate">{selectedBusiness.name}</span>
-                <ChevronDown className={`h-4 w-4 text-slate-400 transition-transform ${switcherOpen ? "rotate-180" : ""}`} />
+
+                <span className="max-w-[220px] truncate">
+                  {selectedBusiness.name}
+                </span>
+
+                <ChevronDown
+                  className={`h-4 w-4 text-slate-400 transition-transform ${
+                    switcherOpen
+                      ? "rotate-180"
+                      : ""
+                  }`}
+                />
               </button>
 
               {switcherOpen && (
-                <div role="listbox" className="absolute left-0 top-full z-50 mt-2 w-[min(360px,calc(100vw-3rem))] overflow-hidden rounded-2xl border border-slate-200 bg-white p-2 shadow-2xl">
-                  <div className="px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Your workspaces</div>
-                  <div className="max-h-64 overflow-y-auto">
-                    {businesses.map((business) => (
-                      <button
-                        key={business.id}
-                        type="button"
-                        role="option"
-                        aria-selected={business.id === selectedBusiness.id}
-                        onClick={() => chooseBusiness(business.id)}
-                        className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition ${business.id === selectedBusiness.id ? "bg-slate-950 text-white" : "text-slate-700 hover:bg-slate-50"}`}
-                      >
-                        <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-xs font-black ${business.id === selectedBusiness.id ? "bg-white/10 text-white" : "bg-slate-100 text-slate-600"}`}>
-                          {getInitials(business.name)}
-                        </span>
-                        <span className="min-w-0 flex-1">
-                          <span className="block truncate text-sm font-semibold">{business.name}</span>
-                          <span className={`block text-[11px] ${business.id === selectedBusiness.id ? "text-white/55" : "text-slate-400"}`}>
-                            {business.status ?? "UNKNOWN"}
-                          </span>
-                        </span>
-                        {business.id === selectedBusiness.id && <Check className="h-4 w-4" />}
-                      </button>
-                    ))}
+                <div
+                  role="listbox"
+                  className="absolute left-0 top-full z-50 mt-2 w-[min(360px,calc(100vw-3rem))] overflow-hidden rounded-2xl border border-slate-200 bg-white p-2 shadow-2xl"
+                >
+                  <div className="px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">
+                    Your workspaces
                   </div>
+
+                  <div className="max-h-64 overflow-y-auto">
+                    {businesses.map(
+                      (business) => (
+                        <button
+                          key={business.id}
+                          type="button"
+                          role="option"
+                          aria-selected={
+                            business.id ===
+                            selectedBusiness.id
+                          }
+                          onClick={() =>
+                            chooseBusiness(
+                              business.id
+                            )
+                          }
+                          className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition ${
+                            business.id ===
+                            selectedBusiness.id
+                              ? "bg-slate-950 text-white"
+                              : "text-slate-700 hover:bg-slate-50"
+                          }`}
+                        >
+                          <span
+                            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-xs font-black ${
+                              business.id ===
+                              selectedBusiness.id
+                                ? "bg-white/10 text-white"
+                                : "bg-slate-100 text-slate-600"
+                            }`}
+                          >
+                            {getInitials(
+                              business.name
+                            )}
+                          </span>
+
+                          <span className="min-w-0 flex-1">
+                            <span className="block truncate text-sm font-semibold">
+                              {business.name}
+                            </span>
+
+                            <span
+                              className={`block text-[11px] ${
+                                business.id ===
+                                selectedBusiness.id
+                                  ? "text-white/55"
+                                  : "text-slate-400"
+                              }`}
+                            >
+                              {business.status ??
+                                "UNKNOWN"}
+                            </span>
+                          </span>
+
+                          {business.id ===
+                            selectedBusiness.id && (
+                            <Check className="h-4 w-4" />
+                          )}
+                        </button>
+                      )
+                    )}
+                  </div>
+
                   <div className="mt-2 border-t border-slate-100 pt-2">
                     <button
                       type="button"
                       onClick={() => {
-                        setSwitcherOpen(false);
+                        setSwitcherOpen(
+                          false
+                        );
                         setShowCreate(true);
                       }}
                       className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
                     >
-                      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><Plus className="h-4 w-4" /></span>
+                      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                        <Plus className="h-4 w-4" />
+                      </span>
+
                       Create another business
                     </button>
                   </div>
@@ -657,34 +1336,53 @@ export default function BusinessPage() {
             </div>
           </div>
 
+          {/* HEADER ACTIONS */}
+
           <div className="flex flex-wrap gap-2">
+            {editing && (
+              <button
+                type="button"
+                onClick={() => {
+                  setForm(
+                    toForm(selectedBusiness)
+                  );
+                  setEditing(false);
+                }}
+                disabled={saving}
+                className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-xs font-bold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Cancel
+              </button>
+            )}
+
             <button
               type="button"
               onClick={() => {
-                setEditing(false);
-                setForm(toForm(selectedBusiness));
-              }}
-              disabled={!editing || saving}
-              className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-xs font-bold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setForm(toForm(selectedBusiness));
-                setEditing((value) => !value);
+                setForm(
+                  toForm(selectedBusiness)
+                );
+
+                setEditing(
+                  (value) => !value
+                );
+
                 setError("");
                 setSuccess("");
               }}
               className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-xs font-bold text-slate-700 transition hover:bg-slate-50"
             >
               <Pencil className="h-4 w-4" />
-              {editing ? "Editing" : "Edit profile"}
+
+              {editing
+                ? "Editing"
+                : "Edit profile"}
             </button>
+
             <button
               type="button"
-              onClick={() => setShowDeactivate(true)}
+              onClick={() =>
+                setShowDeactivate(true)
+              }
               disabled={deactivating}
               className="inline-flex items-center gap-2 rounded-xl border border-red-200 bg-white px-4 py-3 text-xs font-bold text-red-600 transition hover:bg-red-50 disabled:opacity-60"
             >
@@ -695,29 +1393,68 @@ export default function BusinessPage() {
         </div>
       </section>
 
+      {/* =========================================================
+          METRICS
+      ========================================================= */}
+
       <section className="grid gap-4 md:grid-cols-4">
-        <Metric title="Businesses" value={String(businesses.length)} helper="Your workspaces" />
-        <Metric title="Active" value={String(activeCount)} helper="Currently active" />
-        <Metric title="QR codes" value={String(selectedBusiness.qrCodes?.length ?? 0)} helper="This workspace" />
-        <Metric title="Total scans" value={String(totalScans)} helper="Across your workspaces" />
+        <Metric
+          title="Businesses"
+          value={String(
+            businesses.length
+          )}
+          helper="Your workspaces"
+        />
+
+        <Metric
+          title="Active"
+          value={String(activeCount)}
+          helper="Currently active"
+        />
+
+        <Metric
+          title="QR codes"
+          value={String(
+            selectedBusiness.qrCodes
+              ?.length ?? 0
+          )}
+          helper="This workspace"
+        />
+
+        <Metric
+          title="Total scans"
+          value={String(totalScans)}
+          helper="Across your workspaces"
+        />
       </section>
+
+      {/* =========================================================
+          GROWTH CONTROLS
+      ========================================================= */}
 
       <section className="rounded-[24px] border border-slate-200/80 bg-white p-5 shadow-[0_8px_30px_rgba(15,23,42,0.03)] sm:p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <div className="flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-slate-500" />
+
               <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">
                 TapQR growth controls
               </p>
             </div>
+
             <h2 className="mt-1 text-base font-bold text-slate-950">
               Manage the QR experience from one workspace
             </h2>
+
             <p className="mt-1 max-w-2xl text-xs leading-5 text-slate-500">
-              QR codes, Smart Rules and A/B Experiments now work together. Configure the business profile here, then control customer routing from the QR tools.
+              Your business identity, public
+              profile, QR codes, Smart Rules and
+              experiments work together from this
+              workspace.
             </p>
           </div>
+
           <div className="flex flex-wrap gap-2">
             <Link
               href="/dashboard/qr"
@@ -726,6 +1463,7 @@ export default function BusinessPage() {
               <QrCode className="h-4 w-4" />
               QR codes
             </Link>
+
             <Link
               href="/dashboard/qr/rules"
               className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 transition hover:bg-slate-50"
@@ -733,6 +1471,7 @@ export default function BusinessPage() {
               <SlidersHorizontal className="h-4 w-4" />
               Smart Rules
             </Link>
+
             <Link
               href="/dashboard/qr/experiments"
               className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 transition hover:bg-slate-50"
@@ -744,125 +1483,909 @@ export default function BusinessPage() {
         </div>
       </section>
 
+      {/* =========================================================
+          PROFILE COMPLETION
+      ========================================================= */}
+
       <section className="rounded-[22px] border border-blue-100 bg-blue-50/60 p-5 sm:p-6">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.12em] text-blue-600">Profile readiness</p>
-            <h2 className="mt-1 text-base font-bold text-slate-950">Your public profile is {profileCompletion}% complete</h2>
-            <p className="mt-1 text-xs text-slate-500">Complete key details to give customers a richer TapQR experience.</p>
+            <p className="text-xs font-bold uppercase tracking-[0.12em] text-blue-600">
+              Profile readiness
+            </p>
+
+            <h2 className="mt-1 text-base font-bold text-slate-950">
+              Your business profile is{" "}
+              {profileCompletion}% complete
+            </h2>
+
+            <p className="mt-1 text-xs text-slate-500">
+              Complete your identity,
+              classification, localization and
+              public profile for a richer TapQR
+              experience.
+            </p>
           </div>
+
           <div className="hidden h-16 w-16 items-center justify-center rounded-full border-4 border-blue-100 bg-white sm:flex">
-            <span className="text-sm font-black text-blue-600">{profileCompletion}%</span>
+            <span className="text-sm font-black text-blue-600">
+              {profileCompletion}%
+            </span>
           </div>
         </div>
+
         <div className="mt-4 h-2 overflow-hidden rounded-full bg-white">
-          <div className="h-full rounded-full bg-blue-600 transition-all" style={{ width: `${profileCompletion}%` }} />
+          <div
+            className="h-full rounded-full bg-blue-600 transition-all"
+            style={{
+              width: `${profileCompletion}%`,
+            }}
+          />
         </div>
       </section>
 
-      <form onSubmit={saveBusiness} className="grid gap-6 lg:grid-cols-[1.35fr_0.65fr]">
+      {/* =========================================================
+          MAIN FORM
+      ========================================================= */}
+
+      <form
+        onSubmit={saveBusiness}
+        className="grid gap-6 lg:grid-cols-[1.35fr_0.65fr]"
+      >
         <div className="space-y-6">
-          <Panel title="Business information" subtitle="Core business identity and contact details.">
+
+          {/* =====================================================
+              IDENTITY
+          ===================================================== */}
+
+          <Panel
+            title="Business identity"
+            subtitle="Define the official identity of this TapQR business."
+          >
             <div className="grid gap-5 sm:grid-cols-2">
-              <Field label="Business name" value={form.name} disabled={!editing || saving} required onChange={(value) => setField("name", value)} />
-              <Field label="Tagline" value={form.tagline} disabled={!editing || saving} onChange={(value) => setField("tagline", value)} />
-              <Field label="Business email" type="email" value={form.email} disabled={!editing || saving} onChange={(value) => setField("email", value)} />
-              <Field label="Business phone" type="tel" value={form.phone} disabled={!editing || saving} onChange={(value) => setField("phone", value)} />
-              <Field label="WhatsApp" type="tel" value={form.whatsapp} disabled={!editing || saving} onChange={(value) => setField("whatsapp", value)} />
-              <Field label="Website" type="url" value={form.website} disabled={!editing || saving} onChange={(value) => setField("website", value)} />
+              <Field
+                label="Business name"
+                value={form.name}
+                disabled={!editing || saving}
+                required
+                onChange={(value) =>
+                  setField("name", value)
+                }
+              />
+
+              <Field
+                label="Display name"
+                value={form.displayName}
+                disabled={!editing || saving}
+                onChange={(value) =>
+                  setField(
+                    "displayName",
+                    value
+                  )
+                }
+              />
+
+              <div className="sm:col-span-2">
+                <Field
+                  label="Legal name"
+                  value={form.legalName}
+                  disabled={!editing || saving}
+                  onChange={(value) =>
+                    setField(
+                      "legalName",
+                      value
+                    )
+                  }
+                />
+              </div>
             </div>
+          </Panel>
+
+          {/* =====================================================
+              CLASSIFICATION
+          ===================================================== */}
+
+          <Panel
+            title="Business classification"
+            subtitle="Tell TapQR what type of business this workspace represents."
+          >
+            <div className="grid gap-5 sm:grid-cols-2">
+              <SelectField
+                label="Business type"
+                value={form.businessType}
+                disabled={!editing || saving}
+                options={BUSINESS_TYPES.map(
+                  (value) => ({
+                    value,
+                    label: formatBusinessType(
+                      value
+                    ),
+                  })
+                )}
+                placeholder="Select business type"
+                onChange={(value) =>
+                  setField(
+                    "businessType",
+                    value
+                  )
+                }
+              />
+
+              <SelectField
+                label="Industry"
+                value={form.industry}
+                disabled={!editing || saving}
+                options={INDUSTRIES.map(
+                  (value) => ({
+                    value,
+                    label: value,
+                  })
+                )}
+                placeholder="Select industry"
+                onChange={(value) =>
+                  setField(
+                    "industry",
+                    value
+                  )
+                }
+              />
+
+              <Field
+                label="Category"
+                value={form.category}
+                disabled={!editing || saving}
+                onChange={(value) =>
+                  setField(
+                    "category",
+                    value
+                  )
+                }
+              />
+
+              <Field
+                label="Subcategory"
+                value={form.subcategory}
+                disabled={!editing || saving}
+                onChange={(value) =>
+                  setField(
+                    "subcategory",
+                    value
+                  )
+                }
+              />
+            </div>
+          </Panel>
+
+          {/* =====================================================
+              CONTACT
+          ===================================================== */}
+
+          <Panel
+            title="Business contact"
+            subtitle="Primary contact channels associated with the business."
+          >
+            <div className="grid gap-5 sm:grid-cols-2">
+              <Field
+                label="Business email"
+                type="email"
+                value={form.email}
+                disabled={!editing || saving}
+                onChange={(value) =>
+                  setField(
+                    "email",
+                    value
+                  )
+                }
+              />
+
+              <Field
+                label="Business phone"
+                type="tel"
+                value={form.phone}
+                disabled={!editing || saving}
+                onChange={(value) =>
+                  setField(
+                    "phone",
+                    value
+                  )
+                }
+              />
+
+              <Field
+                label="WhatsApp"
+                type="tel"
+                value={form.whatsapp}
+                disabled={!editing || saving}
+                onChange={(value) =>
+                  setField(
+                    "whatsapp",
+                    value
+                  )
+                }
+              />
+
+              <Field
+                label="Website"
+                type="url"
+                value={form.website}
+                disabled={!editing || saving}
+                onChange={(value) =>
+                  setField(
+                    "website",
+                    value
+                  )
+                }
+              />
+            </div>
+          </Panel>
+
+          {/* =====================================================
+              LOCALIZATION
+          ===================================================== */}
+
+          <Panel
+            title="Localization"
+            subtitle="Business-level language, currency and timezone configuration."
+          >
+            <div className="grid gap-5 sm:grid-cols-2">
+              <Field
+                label="Business country"
+                value={form.businessCountry}
+                disabled={!editing || saving}
+                onChange={(value) =>
+                  setField(
+                    "businessCountry",
+                    value
+                  )
+                }
+              />
+
+              <SelectField
+                label="Timezone"
+                value={form.timezone}
+                disabled={!editing || saving}
+                options={TIMEZONES.map(
+                  (value) => ({
+                    value,
+                    label: value,
+                  })
+                )}
+                placeholder="Select timezone"
+                onChange={(value) =>
+                  setField(
+                    "timezone",
+                    value
+                  )
+                }
+              />
+
+              <SelectField
+                label="Currency"
+                value={form.currency}
+                disabled={!editing || saving}
+                options={CURRENCIES.map(
+                  (value) => ({
+                    value,
+                    label: value,
+                  })
+                )}
+                placeholder="Select currency"
+                onChange={(value) =>
+                  setField(
+                    "currency",
+                    value
+                  )
+                }
+              />
+
+              <SelectField
+                label="Language"
+                value={form.language}
+                disabled={!editing || saving}
+                options={LANGUAGES.map(
+                  (value) => ({
+                    value,
+                    label: formatLanguage(
+                      value
+                    ),
+                  })
+                )}
+                placeholder="Select language"
+                onChange={(value) =>
+                  setField(
+                    "language",
+                    value
+                  )
+                }
+              />
+            </div>
+          </Panel>
+
+          {/* =====================================================
+              PUBLIC PROFILE
+          ===================================================== */}
+
+          <Panel
+            title="Public profile"
+            subtitle="Information customers will see through your TapQR experience."
+          >
+            <div className="grid gap-5 sm:grid-cols-2">
+              <Field
+                label="Tagline"
+                value={form.tagline}
+                disabled={!editing || saving}
+                onChange={(value) =>
+                  setField(
+                    "tagline",
+                    value
+                  )
+                }
+              />
+
+              <Field
+                label="Public profile country"
+                value={form.profileCountry}
+                disabled={!editing || saving}
+                onChange={(value) =>
+                  setField(
+                    "profileCountry",
+                    value
+                  )
+                }
+              />
+            </div>
+
             <div className="mt-5">
-              <TextArea label="Business description" value={form.description} disabled={!editing || saving} onChange={(value) => setField("description", value)} />
+              <TextArea
+                label="Business description"
+                value={form.description}
+                disabled={!editing || saving}
+                onChange={(value) =>
+                  setField(
+                    "description",
+                    value
+                  )
+                }
+              />
             </div>
           </Panel>
 
-          <Panel title="Address" subtitle="Location information shown on the public profile.">
+          {/* =====================================================
+              ADDRESS
+          ===================================================== */}
+
+          <Panel
+            title="Address"
+            subtitle="Location information shown on the public profile."
+          >
             <div className="grid gap-5 sm:grid-cols-2">
-              <div className="sm:col-span-2"><Field label="Address line 1" value={form.addressLine1} disabled={!editing || saving} onChange={(value) => setField("addressLine1", value)} /></div>
-              <div className="sm:col-span-2"><Field label="Address line 2" value={form.addressLine2} disabled={!editing || saving} onChange={(value) => setField("addressLine2", value)} /></div>
-              <Field label="City" value={form.city} disabled={!editing || saving} onChange={(value) => setField("city", value)} />
-              <Field label="State" value={form.state} disabled={!editing || saving} onChange={(value) => setField("state", value)} />
-              <Field label="Postal code" value={form.postalCode} disabled={!editing || saving} onChange={(value) => setField("postalCode", value)} />
-              <Field label="Country" value={form.country} disabled={!editing || saving} onChange={(value) => setField("country", value)} />
+              <div className="sm:col-span-2">
+                <Field
+                  label="Address line 1"
+                  value={form.addressLine1}
+                  disabled={!editing || saving}
+                  onChange={(value) =>
+                    setField(
+                      "addressLine1",
+                      value
+                    )
+                  }
+                />
+              </div>
+
+              <div className="sm:col-span-2">
+                <Field
+                  label="Address line 2"
+                  value={form.addressLine2}
+                  disabled={!editing || saving}
+                  onChange={(value) =>
+                    setField(
+                      "addressLine2",
+                      value
+                    )
+                  }
+                />
+              </div>
+
+              <Field
+                label="City"
+                value={form.city}
+                disabled={!editing || saving}
+                onChange={(value) =>
+                  setField(
+                    "city",
+                    value
+                  )
+                }
+              />
+
+              <Field
+                label="State"
+                value={form.state}
+                disabled={!editing || saving}
+                onChange={(value) =>
+                  setField(
+                    "state",
+                    value
+                  )
+                }
+              />
+
+              <Field
+                label="Postal code"
+                value={form.postalCode}
+                disabled={!editing || saving}
+                onChange={(value) =>
+                  setField(
+                    "postalCode",
+                    value
+                  )
+                }
+              />
             </div>
           </Panel>
 
-          <Panel title="Map coordinates" subtitle="Optional coordinates for future map and location features.">
+          {/* =====================================================
+              MAP
+          ===================================================== */}
+
+          <Panel
+            title="Map coordinates"
+            subtitle="Optional coordinates for map and location features."
+          >
             <div className="grid gap-5 sm:grid-cols-2">
-              <Field label="Latitude" value={form.latitude} disabled={!editing || saving} inputMode="decimal" onChange={(value) => setField("latitude", value)} />
-              <Field label="Longitude" value={form.longitude} disabled={!editing || saving} inputMode="decimal" onChange={(value) => setField("longitude", value)} />
+              <Field
+                label="Latitude"
+                value={form.latitude}
+                disabled={!editing || saving}
+                inputMode="decimal"
+                onChange={(value) =>
+                  setField(
+                    "latitude",
+                    value
+                  )
+                }
+              />
+
+              <Field
+                label="Longitude"
+                value={form.longitude}
+                disabled={!editing || saving}
+                inputMode="decimal"
+                onChange={(value) =>
+                  setField(
+                    "longitude",
+                    value
+                  )
+                }
+              />
             </div>
           </Panel>
 
-          <Panel title="Opening hours" subtitle="Hours shown on your customer-facing experience.">
+          {/* =====================================================
+              OPENING HOURS
+          ===================================================== */}
+
+          <Panel
+            title="Opening hours"
+            subtitle="Hours shown on your customer-facing experience."
+          >
             <div className="space-y-3">
               {DAYS.map((day) => {
-                const hours = form.openingHours[day];
+                const hours =
+                  form.openingHours[day];
+
                 return (
-                  <div key={day} className="grid grid-cols-[90px_1fr_1fr_auto] items-center gap-2 rounded-xl border border-slate-100 bg-slate-50/70 p-3 sm:grid-cols-[110px_1fr_1fr_auto] sm:gap-3">
-                    <span className="text-xs font-semibold capitalize text-slate-700">{day}</span>
-                    <input type="time" value={hours?.open ?? ""} disabled={!editing || saving} onChange={(e) => setDayHours(day, "open", e.target.value)} className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs outline-none focus:border-blue-300 disabled:opacity-50" />
-                    <input type="time" value={hours?.close ?? ""} disabled={!editing || saving} onChange={(e) => setDayHours(day, "close", e.target.value)} className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs outline-none focus:border-blue-300 disabled:opacity-50" />
-                    <button type="button" disabled={!editing || saving || !hours} onClick={() => clearDay(day)} aria-label={`Clear ${day} hours`} className="rounded-lg p-2 text-slate-400 transition hover:bg-white hover:text-red-500 disabled:opacity-30"><X className="h-4 w-4" /></button>
+                  <div
+                    key={day}
+                    className="grid grid-cols-[90px_1fr_1fr_auto] items-center gap-2 rounded-xl border border-slate-100 bg-slate-50/70 p-3 sm:grid-cols-[110px_1fr_1fr_auto] sm:gap-3"
+                  >
+                    <span className="text-xs font-semibold capitalize text-slate-700">
+                      {day}
+                    </span>
+
+                    <input
+                      type="time"
+                      value={
+                        hours?.open ?? ""
+                      }
+                      disabled={
+                        !editing || saving
+                      }
+                      onChange={(event) =>
+                        setDayHours(
+                          day,
+                          "open",
+                          event.target.value
+                        )
+                      }
+                      className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs outline-none focus:border-blue-300 disabled:opacity-50"
+                    />
+
+                    <input
+                      type="time"
+                      value={
+                        hours?.close ?? ""
+                      }
+                      disabled={
+                        !editing || saving
+                      }
+                      onChange={(event) =>
+                        setDayHours(
+                          day,
+                          "close",
+                          event.target.value
+                        )
+                      }
+                      className="w-full rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs outline-none focus:border-blue-300 disabled:opacity-50"
+                    />
+
+                    <button
+                      type="button"
+                      disabled={
+                        !editing ||
+                        saving ||
+                        !hours
+                      }
+                      onClick={() =>
+                        clearDay(day)
+                      }
+                      aria-label={`Clear ${day} hours`}
+                      className="rounded-lg p-2 text-slate-400 transition hover:bg-white hover:text-red-500 disabled:opacity-30"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
                   </div>
                 );
               })}
             </div>
           </Panel>
 
-          <Panel title="Social presence" subtitle="Connect public social profiles.">
+          {/* =====================================================
+              SOCIAL
+          ===================================================== */}
+
+          <Panel
+            title="Social presence"
+            subtitle="Connect public social profiles."
+          >
             <div className="grid gap-5 sm:grid-cols-2">
-              {(["instagram", "facebook", "linkedin", "youtube", "twitter", "tiktok"] as const).map((key) => (
-                <Field key={key} label={key === "twitter" ? "X / Twitter" : key.charAt(0).toUpperCase() + key.slice(1)} type="url" value={form[key]} disabled={!editing || saving} onChange={(value) => setField(key, value)} />
+              {(
+                [
+                  "instagram",
+                  "facebook",
+                  "linkedin",
+                  "youtube",
+                  "twitter",
+                  "tiktok",
+                ] as const
+              ).map((key) => (
+                <Field
+                  key={key}
+                  label={
+                    key === "twitter"
+                      ? "X / Twitter"
+                      : key
+                          .charAt(0)
+                          .toUpperCase() +
+                        key.slice(1)
+                  }
+                  type="url"
+                  value={form[key]}
+                  disabled={
+                    !editing || saving
+                  }
+                  onChange={(value) =>
+                    setField(
+                      key,
+                      value
+                    )
+                  }
+                />
               ))}
             </div>
           </Panel>
 
+          {/* =====================================================
+              SAVE BAR
+          ===================================================== */}
+
           {editing && (
             <div className="sticky bottom-4 z-20 flex items-center justify-end gap-2 rounded-2xl border border-slate-200 bg-white/95 p-3 shadow-xl backdrop-blur">
-              <button type="button" onClick={() => { setForm(toForm(selectedBusiness)); setEditing(false); }} disabled={saving} className="rounded-xl border border-slate-200 px-4 py-2.5 text-xs font-bold text-slate-700 disabled:opacity-50">Cancel</button>
-              <button type="submit" disabled={saving} className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60">
-                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                {saving ? "Saving..." : "Save changes"}
+              <button
+                type="button"
+                onClick={() => {
+                  setForm(
+                    toForm(
+                      selectedBusiness
+                    )
+                  );
+                  setEditing(false);
+                }}
+                disabled={saving}
+                className="rounded-xl border border-slate-200 px-4 py-2.5 text-xs font-bold text-slate-700 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="submit"
+                disabled={saving}
+                className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {saving ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Save className="h-4 w-4" />
+                )}
+
+                {saving
+                  ? "Saving..."
+                  : "Save changes"}
               </button>
             </div>
           )}
         </div>
 
+        {/* =======================================================
+            SIDEBAR
+        ======================================================= */}
+
         <aside className="space-y-6">
-          <Panel title="Brand assets" subtitle="URLs for your business logo and cover image.">
+
+          {/* BRAND */}
+
+          <Panel
+            title="Brand assets"
+            subtitle="Business logo and cover image."
+          >
             <div className="space-y-5">
-              <Field label="Logo URL" type="url" value={form.logo} disabled={!editing || saving} onChange={(value) => setField("logo", value)} />
-              <Field label="Cover image URL" type="url" value={form.coverImage} disabled={!editing || saving} onChange={(value) => setField("coverImage", value)} />
+              <Field
+                label="Logo URL"
+                type="url"
+                value={form.logo}
+                disabled={!editing || saving}
+                onChange={(value) =>
+                  setField(
+                    "logo",
+                    value
+                  )
+                }
+              />
+
+              <Field
+                label="Cover image URL"
+                type="url"
+                value={form.coverImage}
+                disabled={!editing || saving}
+                onChange={(value) =>
+                  setField(
+                    "coverImage",
+                    value
+                  )
+                }
+              />
+
               {form.logo && (
                 <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
-                  <img src={form.logo} alt="" className="h-32 w-full object-cover" onError={(event) => { event.currentTarget.style.display = "none"; }} />
+                  <img
+                    src={form.logo}
+                    alt=""
+                    className="h-32 w-full object-cover"
+                    onError={(event) => {
+                      event.currentTarget.style.display =
+                        "none";
+                    }}
+                  />
                 </div>
               )}
             </div>
           </Panel>
 
-          <Panel title="Workspace health" subtitle="Key profile areas ready for your customers.">
+          {/* BUSINESS STATE */}
+
+          <Panel
+            title="Business status"
+            subtitle="Current lifecycle state of this workspace."
+          >
             <div className="space-y-3">
-              <HealthRow label="Business identity" complete={Boolean(form.name.trim())} />
-              <HealthRow label="Contact information" complete={Boolean(form.email.trim() || form.phone.trim() || form.whatsapp.trim())} />
-              <HealthRow label="Public website" complete={Boolean(form.website.trim())} />
-              <HealthRow label="Address" complete={Boolean(form.addressLine1.trim() && form.city.trim())} />
-              <HealthRow label="Brand assets" complete={Boolean(form.logo.trim() || form.coverImage.trim())} />
-              <HealthRow label="Social presence" complete={Boolean(form.instagram.trim() || form.facebook.trim() || form.linkedin.trim())} />
-              <HealthRow label="QR setup" complete={(selectedBusiness.qrCodes?.length ?? 0) > 0} />
+              <HealthRow
+                label="Business active"
+                complete={
+                  selectedBusiness.status ===
+                  "ACTIVE"
+                }
+              />
+
+              <HealthRow
+                label="Business verified"
+                complete={
+                  Boolean(
+                    selectedBusiness.isVerified
+                  )
+                }
+              />
+
+              <HealthRow
+                label="Publicly published"
+                complete={
+                  Boolean(
+                    selectedBusiness.isPublished
+                  )
+                }
+              />
+
+              <HealthRow
+                label="Onboarding completed"
+                complete={
+                  Boolean(
+                    selectedBusiness.onboardingCompleted
+                  )
+                }
+              />
             </div>
           </Panel>
 
-          <Panel title="Business summary" subtitle="A quick snapshot of this workspace.">
+          {/* WORKSPACE HEALTH */}
+
+          <Panel
+            title="Workspace health"
+            subtitle="Key profile areas ready for your customers."
+          >
+            <div className="space-y-3">
+              <HealthRow
+                label="Business identity"
+                complete={Boolean(
+                  form.name.trim()
+                )}
+              />
+
+              <HealthRow
+                label="Classification"
+                complete={Boolean(
+                  form.businessType.trim() &&
+                    form.industry.trim()
+                )}
+              />
+
+              <HealthRow
+                label="Contact information"
+                complete={Boolean(
+                  form.email.trim() ||
+                    form.phone.trim() ||
+                    form.whatsapp.trim()
+                )}
+              />
+
+              <HealthRow
+                label="Localization"
+                complete={Boolean(
+                  form.businessCountry.trim() &&
+                    form.timezone.trim() &&
+                    form.currency.trim() &&
+                    form.language.trim()
+                )}
+              />
+
+              <HealthRow
+                label="Public website"
+                complete={Boolean(
+                  form.website.trim()
+                )}
+              />
+
+              <HealthRow
+                label="Address"
+                complete={Boolean(
+                  form.addressLine1.trim() &&
+                    form.city.trim()
+                )}
+              />
+
+              <HealthRow
+                label="Brand assets"
+                complete={Boolean(
+                  form.logo.trim() ||
+                    form.coverImage.trim()
+                )}
+              />
+
+              <HealthRow
+                label="Social presence"
+                complete={Boolean(
+                  form.instagram.trim() ||
+                    form.facebook.trim() ||
+                    form.linkedin.trim()
+                )}
+              />
+
+              <HealthRow
+                label="QR setup"
+                complete={
+                  (selectedBusiness.qrCodes
+                    ?.length ?? 0) > 0
+                }
+              />
+            </div>
+          </Panel>
+
+          {/* BUSINESS SUMMARY */}
+
+          <Panel
+            title="Business summary"
+            subtitle="A quick snapshot of this workspace."
+          >
             <div className="space-y-4">
-              <SummaryRow icon={<Globe className="h-4 w-4" />} label="Public URL" value={selectedBusiness.slug ? `tapqr.shop/${selectedBusiness.slug}` : "Not published"} />
-              <SummaryRow icon={<Phone className="h-4 w-4" />} label="Contact" value={form.whatsapp || form.phone || "Not added"} />
-              <SummaryRow icon={<MapPin className="h-4 w-4" />} label="Location" value={[form.city, form.state].filter(Boolean).join(", ") || "Not added"} />
+              <SummaryRow
+                icon={
+                  <Globe className="h-4 w-4" />
+                }
+                label="Public URL"
+                value={
+                  selectedBusiness.slug
+                    ? `tapqr.shop/${selectedBusiness.slug}`
+                    : "Not published"
+                }
+              />
+
+              <SummaryRow
+                icon={
+                  <Building2 className="h-4 w-4" />
+                }
+                label="Business type"
+                value={formatBusinessType(
+                  selectedBusiness.businessType
+                )}
+              />
+
+              <SummaryRow
+                icon={
+                  <Globe className="h-4 w-4" />
+                }
+                label="Localization"
+                value={`${selectedBusiness.currency ?? "—"} · ${
+                  selectedBusiness.timezone ??
+                  "—"
+                }`}
+              />
+
+              <SummaryRow
+                icon={
+                  <Phone className="h-4 w-4" />
+                }
+                label="Contact"
+                value={
+                  form.whatsapp ||
+                  form.phone ||
+                  form.email ||
+                  "Not added"
+                }
+              />
+
+              <SummaryRow
+                icon={
+                  <MapPin className="h-4 w-4" />
+                }
+                label="Location"
+                value={
+                  [
+                    form.city,
+                    form.state,
+                  ]
+                    .filter(Boolean)
+                    .join(", ") ||
+                  "Not added"
+                }
+              />
             </div>
           </Panel>
 
-          <Panel title="Next steps" subtitle="Continue configuring this workspace after your profile is ready.">
+          {/* NEXT STEPS */}
+
+          <Panel
+            title="Next steps"
+            subtitle="Continue configuring this workspace."
+          >
             <div className="space-y-2">
               <Link
                 href="/dashboard/qr"
@@ -871,9 +2394,15 @@ export default function BusinessPage() {
                 <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-slate-600">
                   <QrCode className="h-4 w-4" />
                 </span>
+
                 <span className="min-w-0 flex-1">
-                  <span className="block text-xs font-bold text-slate-800">Create or manage QR codes</span>
-                  <span className="block text-[10px] text-slate-400">Configure source, placement and campaign metadata.</span>
+                  <span className="block text-xs font-bold text-slate-800">
+                    Create or manage QR codes
+                  </span>
+
+                  <span className="block text-[10px] text-slate-400">
+                    Configure source, placement and QR metadata.
+                  </span>
                 </span>
               </Link>
 
@@ -884,9 +2413,15 @@ export default function BusinessPage() {
                 <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-slate-600">
                   <SlidersHorizontal className="h-4 w-4" />
                 </span>
+
                 <span className="min-w-0 flex-1">
-                  <span className="block text-xs font-bold text-slate-800">Configure Smart Rules</span>
-                  <span className="block text-[10px] text-slate-400">Route visitors using device, location, time and source context.</span>
+                  <span className="block text-xs font-bold text-slate-800">
+                    Configure Smart Rules
+                  </span>
+
+                  <span className="block text-[10px] text-slate-400">
+                    Route visitors using device, location, time and source context.
+                  </span>
                 </span>
               </Link>
 
@@ -897,128 +2432,561 @@ export default function BusinessPage() {
                 <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-slate-600">
                   <BarChart3 className="h-4 w-4" />
                 </span>
+
                 <span className="min-w-0 flex-1">
-                  <span className="block text-xs font-bold text-slate-800">Run A/B Experiments</span>
-                  <span className="block text-[10px] text-slate-400">Compare variants and measure conversion performance.</span>
+                  <span className="block text-xs font-bold text-slate-800">
+                    Run A/B Experiments
+                  </span>
+
+                  <span className="block text-[10px] text-slate-400">
+                    Compare variants and measure conversion performance.
+                  </span>
                 </span>
               </Link>
             </div>
           </Panel>
 
-          <Panel title="Refresh workspace" subtitle="Reload the latest business data from the API.">
-            <button type="button" onClick={() => void loadBusinesses(true)} disabled={refreshing} className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-xs font-bold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50">
-              <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
-              {refreshing ? "Refreshing..." : "Refresh data"}
+          {/* REFRESH */}
+
+          <Panel
+            title="Refresh workspace"
+            subtitle="Reload the latest business data from the API."
+          >
+            <button
+              type="button"
+              onClick={() =>
+                void loadBusinesses(true)
+              }
+              disabled={refreshing}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-xs font-bold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <RefreshCw
+                className={`h-4 w-4 ${
+                  refreshing
+                    ? "animate-spin"
+                    : ""
+                }`}
+              />
+
+              {refreshing
+                ? "Refreshing..."
+                : "Refresh data"}
             </button>
           </Panel>
         </aside>
       </form>
 
-      {showCreate && <CreateBusinessModal form={createForm} setForm={setCreateForm} creating={creating} onClose={() => setShowCreate(false)} onSubmit={createBusiness} />}
-      {showDeactivate && <ConfirmModal loading={deactivating} businessName={selectedBusiness.name} onCancel={() => setShowDeactivate(false)} onConfirm={() => void deactivateBusiness()} />}
+      {/* MODALS */}
+
+      {showCreate && (
+        <CreateBusinessModal
+          form={createForm}
+          setForm={setCreateForm}
+          creating={creating}
+          onClose={() =>
+            setShowCreate(false)
+          }
+          onSubmit={createBusiness}
+        />
+      )}
+
+      {showDeactivate && (
+        <ConfirmModal
+          loading={deactivating}
+          businessName={
+            selectedBusiness.name
+          }
+          onCancel={() =>
+            setShowDeactivate(false)
+          }
+          onConfirm={() =>
+            void deactivateBusiness()
+          }
+        />
+      )}
     </main>
   );
 }
 
-function Metric({ title, value, helper }: { title: string; value: string; helper: string }) {
+/* ===============================================================
+   METRIC
+=============================================================== */
+
+function Metric({
+  title,
+  value,
+  helper,
+}: {
+  title: string;
+  value: string;
+  helper: string;
+}) {
   return (
     <article className="rounded-[22px] border border-slate-200/80 bg-white p-5 shadow-[0_8px_30px_rgba(15,23,42,0.03)]">
-      <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">{title}</p>
-      <p className="mt-3 text-3xl font-bold tracking-tight text-slate-950">{value}</p>
-      <p className="mt-1 text-xs text-slate-400">{helper}</p>
+      <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">
+        {title}
+      </p>
+
+      <p className="mt-3 text-3xl font-bold tracking-tight text-slate-950">
+        {value}
+      </p>
+
+      <p className="mt-1 text-xs text-slate-400">
+        {helper}
+      </p>
     </article>
   );
 }
 
-function Panel({ title, subtitle, children }: { title: string; subtitle: string; children: React.ReactNode }) {
+/* ===============================================================
+   PANEL
+=============================================================== */
+
+function Panel({
+  title,
+  subtitle,
+  children,
+}: {
+  title: string;
+  subtitle: string;
+  children: React.ReactNode;
+}) {
   return (
     <section className="overflow-hidden rounded-[24px] border border-slate-200/80 bg-white shadow-[0_8px_30px_rgba(15,23,42,0.03)]">
       <div className="border-b border-slate-100 px-5 py-5 sm:px-6">
-        <h2 className="text-sm font-bold text-slate-950">{title}</h2>
-        <p className="mt-1 text-xs leading-5 text-slate-400">{subtitle}</p>
+        <h2 className="text-sm font-bold text-slate-950">
+          {title}
+        </h2>
+
+        <p className="mt-1 text-xs leading-5 text-slate-400">
+          {subtitle}
+        </p>
       </div>
-      <div className="p-5 sm:p-6">{children}</div>
+
+      <div className="p-5 sm:p-6">
+        {children}
+      </div>
     </section>
   );
 }
 
-function Field({ label, value, onChange, disabled, type = "text", required, inputMode }: { label: string; value: string; onChange: (value: string) => void; disabled?: boolean; type?: string; required?: boolean; inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"] }) {
+/* ===============================================================
+   FIELD
+=============================================================== */
+
+function Field({
+  label,
+  value,
+  onChange,
+  disabled,
+  type = "text",
+  required,
+  inputMode,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  disabled?: boolean;
+  type?: string;
+  required?: boolean;
+  inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
+}) {
   return (
     <div>
-      {label && <label className="mb-2 block text-xs font-semibold text-slate-700">{label}{required && <span className="ml-1 text-red-500">*</span>}</label>}
-      <input type={type} value={value} disabled={disabled} required={required} inputMode={inputMode} onChange={(event) => onChange(event.target.value)} className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-500/5 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500" />
+      {label && (
+        <label className="mb-2 block text-xs font-semibold text-slate-700">
+          {label}
+
+          {required && (
+            <span className="ml-1 text-red-500">
+              *
+            </span>
+          )}
+        </label>
+      )}
+
+      <input
+        type={type}
+        value={value}
+        disabled={disabled}
+        required={required}
+        inputMode={inputMode}
+        onChange={(event) =>
+          onChange(event.target.value)
+        }
+        className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-sm text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-500/5 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500"
+      />
     </div>
   );
 }
 
-function TextArea({ label, value, onChange, disabled }: { label: string; value: string; onChange: (value: string) => void; disabled?: boolean }) {
+/* ===============================================================
+   SELECT FIELD
+=============================================================== */
+
+function SelectField({
+  label,
+  value,
+  options,
+  onChange,
+  disabled,
+  placeholder,
+}: {
+  label: string;
+  value: string;
+  options: Array<{
+    value: string;
+    label: string;
+  }>;
+  onChange: (value: string) => void;
+  disabled?: boolean;
+  placeholder?: string;
+}) {
   return (
     <div>
-      <label className="mb-2 block text-xs font-semibold text-slate-700">{label}</label>
-      <textarea rows={5} value={value} disabled={disabled} onChange={(event) => onChange(event.target.value)} className="w-full resize-y rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-300 focus:ring-4 focus:ring-blue-500/5 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500" />
+      <label className="mb-2 block text-xs font-semibold text-slate-700">
+        {label}
+      </label>
+
+      <select
+        value={value}
+        disabled={disabled}
+        onChange={(event) =>
+          onChange(event.target.value)
+        }
+        className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-300 focus:ring-4 focus:ring-blue-500/5 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500"
+      >
+        <option value="">
+          {placeholder ?? "Select"}
+        </option>
+
+        {options.map((option) => (
+          <option
+            key={option.value}
+            value={option.value}
+          >
+            {option.label}
+          </option>
+        ))}
+      </select>
     </div>
   );
 }
 
-function Banner({ tone, message, onClose }: { tone: "error" | "success"; message: string; onClose: () => void }) {
+/* ===============================================================
+   TEXT AREA
+=============================================================== */
+
+function TextArea({
+  label,
+  value,
+  onChange,
+  disabled,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  disabled?: boolean;
+}) {
+  return (
+    <div>
+      <label className="mb-2 block text-xs font-semibold text-slate-700">
+        {label}
+      </label>
+
+      <textarea
+        rows={5}
+        value={value}
+        disabled={disabled}
+        onChange={(event) =>
+          onChange(event.target.value)
+        }
+        className="w-full resize-y rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-300 focus:ring-4 focus:ring-blue-500/5 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500"
+      />
+    </div>
+  );
+}
+
+/* ===============================================================
+   BANNER
+=============================================================== */
+
+function Banner({
+  tone,
+  message,
+  onClose,
+}: {
+  tone: "error" | "success";
+  message: string;
+  onClose: () => void;
+}) {
   const success = tone === "success";
+
   return (
-    <div role={success ? "status" : "alert"} className={`flex items-start gap-3 rounded-2xl border px-4 py-3 text-sm ${success ? "border-emerald-200 bg-emerald-50 text-emerald-800" : "border-red-200 bg-red-50 text-red-700"}`}>
-      {success ? <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" /> : <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />}
-      <span className="min-w-0 flex-1 leading-6">{message}</span>
-      <button type="button" onClick={onClose} aria-label="Dismiss message" className="rounded-lg p-1 opacity-70 transition hover:bg-black/5 hover:opacity-100"><X className="h-4 w-4" /></button>
+    <div
+      role={
+        success ? "status" : "alert"
+      }
+      className={`flex items-start gap-3 rounded-2xl border px-4 py-3 text-sm ${
+        success
+          ? "border-emerald-200 bg-emerald-50 text-emerald-800"
+          : "border-red-200 bg-red-50 text-red-700"
+      }`}
+    >
+      {success ? (
+        <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" />
+      ) : (
+        <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
+      )}
+
+      <span className="min-w-0 flex-1 leading-6">
+        {message}
+      </span>
+
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label="Dismiss message"
+        className="rounded-lg p-1 opacity-70 transition hover:bg-black/5 hover:opacity-100"
+      >
+        <X className="h-4 w-4" />
+      </button>
     </div>
   );
 }
 
-function HealthRow({ label, complete }: { label: string; complete: boolean }) {
+/* ===============================================================
+   HEALTH ROW
+=============================================================== */
+
+function HealthRow({
+  label,
+  complete,
+}: {
+  label: string;
+  complete: boolean;
+}) {
   return (
     <div className="flex items-center justify-between gap-3">
-      <span className="text-xs font-medium text-slate-600">{label}</span>
-      <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-[10px] font-bold ${complete ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600"}`}>
-        <span className={`h-1.5 w-1.5 rounded-full ${complete ? "bg-emerald-500" : "bg-amber-500"}`} />
-        {complete ? "Complete" : "Incomplete"}
+      <span className="text-xs font-medium text-slate-600">
+        {label}
+      </span>
+
+      <span
+        className={`inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-[10px] font-bold ${
+          complete
+            ? "bg-emerald-50 text-emerald-600"
+            : "bg-amber-50 text-amber-600"
+        }`}
+      >
+        <span
+          className={`h-1.5 w-1.5 rounded-full ${
+            complete
+              ? "bg-emerald-500"
+              : "bg-amber-500"
+          }`}
+        />
+
+        {complete
+          ? "Complete"
+          : "Incomplete"}
       </span>
     </div>
   );
 }
 
-function SummaryRow({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+/* ===============================================================
+   SUMMARY ROW
+=============================================================== */
+
+function SummaryRow({
+  icon,
+  label,
+  value,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+}) {
   return (
     <div className="flex items-center gap-3">
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-50 text-slate-500">{icon}</div>
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-50 text-slate-500">
+        {icon}
+      </div>
+
       <div className="min-w-0">
-        <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">{label}</p>
-        <p className="mt-0.5 truncate text-xs font-semibold text-slate-700">{value}</p>
+        <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">
+          {label}
+        </p>
+
+        <p className="mt-0.5 truncate text-xs font-semibold text-slate-700">
+          {value}
+        </p>
       </div>
     </div>
   );
 }
 
-function CreateBusinessModal({ form, setForm, creating, onClose, onSubmit }: { form: { name: string; email: string; phone: string; logo: string; description: string }; setForm: React.Dispatch<React.SetStateAction<{ name: string; email: string; phone: string; logo: string; description: string }>>; creating: boolean; onClose: () => void; onSubmit: (event: FormEvent<HTMLFormElement>) => void }) {
+/* ===============================================================
+   CREATE BUSINESS MODAL
+=============================================================== */
+
+function CreateBusinessModal({
+  form,
+  setForm,
+  creating,
+  onClose,
+  onSubmit,
+}: {
+  form: {
+    name: string;
+    email: string;
+    phone: string;
+    logo: string;
+    description: string;
+  };
+
+  setForm: React.Dispatch<
+    React.SetStateAction<{
+      name: string;
+      email: string;
+      phone: string;
+      logo: string;
+      description: string;
+    }>
+  >;
+
+  creating: boolean;
+  onClose: () => void;
+  onSubmit: (
+    event: FormEvent<HTMLFormElement>
+  ) => void;
+}) {
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/50 px-4 py-6 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="create-business-title">
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/50 px-4 py-6 backdrop-blur-sm"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="create-business-title"
+    >
       <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-[28px] bg-white shadow-2xl">
         <div className="flex items-center justify-between border-b border-slate-100 px-6 py-5">
           <div>
-            <h2 id="create-business-title" className="text-lg font-bold text-slate-950">Create business</h2>
-            <p className="mt-1 text-xs text-slate-400">Start a new TapQR workspace.</p>
+            <h2
+              id="create-business-title"
+              className="text-lg font-bold text-slate-950"
+            >
+              Create business
+            </h2>
+
+            <p className="mt-1 text-xs text-slate-400">
+              Start a new TapQR workspace.
+            </p>
           </div>
-          <button type="button" onClick={onClose} disabled={creating} aria-label="Close" className="rounded-xl p-2 text-slate-400 hover:bg-slate-100 disabled:opacity-50"><X className="h-5 w-5" /></button>
+
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={creating}
+            aria-label="Close"
+            className="rounded-xl p-2 text-slate-400 hover:bg-slate-100 disabled:opacity-50"
+          >
+            <X className="h-5 w-5" />
+          </button>
         </div>
-        <form onSubmit={onSubmit} className="space-y-5 p-6">
-          <Field label="Business name" value={form.name} disabled={creating} required onChange={(value) => setForm((current) => ({ ...current, name: value }))} />
+
+        <form
+          onSubmit={onSubmit}
+          className="space-y-5 p-6"
+        >
+          <Field
+            label="Business name"
+            value={form.name}
+            disabled={creating}
+            required
+            onChange={(value) =>
+              setForm((current) => ({
+                ...current,
+                name: value,
+              }))
+            }
+          />
+
           <div className="grid gap-5 sm:grid-cols-2">
-            <Field label="Email" type="email" value={form.email} disabled={creating} onChange={(value) => setForm((current) => ({ ...current, email: value }))} />
-            <Field label="Phone" type="tel" value={form.phone} disabled={creating} onChange={(value) => setForm((current) => ({ ...current, phone: value }))} />
+            <Field
+              label="Email"
+              type="email"
+              value={form.email}
+              disabled={creating}
+              onChange={(value) =>
+                setForm((current) => ({
+                  ...current,
+                  email: value,
+                }))
+              }
+            />
+
+            <Field
+              label="Phone"
+              type="tel"
+              value={form.phone}
+              disabled={creating}
+              onChange={(value) =>
+                setForm((current) => ({
+                  ...current,
+                  phone: value,
+                }))
+              }
+            />
           </div>
-          <Field label="Logo URL" type="url" value={form.logo} disabled={creating} onChange={(value) => setForm((current) => ({ ...current, logo: value }))} />
-          <TextArea label="Description" value={form.description} disabled={creating} onChange={(value) => setForm((current) => ({ ...current, description: value }))} />
+
+          <Field
+            label="Logo URL"
+            type="url"
+            value={form.logo}
+            disabled={creating}
+            onChange={(value) =>
+              setForm((current) => ({
+                ...current,
+                logo: value,
+              }))
+            }
+          />
+
+          <TextArea
+            label="Description"
+            value={form.description}
+            disabled={creating}
+            onChange={(value) =>
+              setForm((current) => ({
+                ...current,
+                description: value,
+              }))
+            }
+          />
+
           <div className="flex justify-end gap-2 border-t border-slate-100 pt-5">
-            <button type="button" onClick={onClose} disabled={creating} className="rounded-xl border border-slate-200 px-5 py-2.5 text-xs font-bold text-slate-700 disabled:opacity-50">Cancel</button>
-            <button type="submit" disabled={creating} className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-5 py-2.5 text-xs font-bold text-white disabled:cursor-not-allowed disabled:opacity-60">
-              {creating && <Loader2 className="h-4 w-4 animate-spin" />}
-              {creating ? "Creating..." : "Create business"}
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={creating}
+              className="rounded-xl border border-slate-200 px-5 py-2.5 text-xs font-bold text-slate-700 disabled:opacity-50"
+            >
+              Cancel
+            </button>
+
+            <button
+              type="submit"
+              disabled={creating}
+              className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-5 py-2.5 text-xs font-bold text-white disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {creating && (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              )}
+
+              {creating
+                ? "Creating..."
+                : "Create business"}
             </button>
           </div>
         </form>
@@ -1027,20 +2995,68 @@ function CreateBusinessModal({ form, setForm, creating, onClose, onSubmit }: { f
   );
 }
 
-function ConfirmModal({ loading, businessName, onCancel, onConfirm }: { loading: boolean; businessName: string; onCancel: () => void; onConfirm: () => void }) {
+/* ===============================================================
+   CONFIRM MODAL
+=============================================================== */
+
+function ConfirmModal({
+  loading,
+  businessName,
+  onCancel,
+  onConfirm,
+}: {
+  loading: boolean;
+  businessName: string;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/50 px-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="deactivate-business-title">
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/50 px-4 backdrop-blur-sm"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="deactivate-business-title"
+    >
       <div className="w-full max-w-md rounded-[28px] bg-white p-6 shadow-2xl">
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-50 text-red-600"><Trash2 className="h-5 w-5" /></div>
-        <h2 id="deactivate-business-title" className="mt-5 text-lg font-bold text-slate-950">Deactivate business?</h2>
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-50 text-red-600">
+          <Trash2 className="h-5 w-5" />
+        </div>
+
+        <h2
+          id="deactivate-business-title"
+          className="mt-5 text-lg font-bold text-slate-950"
+        >
+          Deactivate business?
+        </h2>
+
         <p className="mt-2 text-sm leading-6 text-slate-500">
-          “{businessName}” will be marked inactive. Existing data remains stored.
+          “{businessName}” will be marked
+          inactive. Existing data remains stored.
         </p>
+
         <div className="mt-6 flex justify-end gap-2">
-          <button type="button" onClick={onCancel} disabled={loading} className="rounded-xl border border-slate-200 px-5 py-2.5 text-xs font-bold text-slate-700 disabled:opacity-50">Cancel</button>
-          <button type="button" onClick={onConfirm} disabled={loading} className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-5 py-2.5 text-xs font-bold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60">
-            {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-            {loading ? "Deactivating..." : "Deactivate business"}
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={loading}
+            className="rounded-xl border border-slate-200 px-5 py-2.5 text-xs font-bold text-slate-700 disabled:opacity-50"
+          >
+            Cancel
+          </button>
+
+          <button
+            type="button"
+            onClick={onConfirm}
+            disabled={loading}
+            className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-5 py-2.5 text-xs font-bold text-white hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {loading && (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            )}
+
+            {loading
+              ? "Deactivating..."
+              : "Deactivate business"}
           </button>
         </div>
       </div>
