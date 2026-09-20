@@ -9,6 +9,9 @@ const API_URL =
   process.env.NEXT_PUBLIC_API_URL ||
   "https://api.tapqr.shop/api";
 
+const BUSINESS_STORAGE_KEY =
+  "tapqr_current_business_id";
+
 export class ApiError extends Error {
   status: number;
   code?: string;
@@ -32,6 +35,41 @@ let refreshPromise:
 
 /*
 |--------------------------------------------------------------------------
+| CURRENT BUSINESS ID
+|--------------------------------------------------------------------------
+|
+| The dashboard stores the currently selected business in:
+|
+| tapqr_current_business_id
+|
+| We send this to the backend as:
+|
+| X-Business-Id
+|
+| The backend MUST verify that the authenticated user
+| actually has access to this business.
+|
+|--------------------------------------------------------------------------
+*/
+
+function getCurrentBusinessId(): string | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  try {
+    const businessId = localStorage.getItem(
+      BUSINESS_STORAGE_KEY
+    );
+
+    return businessId?.trim() || null;
+  } catch {
+    return null;
+  }
+}
+
+/*
+|--------------------------------------------------------------------------
 | REFRESH ACCESS TOKEN
 |--------------------------------------------------------------------------
 */
@@ -47,12 +85,14 @@ async function refreshAccessToken(): Promise<string | null> {
    * Prevent multiple simultaneous refresh requests.
    *
    * Example:
+   *
    * Request A -> 401
    * Request B -> 401
    * Request C -> 401
    *
    * All three wait for the same refresh request.
    */
+
   if (!refreshPromise) {
     refreshPromise = (async () => {
       try {
@@ -96,6 +136,7 @@ async function refreshAccessToken(): Promise<string | null> {
          * Only replace the access token.
          * Existing refresh token remains untouched.
          */
+
         saveTokens(newAccessToken);
 
         return newAccessToken;
@@ -128,8 +169,10 @@ async function performRequest<T>(
 
   /*
    * Only set JSON content type when a body exists.
+   *
    * This keeps GET requests cleaner.
    */
+
   if (options.body) {
     headers.set(
       "Content-Type",
@@ -137,10 +180,34 @@ async function performRequest<T>(
     );
   }
 
+  /*
+   * Authentication
+   */
+
   if (token) {
     headers.set(
       "Authorization",
       `Bearer ${token}`
+    );
+  }
+
+  /*
+   * Business context
+   *
+   * The selected business is already maintained
+   * by the dashboard.
+   *
+   * The backend must verify that the authenticated
+   * user belongs to this business.
+   */
+
+  const businessId =
+    getCurrentBusinessId();
+
+  if (businessId) {
+    headers.set(
+      "X-Business-Id",
+      businessId
     );
   }
 
@@ -162,13 +229,23 @@ async function performRequest<T>(
   }
 
   if (!response.ok) {
-    throw new ApiError(
-      body?.message ||
-        "Something went wrong.",
-      response.status,
-      body?.code
-    );
-  }
+  console.error("[API ERROR]", {
+    URL,
+    status: response.status,
+    statusText: response.statusText,
+    body,
+  });
+
+  const message =
+    body?.message ||
+    body?.error?.message ||
+    `Request failed with ${response.status} ${response.statusText}`;
+
+  throw new ApiError(
+    message,
+    response.status,
+  );
+}
 
   return body as T;
 }
@@ -183,7 +260,8 @@ export async function apiRequest<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
-  const accessToken = getAccessToken();
+  const accessToken =
+    getAccessToken();
 
   try {
     return await performRequest<T>(
@@ -195,6 +273,7 @@ export async function apiRequest<T>(
     /*
      * Only handle 401s.
      */
+
     if (
       !(error instanceof ApiError) ||
       error.status !== 401
@@ -204,10 +283,12 @@ export async function apiRequest<T>(
 
     /*
      * IMPORTANT:
+     *
      * If this request wasn't authenticated in
      * the first place, don't attempt token refresh.
      *
      * This prevents public endpoints such as:
+     *
      * /auth/login
      * /auth/identify
      * /auth/email/send-otp
@@ -215,6 +296,7 @@ export async function apiRequest<T>(
      *
      * from incorrectly triggering a session redirect.
      */
+
     if (!accessToken) {
       throw error;
     }
@@ -223,13 +305,16 @@ export async function apiRequest<T>(
       await refreshAccessToken();
 
     /*
-     * Refresh failed -> user session is no longer valid.
+     * Refresh failed -> user session
+     * is no longer valid.
      */
+
     if (!newAccessToken) {
       if (
         typeof window !== "undefined"
       ) {
-        window.location.href = "/login";
+        window.location.href =
+          "/login";
       }
 
       throw error;
@@ -238,7 +323,12 @@ export async function apiRequest<T>(
     /*
      * Retry the original request exactly once
      * with the new access token.
+     *
+     * performRequest() reads the current
+     * business ID again, so the business
+     * context is also included on retry.
      */
+
     return performRequest<T>(
       endpoint,
       options,

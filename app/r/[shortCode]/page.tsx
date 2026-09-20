@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 import { cookies } from "next/headers";
-
 import GuestExperience from "./GuestExperience";
 
 const API_BASE = (
@@ -21,7 +20,6 @@ export interface GuestExperience {
     shortCode: string;
     enabledSections: unknown;
     catalogId: string | null;
-
     sourceType: string;
     placementLabel: string | null;
     locationLabel: string | null;
@@ -48,6 +46,7 @@ export interface GuestExperience {
     phone: string | null;
     logo: string | null;
     description: string | null;
+    whatsappUrl: string | null;
 
     profile: {
       tagline: string | null;
@@ -57,7 +56,6 @@ export interface GuestExperience {
       phone: string | null;
       whatsapp: string | null;
       externalReviewUrl: string | null;
-
       address: {
         line1: string | null;
         line2: string | null;
@@ -66,12 +64,10 @@ export interface GuestExperience {
         postalCode: string | null;
         country: string | null;
       };
-
       location: {
         latitude: number | null;
         longitude: number | null;
       };
-
       openingHours: unknown;
       socialLinks: unknown;
       coverImage: string | null;
@@ -82,57 +78,43 @@ export interface GuestExperience {
       name: string;
       description: string | null;
       type: string;
-
       categories: Array<{
         id: string;
         name: string;
         description: string | null;
         image: string | null;
-
         items: Array<{
           id: string;
           name: string;
           description: string | null;
           type: string;
-
           price: string | number | null;
           compareAtPrice: string | number | null;
           currency: string;
-
           image: string | null;
           gallery: unknown;
-
           sku: string | null;
           unit: string | null;
           stock: number | null;
           durationMinutes: number | null;
-
           isAvailable: boolean;
           isFeatured: boolean;
-
           metadata: unknown;
-
           variants: Array<{
             id: string;
             name: string;
-
             price: string | number | null;
             compareAtPrice: string | number | null;
-
             sku: string | null;
             stock: number | null;
-
             isAvailable: boolean;
           }>;
-
           optionGroups: Array<{
             id: string;
             name: string;
-
             required: boolean;
             minSelect: number;
             maxSelect: number;
-
             options: Array<{
               id: string;
               name: string;
@@ -164,7 +146,7 @@ type PageProps = {
  */
 async function getGuestExperience(
   shortCode: string,
-  visitorKey?: string
+  visitorKey?: string,
 ): Promise<GuestExperience | null> {
   const code = shortCode.trim();
 
@@ -186,7 +168,7 @@ async function getGuestExperience(
       method: "GET",
       headers,
       cache: "no-store",
-    }
+    },
   );
 
   if (response.status === 404 || response.status === 410) {
@@ -195,7 +177,7 @@ async function getGuestExperience(
 
   if (!response.ok) {
     throw new Error(
-      `Failed to load QR experience: ${response.status}`
+      `Failed to load QR experience: ${response.status}`,
     );
   }
 
@@ -208,7 +190,6 @@ export default async function QRGuestPage({
   params,
 }: PageProps) {
   const { shortCode } = await params;
-
   const code = String(shortCode || "").trim();
 
   if (!code) {
@@ -224,13 +205,12 @@ export default async function QRGuestPage({
    * to the next request.
    */
   const cookieStore = await cookies();
-
   const visitorKey =
     cookieStore.get("tapqr_visitor_key")?.value?.trim() || undefined;
 
   const experience = await getGuestExperience(
     code,
-    visitorKey
+    visitorKey,
   );
 
   if (!experience) {

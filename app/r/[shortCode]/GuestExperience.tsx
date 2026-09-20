@@ -95,29 +95,6 @@ function getGoogleMapsUrl(
   return null;
 }
 
-function getWhatsAppUrl(
-  profile: GuestExperience["business"]["profile"]
-) {
-  const whatsapp =
-    profile?.whatsapp ||
-    profile?.phone;
-
-  if (!whatsapp) {
-    return null;
-  }
-
-  const number = whatsapp.replace(
-    /\D/g,
-    ""
-  );
-
-  if (!number) {
-    return null;
-  }
-
-  return `https://wa.me/${number}`;
-}
-
 function getWebsiteUrl(
   website?: string | null
 ) {
@@ -419,7 +396,7 @@ export default function GuestExperience({
     getAddress(profile);
 
   const whatsappUrl =
-    getWhatsAppUrl(profile);
+    business.whatsappUrl;
 
   const mapsUrl =
     getGoogleMapsUrl(profile);
