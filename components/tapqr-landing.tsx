@@ -1490,7 +1490,7 @@ export default function TapQRLanding() {
               </div>
 
               <div>
-                <b>Legal</b>
+                <b>Legal Terms</b>
                 <Link href="/privacy">Privacy Policy</Link>
                 <Link href="/terms">Terms of Service</Link>
               </div>
