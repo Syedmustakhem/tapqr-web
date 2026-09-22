@@ -5,7 +5,6 @@ import {
   Bot,
   Check,
   CheckCheck,
-  ChevronDown,
   Clock3,
   Loader2,
   MessageCircle,
@@ -19,7 +18,8 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { KeyboardEvent } from "react";
 import { apiRequest } from "@/lib/api";
 
 type ConversationStatus = "OPEN" | "PENDING" | "RESOLVED" | "CLOSED";
@@ -57,6 +57,10 @@ type WhatsAppMessage = {
   content?: string | null;
   status?: string | null;
   mediaId?: string | null;
+  mediaUrl?: string | null;
+  errorCode?: string | null;
+  errorMessage?: string | null;
+  metadata?: unknown;
   templateName?: string | null;
   createdAt: string;
 };
@@ -144,6 +148,21 @@ function getMessageText(message: WhatsAppMessage) {
   return message.text || message.content || "";
 }
 
+function mergeMessage(
+  current: WhatsAppMessage[],
+  incoming: WhatsAppMessage,
+): WhatsAppMessage[] {
+  const existingIndex = current.findIndex((message) => message.id === incoming.id);
+
+  if (existingIndex === -1) {
+    return [...current, incoming];
+  }
+
+  const next = [...current];
+  next[existingIndex] = { ...next[existingIndex], ...incoming };
+  return next;
+}
+
 export default function SupportInbox() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [messages, setMessages] = useState<WhatsAppMessage[]>([]);
@@ -165,6 +184,10 @@ export default function SupportInbox() {
 
   const [messageText, setMessageText] = useState("");
   const [mobileConversationOpen, setMobileConversationOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const messagesRequestIdRef = useRef(0);
+  const mountedRef = useRef(true);
 
   const [newChatOpen, setNewChatOpen] = useState(false);
   const [newPhone, setNewPhone] = useState("");
@@ -176,6 +199,12 @@ export default function SupportInbox() {
       ) || null,
     [conversations, selectedConversationId],
   );
+
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   const filteredConversations = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -212,7 +241,8 @@ export default function SupportInbox() {
   const loadConversations = useCallback(
     async (silent = false) => {
       try {
-        if (!silent) setLoadingConversations(true);
+        setErrorMessage(null);
+        if (!silent && mountedRef.current) setLoadingConversations(true);
 
         const response = await apiRequest<
           ApiResponse<Conversation[]> | Conversation[]
@@ -220,6 +250,8 @@ export default function SupportInbox() {
 
         const data = unwrap(response);
         const nextConversations = Array.isArray(data) ? data : [];
+
+        if (!mountedRef.current) return;
 
         setConversations(nextConversations);
 
@@ -235,39 +267,68 @@ export default function SupportInbox() {
         });
       } catch (error) {
         console.error("Failed to load support conversations:", error);
+        if (mountedRef.current) {
+          setErrorMessage(
+            error instanceof Error
+              ? error.message
+              : "Failed to load conversations.",
+          );
+        }
       } finally {
-        if (!silent) setLoadingConversations(false);
+        if (!silent && mountedRef.current) setLoadingConversations(false);
       }
     },
     [],
   );
 
-  const loadMessages = useCallback(async (conversationId: string) => {
+  const loadMessages = useCallback(async (conversationId: string, silent = false) => {
+    const requestId = ++messagesRequestIdRef.current;
+
     try {
-      setLoadingMessages(true);
+      if (!silent) setLoadingMessages(true);
 
       const response = await apiRequest<
         ApiResponse<WhatsAppMessage[]> | WhatsAppMessage[]
       >(`/whatsapp/conversations/${conversationId}/messages?limit=200&page=1`);
 
       const data = unwrap(response);
+
+      if (
+        !mountedRef.current ||
+        requestId !== messagesRequestIdRef.current
+      ) {
+        return;
+      }
+
       setMessages(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Failed to load conversation messages:", error);
-      setMessages([]);
+
+      if (
+        mountedRef.current &&
+        !silent &&
+        requestId === messagesRequestIdRef.current
+      ) {
+        setMessages([]);
+        setErrorMessage(
+          error instanceof Error
+            ? error.message
+            : "Failed to load messages.",
+        );
+      }
     } finally {
-      setLoadingMessages(false);
+      if (
+        !silent &&
+        mountedRef.current &&
+        requestId === messagesRequestIdRef.current
+      ) {
+        setLoadingMessages(false);
+      }
     }
   }, []);
 
   useEffect(() => {
-    loadConversations();
-
-    const interval = window.setInterval(() => {
-      loadConversations(true);
-    }, 10000);
-
-    return () => window.clearInterval(interval);
+    void loadConversations();
   }, [loadConversations]);
 
   useEffect(() => {
@@ -276,14 +337,23 @@ export default function SupportInbox() {
       return;
     }
 
-    loadMessages(selectedConversationId);
-
-    const interval = window.setInterval(() => {
-      loadMessages(selectedConversationId);
-    }, 5000);
-
-    return () => window.clearInterval(interval);
+    void loadMessages(selectedConversationId);
   }, [selectedConversationId, loadMessages]);
+
+  useEffect(() => {
+    if (!selectedConversationId) return;
+
+    const intervalId = window.setInterval(() => {
+      void loadMessages(selectedConversationId, true);
+      void loadConversations(true);
+    }, 8000);
+
+    return () => window.clearInterval(intervalId);
+  }, [selectedConversationId, loadMessages, loadConversations]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [messages.length, selectedConversationId]);
 
   const selectConversation = (id: string) => {
     setSelectedConversationId(id);
@@ -301,6 +371,7 @@ export default function SupportInbox() {
     }
 
     try {
+      setErrorMessage(null);
       setCreating(true);
 
       const response = await apiRequest<
@@ -324,7 +395,7 @@ export default function SupportInbox() {
       }
     } catch (error) {
       console.error("Failed to create conversation:", error);
-      window.alert(
+      setErrorMessage(
         error instanceof Error
           ? error.message
           : "Failed to start conversation.",
@@ -339,34 +410,77 @@ export default function SupportInbox() {
 
     if (!text || !selectedConversation || sending) return;
 
+    const conversationId = selectedConversation.id;
+    const clientMessageId = `client-${Date.now()}-${Math.random()
+      .toString(36)
+      .slice(2, 9)}`;
+
+    const optimisticMessage: WhatsAppMessage = {
+      id: clientMessageId,
+      direction: "OUTBOUND",
+      type: "TEXT",
+      text,
+      status: "PENDING",
+      createdAt: new Date().toISOString(),
+    };
+
     try {
+      setErrorMessage(null);
       setSending(true);
-
-      await apiRequest(
-        `/whatsapp/conversations/${selectedConversation.id}/messages`,
-        {
-          method: "POST",
-          body: JSON.stringify({ text }),
-        },
-      );
-
       setMessageText("");
+      setMessages((current) => [...current, optimisticMessage]);
 
-      await Promise.all([
-        loadMessages(selectedConversation.id),
-        loadConversations(true),
-      ]);
+      const response = await apiRequest<
+        ApiResponse<WhatsAppMessage> | WhatsAppMessage
+      >(`/whatsapp/conversations/${conversationId}/messages`, {
+        method: "POST",
+        body: JSON.stringify({ text }),
+      });
+
+      const sentMessage = unwrap(response);
+
+      if (sentMessage?.id && mountedRef.current) {
+        setMessages((current) =>
+          mergeMessage(
+            current.filter((message) => message.id !== clientMessageId),
+            sentMessage,
+          ),
+        );
+      } else if (mountedRef.current) {
+        await loadMessages(conversationId, true);
+      }
+
+      if (mountedRef.current) {
+        setConversations((current) =>
+          current.map((conversation) =>
+            conversation.id === conversationId
+              ? {
+                  ...conversation,
+                  lastMessageAt: new Date().toISOString(),
+                }
+              : conversation,
+          ),
+        );
+      }
     } catch (error) {
       console.error("Failed to send WhatsApp message:", error);
-      window.alert(
-        error instanceof Error
-          ? error.message
-          : "Failed to send message.",
-      );
+
+      if (mountedRef.current) {
+        setMessages((current) =>
+          current.filter((message) => message.id !== clientMessageId),
+        );
+        setMessageText(text);
+        setErrorMessage(
+          error instanceof Error
+            ? error.message
+            : "Failed to send message.",
+        );
+      }
     } finally {
-      setSending(false);
+      if (mountedRef.current) setSending(false);
     }
   };
+
   const sendSupportTemplate = async () => {
     if (
       !selectedConversation ||
@@ -377,30 +491,37 @@ export default function SupportInbox() {
     }
 
     try {
+      setErrorMessage(null);
       setSendingTemplate(true);
 
-      await apiRequest(
+      const response = await apiRequest<
+        ApiResponse<WhatsAppMessage> | WhatsAppMessage
+      >(
         `/whatsapp/conversations/${selectedConversation.id}/template`,
         {
           method: "POST",
         },
       );
 
-      await Promise.all([
-        loadMessages(selectedConversation.id),
-        loadConversations(true),
-      ]);
+      const sentMessage = unwrap(response);
 
-      window.alert(
-        "WhatsApp support template sent successfully.",
-      );
+      if (sentMessage?.id) {
+        setMessages((current) => {
+          if (current.some((message) => message.id === sentMessage.id)) {
+            return current;
+          }
+
+          return mergeMessage(current, sentMessage);
+        });
+      }
+
     } catch (error) {
       console.error(
         "Failed to send WhatsApp support template:",
         error,
       );
 
-      window.alert(
+      setErrorMessage(
         error instanceof Error
           ? error.message
           : "Failed to send WhatsApp support template.",
@@ -413,6 +534,7 @@ export default function SupportInbox() {
     if (!selectedConversation || updating) return;
 
     try {
+      setErrorMessage(null);
       setUpdating(true);
 
       await apiRequest(
@@ -426,7 +548,7 @@ export default function SupportInbox() {
       await loadConversations(true);
     } catch (error) {
       console.error("Failed to update conversation status:", error);
-      window.alert(
+      setErrorMessage(
         error instanceof Error
           ? error.message
           : "Failed to update conversation.",
@@ -440,6 +562,7 @@ export default function SupportInbox() {
     if (!selectedConversation || updating) return;
 
     try {
+      setErrorMessage(null);
       setUpdating(true);
 
       await apiRequest(
@@ -453,7 +576,7 @@ export default function SupportInbox() {
       await loadConversations(true);
     } catch (error) {
       console.error("Failed to update handling mode:", error);
-      window.alert(
+      setErrorMessage(
         error instanceof Error
           ? error.message
           : "Failed to update handling mode.",
@@ -464,16 +587,32 @@ export default function SupportInbox() {
   };
 
   const handleComposerKeyDown = (
-    event: React.KeyboardEvent<HTMLTextAreaElement>,
+    event: KeyboardEvent<HTMLTextAreaElement>,
   ) => {
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
-      sendMessage();
+      if (!sending && !sendingTemplate) void sendMessage();
     }
   };
 
   return (
     <div className="min-h-[calc(100vh-140px)] overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-[0_20px_60px_-35px_rgba(15,23,42,0.28)]">
+      {errorMessage && (
+        <div
+          role="alert"
+          className="flex items-center justify-between gap-3 border-b border-red-100 bg-red-50 px-5 py-3 text-sm text-red-700 sm:px-7 lg:px-8"
+        >
+          <span className="min-w-0 truncate">{errorMessage}</span>
+          <button
+            type="button"
+            onClick={() => setErrorMessage(null)}
+            className="shrink-0 rounded-lg px-2 py-1 text-xs font-semibold text-red-700 hover:bg-red-100"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
       {/* Page header */}
       <div className="border-b border-slate-200 bg-white px-5 py-5 sm:px-7 lg:px-8">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
@@ -886,13 +1025,17 @@ export default function SupportInbox() {
                               {formatTime(message.createdAt)}
 
                               {outbound &&
-                                (message.status === "READ" ? (
+                                (message.status === "FAILED" ? (
+                                  <span className="font-semibold text-red-300">!</span>
+                                ) : message.status === "READ" ? (
                                   <CheckCheck
                                     size={13}
                                     className="text-blue-400"
                                   />
                                 ) : message.status === "DELIVERED" ? (
                                   <CheckCheck size={13} />
+                                ) : message.status === "PENDING" ? (
+                                  <Clock3 size={13} />
                                 ) : (
                                   <Check size={13} />
                                 ))}
@@ -901,6 +1044,7 @@ export default function SupportInbox() {
                         </div>
                       );
                     })}
+                    <div ref={messagesEndRef} />
                   </div>
                 )}
               </div>
@@ -970,7 +1114,7 @@ export default function SupportInbox() {
                       <button
                         type="button"
                         onClick={sendMessage}
-                        disabled={sending || !messageText.trim()}
+                        disabled={sending || sendingTemplate || !messageText.trim()}
                         className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-950 text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40"
                         title="Send message"
                       >
