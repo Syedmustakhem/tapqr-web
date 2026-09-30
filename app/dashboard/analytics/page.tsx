@@ -607,6 +607,9 @@ function getBusinessIdFromBrowser(searchParams: URLSearchParams): string {
   if (fromQuery) return fromQuery;
 
   const keys = [
+    // Canonical key — written by lib/api.ts + every dashboard page.
+    // (The other keys below are legacy fallbacks.)
+    "tapqr_current_business_id",
     "tapqr_business_id",
     "businessId",
     "business_id",
