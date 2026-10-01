@@ -401,7 +401,7 @@ export default function CampaignsPage() {
 
       const response =
         await apiRequest<CampaignListResponse>(
-          `/business/${businessId}/campaigns`,
+          `/campaign/business/${businessId}/campaigns`,
         );
 
       const data = response.data ?? [];
@@ -473,7 +473,7 @@ export default function CampaignsPage() {
       const [campaignResponse, qrResponse, performanceResponse] =
         await Promise.all([
           apiRequest<CampaignQRCodesResponse>(
-            `/business/${businessId}/campaigns/${campaignId}/qrcodes`,
+            `/campaign/business/${businessId}/campaigns/${campaignId}/qrcodes`,
           ),
           apiRequest<QRListResponse>(
             `/qrcodes/business/${businessId}`,
@@ -509,7 +509,7 @@ export default function CampaignsPage() {
       setSuccess("");
 
       const response = await apiRequest<QRCodeResponse>(
-        `/business/${businessId}/campaigns/${selectedCampaign.id}/qrcodes/${qrCodeId}`,
+        `/campaign/business/${businessId}/campaigns/${selectedCampaign.id}/qrcodes/${qrCodeId}`,
         { method: "POST" },
       );
 
@@ -542,7 +542,7 @@ export default function CampaignsPage() {
       setSuccess("");
 
       const response = await apiRequest<QRCodeResponse>(
-        `/business/${businessId}/campaigns/${selectedCampaign.id}/qrcodes/${qrCodeId}`,
+        `/campaign/business/${businessId}/campaigns/${selectedCampaign.id}/qrcodes/${qrCodeId}`,
         { method: "DELETE" },
       );
 
@@ -643,7 +643,7 @@ export default function CampaignsPage() {
       if (editing && selectedCampaign) {
         const response =
           await apiRequest<CampaignResponse>(
-            `/business/${businessId}/campaigns/${selectedCampaign.id}`,
+            `/campaign/business/${businessId}/campaigns/${selectedCampaign.id}`,
             {
               method: "PATCH",
               body: JSON.stringify({
@@ -672,7 +672,7 @@ export default function CampaignsPage() {
       } else {
         const response =
           await apiRequest<CampaignResponse>(
-            `/business/${businessId}/campaigns`,
+            `/campaign/business/${businessId}/campaigns`,
             {
               method: "POST",
               body: JSON.stringify({
@@ -723,7 +723,7 @@ export default function CampaignsPage() {
 
       const response =
         await apiRequest<CampaignResponse>(
-          `/business/${businessId}/campaigns/${selectedCampaign.id}/status`,
+          `/campaign/business/${businessId}/campaigns/${selectedCampaign.id}/status`,
           {
             method: "PATCH",
             body: JSON.stringify({ status }),
