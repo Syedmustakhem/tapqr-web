@@ -798,6 +798,20 @@ export default function SmartRulesPage() {
           rule.id
         );
 
+      /**
+       * The publish endpoint returns
+       * { rule, version } — merge the
+       * updated rule, not the wrapper.
+       */
+      const publishedRule =
+        (
+          response?.data as {
+            rule?: QRRule;
+          } | null
+        )?.rule ??
+        response?.data ??
+        {};
+
       setRules(
         (current) =>
           current.map(
@@ -806,8 +820,7 @@ export default function SmartRulesPage() {
               rule.id
                 ? {
                     ...item,
-                    ...(response?.data ??
-                      {}),
+                    ...publishedRule,
                   }
                 : item
           )

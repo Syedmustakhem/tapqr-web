@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import GuestExperience from "./GuestExperience";
 
@@ -20,6 +20,7 @@ export interface GuestExperience {
     shortCode: string;
     enabledSections: unknown;
     catalogId: string | null;
+    destinationUrl: string | null;
     sourceType: string;
     placementLabel: string | null;
     locationLabel: string | null;
@@ -215,6 +216,27 @@ export default async function QRGuestPage({
 
   if (!experience) {
     notFound();
+  }
+
+  /**
+   * URL-redirect QRs (including rule-resolved destinations)
+   * perform a real redirect instead of rendering the
+   * interstitial experience page.
+   *
+   * The backend already resolved Smart Rules, so
+   * qr.destinationUrl is the final target.
+   */
+  if (
+    experience.qr.experienceType ===
+      "REDIRECT" &&
+    experience.qr.destinationUrl &&
+    /^https?:\/\//i.test(
+      experience.qr.destinationUrl.trim()
+    )
+  ) {
+    redirect(
+      experience.qr.destinationUrl.trim()
+    );
   }
 
   return (
