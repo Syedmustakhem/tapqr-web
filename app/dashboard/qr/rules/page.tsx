@@ -276,6 +276,11 @@ export default function SmartRulesPage() {
   ] = useState(false);
 
   const [
+    qrError,
+    setQrError,
+  ] = useState("");
+
+  const [
     loadingRules,
     setLoadingRules,
   ] = useState(false);
@@ -481,6 +486,7 @@ export default function SmartRulesPage() {
     try {
       setLoadingQrs(true);
       setError("");
+      setQrError("");
 
       const response =
         await apiRequest<QRListResponse>(
@@ -515,8 +521,20 @@ export default function SmartRulesPage() {
       setError(
         getErrorMessage(err)
       );
+      setQrError(
+        getErrorMessage(err)
+      );
+      setQrs([]);
     } finally {
       setLoadingQrs(false);
+    }
+  }
+
+  function retryLoadQRCodes() {
+    if (selectedBusinessId) {
+      void loadQRCodes(
+        selectedBusinessId
+      );
     }
   }
 
@@ -1136,8 +1154,12 @@ export default function SmartRulesPage() {
               }
               className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-blue-300 focus:ring-4 focus:ring-blue-500/5 disabled:bg-slate-50"
             >
-              {qrs.length ===
-              0 ? (
+              {loadingQrs ? (
+                <option value="">
+                  Loading QR codes…
+                </option>
+              ) : qrs.length ===
+                0 ? (
                 <option value="">
                   No QR codes available
                 </option>
@@ -1154,6 +1176,30 @@ export default function SmartRulesPage() {
                 )
               )}
             </select>
+
+            {!loadingQrs &&
+              qrError &&
+              qrs.length ===
+                0 && (
+                <div className="mt-2 flex items-center justify-between gap-3 rounded-xl border border-red-200 bg-red-50 px-3 py-2">
+                  <p className="text-xs font-semibold text-red-700">
+                    Couldn&apos;t
+                    load QR
+                    codes:{" "}
+                    {qrError}
+                  </p>
+
+                  <button
+                    type="button"
+                    onClick={
+                      retryLoadQRCodes
+                    }
+                    className="shrink-0 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-red-700"
+                  >
+                    Retry
+                  </button>
+                </div>
+              )}
           </div>
         </div>
 
