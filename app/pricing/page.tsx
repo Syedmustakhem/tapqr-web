@@ -80,6 +80,7 @@ const plans: Plan[] = [
       "Add your own logo",
       "Advanced QR customization",
       "Analytics",
+      "TapQR Agent OS access",
     ],
     cta: "Get TapQR Pro",
     href: "/register?plan=monthly",
@@ -100,6 +101,7 @@ const plans: Plan[] = [
       "Your own logo",
       "Advanced customization",
       "Analytics",
+      "TapQR Agent OS access",
     ],
     cta: "Choose Yearly",
     href: "/register?plan=yearly",
@@ -154,6 +156,11 @@ const faqs = [
     question: "Can I change my QR after sharing it?",
     answer:
       "Yes. TapQR dynamic QR codes are designed so your profile can be updated without changing the QR code you have already shared.",
+  },
+  {
+    question: "What is TapQR Agent OS?",
+    answer:
+      "TapQR Agent OS connects AI assistants to your TapQR workspace, so you can manage your QR profiles, check analytics, and update your business presence through conversation. It is included with TapQR Pro.",
   },
   {
     question: "What is a dynamic QR code?",
@@ -290,8 +297,8 @@ export default function PricingPage() {
 
           <p className="mx-auto mt-7 max-w-2xl text-lg leading-8 text-black/55 sm:text-xl">
             Start free with one dynamic QR profile, or unlock powerful
-            branding, customization, analytics, and multiple profiles with
-            TapQR.
+            branding, customization, analytics, multiple profiles, and
+            AI agent access with TapQR.
           </p>
         </motion.div>
       </section>
