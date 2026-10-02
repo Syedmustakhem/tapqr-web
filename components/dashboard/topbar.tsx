@@ -38,6 +38,7 @@ import {
 
 import { apiRequest } from "@/lib/api";
 
+import PlanBadge from "@/components/billing/PlanBadge";
 import {
   extractNotifications,
   extractUnreadCount,
@@ -833,7 +834,13 @@ export default function Topbar({
             RIGHT
         ================================================================= */}
 
-        <div className="flex shrink-0 items-center gap-2 sm:gap-2.5">
+ <div className="flex shrink-0 items-center gap-2 sm:gap-2.5">
+
+          {/* ================================================================
+              PLAN
+          ================================================================= */}
+
+          <PlanBadge />
 
           {/* ================================================================
               SUPPORT / INBOX

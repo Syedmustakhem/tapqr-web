@@ -241,10 +241,23 @@ async function performRequest<T>(
     body?.error?.message ||
     `Request failed with ${response.status} ${response.statusText}`;
 
+  /*
+   * Forward the backend error code
+   * (e.g. UPGRADE_REQUIRED on 403s,
+   * ALREADY_SUBSCRIBED on 400s) so
+   * callers can react to it.
+   */
+
+  const code =
+    body?.code ??
+    body?.error?.code ??
+    undefined;
+
   throw new ApiError(
     message,
     response.status,
-  );
+    code
+  );s
 }
 
   return body as T;
