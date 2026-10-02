@@ -1,7 +1,19 @@
 "use client";
 
+import {
+  useEffect,
+  useState,
+} from "react";
+
 import Link from "next/link";
 import { motion } from "framer-motion";
+
+import PlanCheckoutButton from "@/components/billing/PlanCheckoutButton";
+
+import {
+  isAuthenticated,
+} from "@/lib/auth";
+
 import {
   ArrowRight,
   BarChart3,
@@ -14,7 +26,26 @@ import {
   Users,
 } from "lucide-react";
 
-const plans = [
+import type { LucideIcon } from "lucide-react";
+
+type PlanCode =
+  | "PRO_MONTHLY"
+  | "PRO_YEARLY";
+
+type Plan = {
+  name: string;
+  description: string;
+  price: string;
+  period: string;
+  icon: LucideIcon;
+  popular: boolean;
+  features: string[];
+  cta: string;
+  href: string;
+  planCode: PlanCode | null;
+};
+
+const plans: Plan[] = [
   {
     name: "Free",
     description: "Everything you need to start sharing.",
@@ -32,6 +63,7 @@ const plans = [
     ],
     cta: "Create Free QR",
     href: "/register",
+    planCode: null,
   },
   {
     name: "Pro Monthly",
@@ -51,6 +83,7 @@ const plans = [
     ],
     cta: "Get TapQR Pro",
     href: "/register?plan=monthly",
+    planCode: "PRO_MONTHLY",
   },
   {
     name: "Pro Yearly",
@@ -70,6 +103,7 @@ const plans = [
     ],
     cta: "Choose Yearly",
     href: "/register?plan=yearly",
+    planCode: "PRO_YEARLY",
   },
 ];
 
@@ -129,6 +163,23 @@ const faqs = [
 ];
 
 export default function PricingPage() {
+  /*
+   * Logged-out visitors cannot check out —
+   * the checkout API would 401. Send them
+   * to register first; the plan query param
+   * carries their choice.
+   *
+   * Read on mount (not during render) so
+   * server HTML and hydration stay in sync.
+   */
+
+  const [authed, setAuthed] =
+    useState(false);
+
+  useEffect(() => {
+    setAuthed(isAuthenticated());
+  }, []);
+
   return (
     <main className="min-h-screen bg-paper text-ink">
       {/* Header */}
@@ -309,17 +360,33 @@ export default function PricingPage() {
                   </span>
                 </div>
 
-                <Link
-                  href={plan.href}
-                  className={`mt-8 flex h-12 items-center justify-center gap-2 rounded-full text-sm font-semibold transition-transform hover:-translate-y-0.5 ${
-                    plan.popular
-                      ? "bg-[#2F6BFF] text-white"
-                      : "bg-[#0B0D0C] text-white"
-                  }`}
-                >
-                  {plan.cta}
-                  <ArrowRight size={16} />
-                </Link>
+                {plan.planCode && authed ? (
+                  <PlanCheckoutButton
+                    planCode={
+                      plan.planCode
+                    }
+                    className={`mt-8 flex h-12 w-full items-center justify-center gap-2 rounded-full text-sm font-semibold transition-transform hover:-translate-y-0.5 ${
+                      plan.popular
+                        ? "bg-[#2F6BFF] text-white"
+                        : "bg-[#0B0D0C] text-white"
+                    }`}
+                  >
+                    {plan.cta}
+                    <ArrowRight size={16} />
+                  </PlanCheckoutButton>
+                ) : (
+                  <Link
+                    href={plan.href}
+                    className={`mt-8 flex h-12 items-center justify-center gap-2 rounded-full text-sm font-semibold transition-transform hover:-translate-y-0.5 ${
+                      plan.popular
+                        ? "bg-[#2F6BFF] text-white"
+                        : "bg-[#0B0D0C] text-white"
+                    }`}
+                  >
+                    {plan.cta}
+                    <ArrowRight size={16} />
+                  </Link>
+                )}
 
                 <div
                   className={`my-8 h-px ${

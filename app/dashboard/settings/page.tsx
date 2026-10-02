@@ -6,12 +6,15 @@ import {
   useState,
 } from "react";
 
+import type { ReactNode } from "react";
+
 import { useRouter } from "next/navigation";
 
 import {
   Bell,
   CheckCircle2,
   ChevronRight,
+  CreditCard,
   Loader2,
   Lock,
   LogOut,
@@ -29,6 +32,8 @@ import {
 import {
   clearSession,
 } from "@/lib/auth";
+
+import BillingSection from "@/components/billing/BillingSection";
 
 /* -------------------------------------------------------------------------- */
 /* Types                                                                      */
@@ -133,6 +138,7 @@ type SectionId =
   | "account"
   | "security"
   | "notifications"
+  | "billing"
   | "privacy";
 
 /* -------------------------------------------------------------------------- */
@@ -284,6 +290,21 @@ export default function SettingsPage() {
       );
   }, [success]);
 
+  useEffect(() => {
+    try {
+      const tab =
+        new URLSearchParams(
+          window.location.search
+        ).get("tab");
+
+      if (tab === "billing") {
+        setOpenSection("billing");
+      }
+    } catch {
+      /* Non-browser or malformed URL — ignore. */
+    }
+  }, []);
+
   const toggleSection = (
     id: SectionId
   ) => {
@@ -293,6 +314,7 @@ export default function SettingsPage() {
         : id
     );
     setError("");
+    setSuccess("");
   };
 
   const handleSaveProfile =
@@ -811,6 +833,33 @@ export default function SettingsPage() {
           )}
         </div>
 
+        {/* BILLING */}
+        <div className="border-b border-slate-100 last:border-b-0">
+          <SectionButton
+            icon={
+              <CreditCard className="h-5 w-5" />
+            }
+            title="Billing"
+            description="Plan, usage, invoices and subscription."
+            open={
+              openSection ===
+              "billing"
+            }
+            onClick={() =>
+              toggleSection(
+                "billing"
+              )
+            }
+          />
+
+          {openSection ===
+            "billing" && (
+            <div className="border-t border-slate-100 bg-slate-50/60 px-5 py-6 sm:px-8">
+              <BillingSection />
+            </div>
+          )}
+        </div>
+
         {/* PRIVACY */}
         <div className="border-b border-slate-100 last:border-b-0">
           <SectionButton
@@ -936,7 +985,7 @@ function SectionButton({
   open,
   onClick,
 }: {
-  icon: React.ReactNode;
+  icon: ReactNode;
   title: string;
   description: string;
   open: boolean;
