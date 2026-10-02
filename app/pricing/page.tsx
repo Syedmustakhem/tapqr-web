@@ -8,8 +8,6 @@ import {
 import Link from "next/link";
 import { motion } from "framer-motion";
 
-import PlanCheckoutButton from "@/components/billing/PlanCheckoutButton";
-
 import {
   isAuthenticated,
 } from "@/lib/auth";
@@ -173,7 +171,7 @@ export default function PricingPage() {
   /*
    * Logged-out visitors cannot check out —
    * the checkout API would 401. Send them
-   * to register first; the plan query param
+   * to login first; the plan query param
    * carries their choice.
    *
    * Read on mount (not during render) so
@@ -186,6 +184,33 @@ export default function PricingPage() {
   useEffect(() => {
     setAuthed(isAuthenticated());
   }, []);
+
+  /*
+   * Checkout now lives on the dashboard
+   * payments page. Public pricing only
+   * routes there — via login first when
+   * the visitor is logged out.
+   */
+
+  const planTarget = (
+    planCode: PlanCode | null,
+    href: string
+  ): string => {
+    if (!planCode) {
+      return href;
+    }
+
+    const paymentsUrl =
+      `/dashboard/payments?plan=${planCode}`;
+
+    if (authed) {
+      return paymentsUrl;
+    }
+
+    return `/login?redirect=${encodeURIComponent(
+      paymentsUrl
+    )}`;
+  };
 
   return (
     <main className="min-h-screen bg-paper text-ink">
@@ -367,11 +392,12 @@ export default function PricingPage() {
                   </span>
                 </div>
 
-                {plan.planCode && authed ? (
-                  <PlanCheckoutButton
-                    planCode={
-                      plan.planCode
-                    }
+                {plan.planCode ? (
+                  <Link
+                    href={planTarget(
+                      plan.planCode,
+                      plan.href
+                    )}
                     className={`mt-8 flex h-12 w-full items-center justify-center gap-2 rounded-full text-sm font-semibold transition-transform hover:-translate-y-0.5 ${
                       plan.popular
                         ? "bg-[#2F6BFF] text-white"
@@ -380,7 +406,7 @@ export default function PricingPage() {
                   >
                     {plan.cta}
                     <ArrowRight size={16} />
-                  </PlanCheckoutButton>
+                  </Link>
                 ) : (
                   <Link
                     href={plan.href}

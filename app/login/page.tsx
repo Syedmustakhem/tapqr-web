@@ -205,8 +205,31 @@ export default function LoginPage() {
   }
 
   function goToDashboard() {
-    window.location.href = "/dashboard";
+  try {
+    window.localStorage.setItem(
+      "tapqr_last_login_at",
+      String(Date.now())
+    );
+
+    const redirect = new URLSearchParams(
+      window.location.search
+    ).get("redirect");
+
+    if (
+      redirect &&
+      redirect.startsWith("/") &&
+      !redirect.startsWith("//")
+    ) {
+      window.location.href = redirect;
+      return;
+    }
+  } catch {
+    /* ignore */
   }
+  window.location.href = "/dashboard";
+}
+
+
 
   function chooseEmail() {
     clearMessages();

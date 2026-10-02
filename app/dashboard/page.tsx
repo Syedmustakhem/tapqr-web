@@ -6,6 +6,9 @@ import {
   useMemo,
   useState,
 } from "react";
+
+import type { ReactNode } from "react";
+
 import Link from "next/link";
 import {
   Activity,
@@ -34,6 +37,7 @@ import {
   AuthUser,
   saveUser,
 } from "@/lib/auth";
+import ProUpsellBanner from "@/components/billing/ProUpsellBanner";
 
 type Business = {
   id: string;
@@ -442,6 +446,9 @@ export default function DashboardPage() {
           }
         />
       )}
+
+      {/* PRO UPSELL — shows at most once every 7 days, Free users only */}
+      <ProUpsellBanner />
 
       {/* HERO */}
       <section className="relative overflow-visible rounded-[28px] border border-slate-200/80 bg-white p-6 shadow-[0_8px_30px_rgba(15,23,42,0.04)] sm:p-8">
@@ -1052,7 +1059,7 @@ function MetricCard({
   label: string;
   value: number;
   helper: string;
-  icon: React.ReactNode;
+  icon: ReactNode;
   tone:
     | "blue"
     | "green"
@@ -1120,7 +1127,7 @@ function QuickAction({
   description,
 }: {
   href: string;
-  icon: React.ReactNode;
+  icon: ReactNode;
   title: string;
   description: string;
 }) {

@@ -60,7 +60,7 @@ export default function UpgradePrompt({
       </div>
 
       <Link
-        href="/pricing"
+        href="/dashboard/payments"
         className="shrink-0 rounded-xl bg-slate-950 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-slate-800"
       >
         Upgrade

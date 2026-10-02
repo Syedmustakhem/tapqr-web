@@ -173,7 +173,7 @@ export default function PlanCheckoutButton({
 
             handler: () => {
               router.push(
-                "/dashboard/settings?tab=billing"
+                "/dashboard/payments"
               );
               router.refresh();
             },
@@ -211,7 +211,7 @@ export default function PlanCheckoutButton({
             "ALREADY_SUBSCRIBED"
         ) {
           router.push(
-            "/dashboard/settings?tab=billing"
+            "/dashboard/payments"
           );
           return;
         }
