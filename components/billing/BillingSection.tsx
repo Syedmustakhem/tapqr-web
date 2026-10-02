@@ -295,7 +295,7 @@ export default function BillingSection() {
 
         <div className="mt-4 flex flex-wrap gap-2">
           <Link
-            href="/pricing"
+            href="/dashboard/payments"
             className="rounded-xl bg-slate-950 px-5 py-2.5 text-xs font-bold text-white transition hover:bg-slate-800"
           >
             {isPro

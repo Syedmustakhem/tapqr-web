@@ -257,7 +257,7 @@ async function performRequest<T>(
     message,
     response.status,
     code
-  );s
+  );
 }
 
   return body as T;

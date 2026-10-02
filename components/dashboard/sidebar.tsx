@@ -17,6 +17,7 @@ import {
   Sparkles,
   Users,
   X,
+  CreditCard,
 } from "lucide-react";
 import { MessageSquare } from "lucide-react";
 import { apiRequest, ApiError } from "@/lib/api";
@@ -63,6 +64,12 @@ const navigation = [
   href: "/dashboard/reviews",
   icon: MessageSquare,
 },
+{
+  label: "Payments",
+  href: "/dashboard/payments",
+  icon: CreditCard,
+},
+
   {
     label: "Activity",
     href: "/dashboard/activity",
