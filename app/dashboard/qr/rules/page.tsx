@@ -38,6 +38,7 @@ import {
   publishQRRule,
   type QRRule,
   type QRRuleActionType,
+  type QRRuleConditionGroup,
   type QRRuleStatus,
 } from "@/lib/qr-rules";
 
@@ -205,10 +206,13 @@ function conditionCount(
     rule.conditions?.length ?? 0;
 
   const groups =
-    rule.conditionGroups ?? [];
+    rule.groups ?? [];
 
   const grouped = groups.reduce(
-    (total, group) =>
+    (
+      total: number,
+      group: QRRuleConditionGroup
+    ) =>
       total +
       (group.conditions?.length ?? 0),
     0

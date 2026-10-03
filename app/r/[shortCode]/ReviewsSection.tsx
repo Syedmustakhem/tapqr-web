@@ -1,4 +1,4 @@
- "use client";
+"use client";
 
 import {
   FormEvent,
@@ -6,7 +6,7 @@ import {
   useMemo,
   useState,
 } from "react";
-
+import ReviewFunnel from "./ReviewFunnel";
 import {
   CheckCircle2,
   ExternalLink,
@@ -48,6 +48,7 @@ interface ReviewsSectionProps {
   verificationToken?: string | null;
   verificationReady?: boolean;
   externalReviewUrl?: string | null;
+  reviewFunnelEnabled?: boolean;
   primaryColor: string;
   buttonRadius: number;
 }
@@ -103,6 +104,7 @@ export default function ReviewsSection({
   verificationToken,
   verificationReady = false,
   externalReviewUrl,
+  reviewFunnelEnabled = false,
   primaryColor,
   buttonRadius,
 }: ReviewsSectionProps) {
@@ -357,12 +359,12 @@ export default function ReviewsSection({
         <div
           style={{
             display: "flex",
-            alignItems: "flex-start",
+            alignItems:
+              "flex-start",
             justifyContent:
               "space-between",
             gap: 18,
-            flexWrap:
-              "wrap",
+            flexWrap: "wrap",
           }}
         >
           <div>
@@ -566,372 +568,412 @@ export default function ReviewsSection({
             </div>
           )}
 
-        <form
-          onSubmit={submitReview}
-          style={{
-            marginTop: 25,
-            paddingTop: 22,
-            borderTop:
-              "1px solid #eef2f7",
-          }}
-        >
-          <h3
-            style={{
-              margin: 0,
-              fontSize: 17,
-              fontWeight: 800,
-              color:
-                "#111827",
-            }}
-          >
-            Leave a review
-          </h3>
-
-          <div
-            style={{
-              marginTop: 13,
-              display: "flex",
-              alignItems:
-                "center",
-              gap: 5,
-              flexWrap:
-                "wrap",
-            }}
-          >
-            {[1, 2, 3, 4, 5].map(
-              (star) => {
-                const active =
-                  star <=
-                  (hoverRating ||
-                    rating);
-
-                return (
-                  <button
-                    key={star}
-                    type="button"
-                    aria-label={`${star} star`}
-                    onMouseEnter={() =>
-                      setHoverRating(
-                        star
-                      )
-                    }
-                    onMouseLeave={() =>
-                      setHoverRating(
-                        0
-                      )
-                    }
-                    onClick={() =>
-                      setRating(
-                        star
-                      )
-                    }
-                    style={{
-                      width: 38,
-                      height: 38,
-                      border: "none",
-                      background:
-                        "transparent",
-                      padding: 0,
-                      cursor:
-                        "pointer",
-                      color: active
-                        ? "#f59e0b"
-                        : "#cbd5e1",
-                    }}
-                  >
-                    <Star
-                      fill={
-                        active
-                          ? "currentColor"
-                          : "none"
-                      }
-                      style={{
-                        width: 28,
-                        height: 28,
-                      }}
-                    />
-                  </button>
-                );
-              }
-            )}
-
-            <span
-              style={{
-                marginLeft: 7,
-                fontSize: 12,
-                fontWeight: 700,
-                color:
-                  "#64748b",
-              }}
-            >
-              {ratingLabel}
-            </span>
-          </div>
-
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns:
-                "repeat(auto-fit, minmax(220px, 1fr))",
-              gap: 10,
-              marginTop: 14,
-            }}
-          >
-            <input
-              value={name}
-              onChange={(event) =>
-                setName(
-                  event.target
-                    .value
-                )
-              }
-              placeholder="Your name"
-              autoComplete="name"
-              maxLength={100}
-              style={{
-                width: "100%",
-                boxSizing:
-                  "border-box",
-                padding:
-                  "12px 13px",
-                border:
-                  "1px solid #e2e8f0",
-                borderRadius:
-                  12,
-                outline: "none",
-                fontSize: 13,
-                color:
-                  "#111827",
-              }}
-            />
-
-            <input
-              value={email}
-              onChange={(event) =>
-                setEmail(
-                  event.target
-                    .value
-                )
-              }
-              placeholder="Email (optional)"
-              type="email"
-              autoComplete="email"
-              maxLength={254}
-              style={{
-                width: "100%",
-                boxSizing:
-                  "border-box",
-                padding:
-                  "12px 13px",
-                border:
-                  "1px solid #e2e8f0",
-                borderRadius:
-                  12,
-                outline: "none",
-                fontSize: 13,
-                color:
-                  "#111827",
-              }}
-            />
-          </div>
-
-          <input
-            value={title}
-            onChange={(event) =>
-              setTitle(
-                event.target.value
-              )
+        {/*
+          REVIEW FUNNEL (Pro):
+          when enabled, the star-first funnel replaces the
+          standard review form below.
+        */}
+        {reviewFunnelEnabled ? (
+          <ReviewFunnel
+            businessId={businessId}
+            qrCodeId={qrCodeId}
+            verificationToken={
+              verificationToken
             }
-            placeholder="Review title (optional)"
-            maxLength={120}
-            style={{
-              width: "100%",
-              boxSizing:
-                "border-box",
-              marginTop: 10,
-              padding:
-                "12px 13px",
-              border:
-                "1px solid #e2e8f0",
-              borderRadius:
-                12,
-              outline: "none",
-              fontSize: 13,
-              color:
-                "#111827",
-            }}
-          />
-
-          <textarea
-            value={comment}
-            onChange={(event) =>
-              setComment(
-                event.target.value
-              )
+            verificationReady={
+              verificationReady
             }
-            placeholder="Tell us about your experience..."
-            maxLength={2000}
-            rows={4}
-            style={{
-              width: "100%",
-              boxSizing:
-                "border-box",
-              marginTop: 10,
-              padding:
-                "12px 13px",
-              border:
-                "1px solid #e2e8f0",
-              borderRadius:
-                12,
-              outline: "none",
-              resize: "vertical",
-              fontSize: 13,
-              lineHeight: 1.5,
-              color:
-                "#111827",
-            }}
+            externalReviewUrl={
+              externalReviewUrl
+            }
+            primaryColor={
+              primaryColor
+            }
+            buttonRadius={
+              buttonRadius
+            }
           />
-
-          {error && (
-            <div
-              role="alert"
-              style={{
-                marginTop: 10,
-                padding:
-                  "10px 12px",
-                borderRadius:
-                  11,
-                background:
-                  "#fef2f2",
-                border:
-                  "1px solid #fecaca",
-                color:
-                  "#b91c1c",
-                fontSize: 12,
-                lineHeight: 1.5,
-              }}
-            >
-              {error}
-            </div>
-          )}
-
-          {message && (
-            <div
-              role="status"
-              style={{
-                marginTop: 10,
-                padding:
-                  "10px 12px",
-                borderRadius:
-                  11,
-                background:
-                  "#ecfdf5",
-                border:
-                  "1px solid #a7f3d0",
-                color:
-                  "#047857",
-                fontSize: 12,
-                lineHeight: 1.5,
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  gap: 8,
-                  alignItems:
-                    "flex-start",
-                }}
-              >
-                <CheckCircle2
-                  style={{
-                    width: 16,
-                    height: 16,
-                    flexShrink: 0,
-                  }}
-                />
-
-                <span>
-                  {message}
-                </span>
-              </div>
-            </div>
-          )}
-
-          <div
+        ) : (
+          <form
+            onSubmit={submitReview}
             style={{
-              display: "flex",
-              gap: 10,
-              alignItems:
-                "center",
-              justifyContent:
-                "space-between",
-              flexWrap:
-                "wrap",
-              marginTop: 13,
+              marginTop: 25,
+              paddingTop: 22,
+              borderTop:
+                "1px solid #eef2f7",
             }}
           >
-            <span
+            <h3
               style={{
-                fontSize: 10,
-                color:
-                  "#94a3b8",
-              }}
-            >
-              {!verificationReady
-                ? "Preparing a secure QR interaction..."
-                : verificationToken
-                  ? "This review can be marked as verified after moderation."
-                  : "Reviews are moderated before publication."}
-            </span>
-
-            <button
-              type="submit"
-              disabled={
-                submitting ||
-                rating === 0 ||
-                !verificationReady
-              }
-              style={{
-                border: "none",
-                padding:
-                  "11px 17px",
-                borderRadius:
-                  buttonRadius,
-                background:
-                  primaryColor,
-                color: "#fff",
+                margin: 0,
+                fontSize: 17,
                 fontWeight: 800,
-                fontSize: 13,
-                cursor:
-                  submitting ||
-                  rating === 0
-                    ? "not-allowed"
-                    : "pointer",
-                opacity:
-                  submitting ||
-                  rating === 0
-                    ? 0.55
-                    : 1,
-                display:
-                  "inline-flex",
+                color:
+                  "#111827",
+              }}
+            >
+              Leave a review
+            </h3>
+
+            <div
+              style={{
+                marginTop: 13,
+                display: "flex",
                 alignItems:
                   "center",
-                gap: 7,
+                gap: 5,
+                flexWrap:
+                  "wrap",
               }}
             >
-              <MessageSquare
+              {[1, 2, 3, 4, 5].map(
+                (star) => {
+                  const active =
+                    star <=
+                    (hoverRating ||
+                      rating);
+
+                  return (
+                    <button
+                      key={star}
+                      type="button"
+                      aria-label={`${star} star`}
+                      onMouseEnter={() =>
+                        setHoverRating(
+                          star
+                        )
+                      }
+                      onMouseLeave={() =>
+                        setHoverRating(
+                          0
+                        )
+                      }
+                      onClick={() =>
+                        setRating(
+                          star
+                        )
+                      }
+                      style={{
+                        width: 38,
+                        height: 38,
+                        border:
+                          "none",
+                        background:
+                          "transparent",
+                        padding: 0,
+                        cursor:
+                          "pointer",
+                        color: active
+                          ? "#f59e0b"
+                          : "#cbd5e1",
+                      }}
+                    >
+                      <Star
+                        fill={
+                          active
+                            ? "currentColor"
+                            : "none"
+                        }
+                        style={{
+                          width: 28,
+                          height: 28,
+                        }}
+                      />
+                    </button>
+                  );
+                }
+              )}
+
+              <span
                 style={{
-                  width: 15,
-                  height: 15,
+                  marginLeft: 7,
+                  fontSize: 12,
+                  fontWeight: 700,
+                  color:
+                    "#64748b",
+                }}
+              >
+                {ratingLabel}
+              </span>
+            </div>
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns:
+                  "repeat(auto-fit, minmax(220px, 1fr))",
+                gap: 10,
+                marginTop: 14,
+              }}
+            >
+              <input
+                value={name}
+                onChange={(
+                  event
+                ) =>
+                  setName(
+                    event.target
+                      .value
+                  )
+                }
+                placeholder="Your name"
+                autoComplete="name"
+                maxLength={100}
+                style={{
+                  width: "100%",
+                  boxSizing:
+                    "border-box",
+                  padding:
+                    "12px 13px",
+                  border:
+                    "1px solid #e2e8f0",
+                  borderRadius:
+                    12,
+                  outline: "none",
+                  fontSize: 13,
+                  color:
+                    "#111827",
                 }}
               />
 
-              {submitting
-                ? "Submitting..."
-                : "Submit review"}
-            </button>
-          </div>
-        </form>
+              <input
+                value={email}
+                onChange={(
+                  event
+                ) =>
+                  setEmail(
+                    event.target
+                      .value
+                  )
+                }
+                placeholder="Email (optional)"
+                type="email"
+                autoComplete="email"
+                maxLength={254}
+                style={{
+                  width: "100%",
+                  boxSizing:
+                    "border-box",
+                  padding:
+                    "12px 13px",
+                  border:
+                    "1px solid #e2e8f0",
+                  borderRadius:
+                    12,
+                  outline: "none",
+                  fontSize: 13,
+                  color:
+                    "#111827",
+                }}
+              />
+            </div>
+
+            <input
+              value={title}
+              onChange={(
+                event
+              ) =>
+                setTitle(
+                  event.target
+                    .value
+                )
+              }
+              placeholder="Review title (optional)"
+              maxLength={120}
+              style={{
+                width: "100%",
+                boxSizing:
+                  "border-box",
+                marginTop: 10,
+                padding:
+                  "12px 13px",
+                border:
+                  "1px solid #e2e8f0",
+                borderRadius:
+                  12,
+                outline: "none",
+                fontSize: 13,
+                color:
+                  "#111827",
+              }}
+            />
+
+            <textarea
+              value={comment}
+              onChange={(
+                event
+              ) =>
+                setComment(
+                  event.target
+                    .value
+                )
+              }
+              placeholder="Tell us about your experience..."
+              maxLength={2000}
+              rows={4}
+              style={{
+                width: "100%",
+                boxSizing:
+                  "border-box",
+                marginTop: 10,
+                padding:
+                  "12px 13px",
+                border:
+                  "1px solid #e2e8f0",
+                borderRadius:
+                  12,
+                outline: "none",
+                resize:
+                  "vertical",
+                fontSize: 13,
+                lineHeight: 1.5,
+                color:
+                  "#111827",
+              }}
+            />
+
+            {error && (
+              <div
+                role="alert"
+                style={{
+                  marginTop: 10,
+                  padding:
+                    "10px 12px",
+                  borderRadius:
+                    11,
+                  background:
+                    "#fef2f2",
+                  border:
+                    "1px solid #fecaca",
+                  color:
+                    "#b91c1c",
+                  fontSize: 12,
+                  lineHeight: 1.5,
+                }}
+              >
+                {error}
+              </div>
+            )}
+
+            {message && (
+              <div
+                role="status"
+                style={{
+                  marginTop: 10,
+                  padding:
+                    "10px 12px",
+                  borderRadius:
+                    11,
+                  background:
+                    "#ecfdf5",
+                  border:
+                    "1px solid #a7f3d0",
+                  color:
+                    "#047857",
+                  fontSize: 12,
+                  lineHeight: 1.5,
+                }}
+              >
+                <div
+                  style={{
+                    display:
+                      "flex",
+                    gap: 8,
+                    alignItems:
+                      "flex-start",
+                  }}
+                >
+                  <CheckCircle2
+                    style={{
+                      width: 16,
+                      height: 16,
+                      flexShrink: 0,
+                    }}
+                  />
+
+                  <span>
+                    {message}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            <div
+              style={{
+                display: "flex",
+                gap: 10,
+                alignItems:
+                  "center",
+                justifyContent:
+                  "space-between",
+                flexWrap:
+                  "wrap",
+                marginTop: 13,
+              }}
+            >
+              <span
+                style={{
+                  fontSize: 10,
+                  color:
+                    "#94a3b8",
+                }}
+              >
+                {!verificationReady
+                  ? "Preparing a secure QR interaction..."
+                  : verificationToken
+                    ? "This review can be marked as verified after moderation."
+                    : "Reviews are moderated before publication."}
+              </span>
+
+              <button
+                type="submit"
+                disabled={
+                  submitting ||
+                  rating === 0 ||
+                  !verificationReady
+                }
+                style={{
+                  border: "none",
+                  padding:
+                    "11px 17px",
+                  borderRadius:
+                    buttonRadius,
+                  background:
+                    primaryColor,
+                  color: "#fff",
+                  fontWeight: 800,
+                  fontSize: 13,
+                  cursor:
+                    submitting ||
+                    rating === 0
+                      ? "not-allowed"
+                      : "pointer",
+                  opacity:
+                    submitting ||
+                    rating === 0
+                      ? 0.55
+                      : 1,
+                  display:
+                    "inline-flex",
+                  alignItems:
+                    "center",
+                  gap: 7,
+                }}
+              >
+                <MessageSquare
+                  style={{
+                    width: 15,
+                    height: 15,
+                  }}
+                />
+
+                {submitting
+                  ? "Submitting..."
+                  : "Submit review"}
+              </button>
+            </div>
+          </form>
+        )}
 
         {submittedRating ===
           5 &&
@@ -1237,7 +1279,8 @@ export default function ReviewsSection({
                                     primaryColor,
                                 }}
                               >
-                                Business response
+                                Business
+                                response
                               </div>
 
                               <p

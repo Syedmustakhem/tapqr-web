@@ -48,6 +48,7 @@ type Review = {
   userId?: string | null;
   reviewerName?: string | null;
   reviewerEmail?: string | null;
+  isPrivateFeedback?: boolean;
   rating: number;
   title?: string | null;
   comment?: string | null;
@@ -244,6 +245,9 @@ export default function ReviewsPage() {
 
   const [statusFilter, setStatusFilter] =
     useState<StatusFilter>("ALL");
+
+  const [privateOnly, setPrivateOnly] =
+    useState(false);
 
   const [ratingFilter, setRatingFilter] =
     useState("ALL");
@@ -1068,6 +1072,23 @@ export default function ReviewsPage() {
                   </button>
                 )
               )}
+
+              <button
+                type="button"
+                onClick={() =>
+                  setPrivateOnly(
+                    (value) => !value
+                  )
+                }
+                className={`rounded-full border px-3 py-1.5 text-[10px] font-bold ${
+                  privateOnly
+                    ? "border-amber-500 bg-amber-500 text-white"
+                    : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
+                }`}
+                title="Show only private funnel feedback"
+              >
+                🔒 Private feedback
+              </button>
             </div>
 
             <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-between">
@@ -1143,7 +1164,13 @@ export default function ReviewsPage() {
         ) : (
           <>
             <div className="divide-y divide-slate-100">
-              {reviews.map(
+              {reviews
+                .filter(
+                  (review) =>
+                    !privateOnly ||
+                    review.isPrivateFeedback
+                )
+                .map(
                 (review) => (
                   <ReviewRow
                     key={review.id}
@@ -1213,7 +1240,7 @@ export default function ReviewsPage() {
                     }}
                   />
                 )
-              )}
+                )}
             </div>
 
             <Pagination
@@ -1608,6 +1635,15 @@ function ReviewRow({
                   review.status
                 }
               />
+
+              {review.isPrivateFeedback && (
+                <span
+                  className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-amber-700"
+                  title="Private funnel feedback — never shown publicly"
+                >
+                  🔒 Private
+                </span>
+              )}
 
               {actionLoading ? (
                 <Loader />
