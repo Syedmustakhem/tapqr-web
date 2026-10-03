@@ -62,6 +62,10 @@ export interface GuestExperience {
   specialsTitle: string | null;
   specialsDescription: string | null;
   specialsValidUntil: string | null;
+    loyaltyCardEnabled: boolean | null;
+  loyaltyCardTitle: string | null;
+  loyaltyStampsRequired: number | null;
+  loyaltyRewardDescription: string | null;
       address: {
         line1: string | null;
         line2: string | null;

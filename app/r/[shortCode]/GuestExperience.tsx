@@ -5,6 +5,7 @@ import {
   useState,
   useEffect,
 } from "react";
+import LoyaltyCard from "./LoyaltyCard";
 
 import type {
   GuestExperience,
@@ -1024,6 +1025,29 @@ export default function GuestExperience({
         }
         validUntil={
           profile?.specialsValidUntil
+        }
+        primaryColor={
+          primaryColor
+        }
+      />
+      {/* =========================
+          LOYALTY CARD (Pro)
+      ========================== */}
+
+      <LoyaltyCard
+        enabled={
+          profile?.loyaltyCardEnabled ??
+          false
+        }
+        businessId={business.id}
+        title={
+          profile?.loyaltyCardTitle
+        }
+        stampsRequired={
+          profile?.loyaltyStampsRequired
+        }
+        rewardDescription={
+          profile?.loyaltyRewardDescription
         }
         primaryColor={
           primaryColor

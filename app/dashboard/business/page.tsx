@@ -61,6 +61,10 @@ type BusinessProfile = {
   specialsTitle?: string | null;
   specialsDescription?: string | null;
   specialsValidUntil?: string | null;
+  loyaltyCardEnabled?: boolean | null;
+  loyaltyCardTitle?: string | null;
+  loyaltyStampsRequired?: number | null;
+  loyaltyRewardDescription?: string | null;
 
   /**
    * This is the public profile/address country.
@@ -180,6 +184,12 @@ type FormState = {
   specialsTitle: string;
   specialsDescription: string;
   specialsValidUntil: string;
+
+  // Loyalty Card (Pro)
+  loyaltyCardEnabled: boolean;
+  loyaltyCardTitle: string;
+  loyaltyStampsRequired: string;
+  loyaltyRewardDescription: string;
 
   // Public address
   addressLine1: string;
@@ -319,6 +329,12 @@ const EMPTY_FORM = (): FormState => ({
   specialsDescription: "",
   specialsValidUntil: "",
 
+  // Loyalty Card (Pro)
+  loyaltyCardEnabled: false,
+  loyaltyCardTitle: "",
+  loyaltyStampsRequired: "10",
+  loyaltyRewardDescription: "",
+
   // Address
   addressLine1: "",
   addressLine2: "",
@@ -435,6 +451,22 @@ function toForm(business: Business): FormState {
       toDatetimeLocal(
         profile.specialsValidUntil
       ),
+
+    // Loyalty Card (Pro)
+    loyaltyCardEnabled:
+      profile.loyaltyCardEnabled ?? false,
+    loyaltyCardTitle:
+      profile.loyaltyCardTitle ?? "",
+    loyaltyStampsRequired:
+      profile.loyaltyStampsRequired !=
+      null
+        ? String(
+            profile.loyaltyStampsRequired
+          )
+        : "10",
+    loyaltyRewardDescription:
+      profile.loyaltyRewardDescription ??
+      "",
 
     // Address
     addressLine1: profile.addressLine1 ?? "",
@@ -797,6 +829,28 @@ export default function BusinessPage() {
       return;
     }
 
+    const stampsRequiredRaw =
+      form.loyaltyStampsRequired.trim();
+
+    const stampsRequired =
+      stampsRequiredRaw === ""
+        ? null
+        : Number(stampsRequiredRaw);
+
+    if (
+      stampsRequired !== null &&
+      (!Number.isInteger(
+        stampsRequired
+      ) ||
+        stampsRequired < 2 ||
+        stampsRequired > 30)
+    ) {
+      setError(
+        "Stamps required must be a whole number between 2 and 30."
+      );
+      return;
+    }
+
     try {
       setSaving(true);
       setError("");
@@ -904,6 +958,20 @@ export default function BusinessPage() {
                     form.specialsValidUntil
                   ).toISOString()
                 : null,
+
+            loyaltyCardEnabled:
+              form.loyaltyCardEnabled,
+
+            loyaltyCardTitle:
+              form.loyaltyCardTitle.trim() ||
+              null,
+
+            loyaltyStampsRequired:
+              stampsRequired,
+
+            loyaltyRewardDescription:
+              form.loyaltyRewardDescription.trim() ||
+              null,
 
             description:
               form.description.trim() || null,
@@ -2397,6 +2465,121 @@ export default function BusinessPage() {
                   </p>
                 </div>
               </div>
+            </div>
+          </Panel>
+
+          {/* =====================================================
+              LOYALTY CARD (Pro)
+          ===================================================== */}
+
+          <Panel
+            title="Loyalty Card"
+            subtitle="Reward repeat scanners with a digital stamp card."
+          >
+            <div className="space-y-5">
+              <label className="flex items-start gap-3 rounded-xl border border-slate-200 p-4">
+                <input
+                  type="checkbox"
+                  checked={
+                    form.loyaltyCardEnabled
+                  }
+                  disabled={
+                    !editing || saving
+                  }
+                  onChange={(event) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      loyaltyCardEnabled:
+                        event.target
+                          .checked,
+                    }))
+                  }
+                  className="mt-1 h-4 w-4 accent-slate-950"
+                />
+
+                <span>
+                  <span className="block text-sm font-bold text-slate-900">
+                    Enable Loyalty Card{" "}
+                    <span className="ml-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-amber-700">
+                      Pro
+                    </span>
+                  </span>
+
+                  <span className="mt-1 block text-xs leading-5 text-slate-500">
+                    Scanners earn one
+                    stamp per day when
+                    they scan your QR.
+                    No app or login
+                    needed — the card
+                    lives on their
+                    device.
+                  </span>
+                </span>
+              </label>
+
+              <div className="grid gap-5 sm:grid-cols-2">
+                <Field
+                  label="Card title"
+                  value={
+                    form.loyaltyCardTitle
+                  }
+                  disabled={
+                    !editing || saving
+                  }
+                  onChange={(value) =>
+                    setField(
+                      "loyaltyCardTitle",
+                      value
+                    )
+                  }
+                />
+
+                <Field
+                  label="Stamps required (2–30)"
+                  type="number"
+                  value={
+                    form.loyaltyStampsRequired
+                  }
+                  disabled={
+                    !editing || saving
+                  }
+                  inputMode="numeric"
+                  onChange={(value) =>
+                    setField(
+                      "loyaltyStampsRequired",
+                      value
+                    )
+                  }
+                />
+
+                <div className="sm:col-span-2">
+                  <TextArea
+                    label="Reward description"
+                    value={
+                      form.loyaltyRewardDescription
+                    }
+                    disabled={
+                      !editing || saving
+                    }
+                    onChange={(value) =>
+                      setField(
+                        "loyaltyRewardDescription",
+                        value
+                      )
+                    }
+                  />
+                </div>
+              </div>
+
+              <p className="text-xs leading-5 text-slate-400">
+                Example: "Coffee Club"
+                · 10 stamps · "Free
+                coffee on your 10th
+                visit". When a scanner
+                reaches the goal, the
+                card shows the reward
+                to claim.
+              </p>
             </div>
           </Panel>
 
