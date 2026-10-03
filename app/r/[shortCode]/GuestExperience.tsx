@@ -1578,6 +1578,30 @@ export default function GuestExperience({
             )}
           </>
         )}
+
+        <ReviewsSection
+          businessId={business.id}
+          qrCodeId={qr.id}
+          verificationToken={
+            reviewVerificationToken
+          }
+          verificationReady={
+            scanVerificationReady
+          }
+          externalReviewUrl={
+            profile?.externalReviewUrl
+          }
+          reviewFunnelEnabled={
+            profile?.reviewFunnelEnabled ??
+            false
+          }
+          primaryColor={
+            primaryColor
+          }
+          buttonRadius={
+            buttonRadius
+          }
+        />
       </section>
 
       {/* =========================
@@ -1605,21 +1629,6 @@ export default function GuestExperience({
           }
         />
       )}
-<ReviewsSection
-  businessId={business.id}
-  qrCodeId={qr.id}
-  verificationToken={
-    reviewVerificationToken
-  }
-  verificationReady={
-    scanVerificationReady
-  }
-  externalReviewUrl={
-    profile?.externalReviewUrl
-  }
-  primaryColor={primaryColor}
-  buttonRadius={buttonRadius}
-/>
       {/* =========================
           FOOTER
       ========================== */}

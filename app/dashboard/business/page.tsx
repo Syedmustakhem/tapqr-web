@@ -55,6 +55,8 @@ type BusinessProfile = {
   city?: string | null;
   state?: string | null;
   postalCode?: string | null;
+  reviewFunnelEnabled?: boolean | null;
+  externalReviewUrl?: string | null;
 
   /**
    * This is the public profile/address country.
@@ -164,6 +166,10 @@ type FormState = {
 
   // Public profile
   tagline: string;
+
+  // Review Funnel (Pro)
+  reviewFunnelEnabled: boolean;
+  externalReviewUrl: string;
 
   // Public address
   addressLine1: string;
@@ -293,6 +299,10 @@ const EMPTY_FORM = (): FormState => ({
   // Public profile
   tagline: "",
 
+  // Review Funnel (Pro)
+  reviewFunnelEnabled: false,
+  externalReviewUrl: "",
+
   // Address
   addressLine1: "",
   addressLine2: "",
@@ -365,6 +375,12 @@ function toForm(business: Business): FormState {
 
     // Public profile
     tagline: profile.tagline ?? "",
+
+    // Review Funnel (Pro)
+    reviewFunnelEnabled:
+      profile.reviewFunnelEnabled ?? false,
+    externalReviewUrl:
+      profile.externalReviewUrl ?? "",
 
     // Address
     addressLine1: profile.addressLine1 ?? "",
@@ -810,6 +826,13 @@ export default function BusinessPage() {
             tagline:
               form.tagline.trim() || null,
 
+            externalReviewUrl:
+              form.externalReviewUrl.trim() ||
+              null,
+
+            reviewFunnelEnabled:
+              form.reviewFunnelEnabled,
+
             description:
               form.description.trim() || null,
 
@@ -909,11 +932,20 @@ export default function BusinessPage() {
         "Business profile updated successfully."
       );
     } catch (err) {
-      setError(
-        err instanceof ApiError
-          ? err.message
-          : "Unable to update business."
-      );
+      if (
+        err instanceof ApiError &&
+        err.code === "UPGRADE_REQUIRED"
+      ) {
+        setError(
+          "Review Funnel is a Pro feature. Upgrade to Pro to enable it and set your Google review link."
+        );
+      } else {
+        setError(
+          err instanceof ApiError
+            ? err.message
+            : "Unable to update business."
+        );
+      }
     } finally {
       setSaving(false);
     }
@@ -2092,6 +2124,83 @@ export default function BusinessPage() {
                 />
               ))}
             </div>
+          </Panel>
+
+          {/* =====================================================
+              REVIEW FUNNEL (Pro)
+          ===================================================== */}
+
+          <Panel
+            title="Review Funnel"
+            subtitle="Turn scans into Google reviews — and catch unhappy customers privately."
+          >
+            <div className="grid gap-5 sm:grid-cols-2">
+              <label className="flex items-start gap-3 rounded-xl border border-slate-200 p-4">
+                <input
+                  type="checkbox"
+                  checked={
+                    form.reviewFunnelEnabled
+                  }
+                  disabled={
+                    !editing || saving
+                  }
+                  onChange={(event) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      reviewFunnelEnabled:
+                        event.target
+                          .checked,
+                    }))
+                  }
+                  className="mt-1 h-4 w-4 accent-slate-950"
+                />
+
+                <span>
+                  <span className="block text-sm font-bold text-slate-900">
+                    Enable Review Funnel{" "}
+                    <span className="ml-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-amber-700">
+                      Pro
+                    </span>
+                  </span>
+
+                  <span className="mt-1 block text-xs leading-5 text-slate-500">
+                    Visitors rate 1–5
+                    stars first. 4–5
+                    stars get sent to
+                    Google; 1–3 stars
+                    leave private
+                    feedback only you
+                    see.
+                  </span>
+                </span>
+              </label>
+
+              <Field
+                label="Google review link"
+                type="url"
+                value={
+                  form.externalReviewUrl
+                }
+                disabled={
+                  !editing || saving
+                }
+                onChange={(value) =>
+                  setField(
+                    "externalReviewUrl",
+                    value
+                  )
+                }
+              />
+            </div>
+
+            <p className="mt-3 text-xs leading-5 text-slate-400">
+              Find it in your Google
+              Business profile →
+              Share → Reviews. Without
+              a link, happy customers
+              are asked to review on
+              TapQR instead.
+            </p>
           </Panel>
 
           {/* =====================================================

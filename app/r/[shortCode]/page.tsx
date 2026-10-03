@@ -57,6 +57,8 @@ export interface GuestExperience {
       phone: string | null;
       whatsapp: string | null;
       externalReviewUrl: string | null;
+      reviewFunnelEnabled: boolean | null;
+
       address: {
         line1: string | null;
         line2: string | null;

@@ -39,8 +39,9 @@ type RuleWithRelations = QRRule & {
   qrCode?: QRCodeForRule | null;
 
   /*
-   * Different backend/frontend revisions have used both
-   * conditionGroups and qrruleConditionGroups.
+   * The rule detail API returns condition groups under
+   * the Prisma relation name `qrruleConditionGroups`;
+   * some revisions normalize it to `groups`.
    *
    * Keep the page tolerant of either response shape.
    */
@@ -385,7 +386,6 @@ function getGroups(
   rule: RuleWithRelations
 ): QRRuleConditionGroup[] {
   return (
-    rule.conditionGroups ??
     rule.groups ??
     rule.qrruleConditionGroups ??
     []
@@ -665,6 +665,9 @@ export default function RuleDetailPage() {
   );
 
   const qrCode = rule?.qrCode;
+
+  const experimentVariants =
+    rule?.experiment?.variants ?? [];
 
   const simulatorQRCodes = useMemo(() => {
     if (!rule) {
@@ -1286,11 +1289,9 @@ export default function RuleDetailPage() {
                 </p>
 
                 <div className="mt-2 flex flex-wrap gap-2">
-                  {(
-                    rule.experiment
-                      .variants ?? []
-                  ).length > 0 ? (
-                    rule.experiment.variants.map(
+                  {experimentVariants.length >
+                  0 ? (
+                    experimentVariants.map(
                       (variant, index) => (
                         <span
                           key={

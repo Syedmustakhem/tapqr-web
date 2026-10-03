@@ -850,30 +850,28 @@ export default function RuleBuilder({
                     >
                       <div className="rounded-2xl border border-slate-200 bg-white">
                         <ConditionGroup
-                          group={{
-                            logic:
-                              QRRuleLogic.AND,
-                            conditions: [
-                              condition,
-                            ],
-                            children: [],
-                            sortOrder:
-                              index,
-                          }}
+                          condition={
+                            condition
+                          }
                           disabled={
                             disabled
                           }
                           onChange={(
-                            group
+                            next
                           ) => {
-                            const next =
-                              group
-                                .conditions?.[0];
+                            const updated =
+                              Array.isArray(
+                                next
+                              )
+                                ? next[0]
+                                : next;
 
-                            if (next) {
+                            if (
+                              updated
+                            ) {
                               updateRootCondition(
                                 index,
-                                next
+                                updated
                               );
                             }
                           }}
@@ -901,26 +899,94 @@ export default function RuleBuilder({
 
           {value.groups.map(
             (group, index) => (
-              <ConditionGroup
+              <div
                 key={
                   group.id ??
                   `condition-group-${index}`
                 }
-                group={group}
-                depth={0}
-                disabled={disabled}
-                onChange={(
-                  nextGroup
-                ) =>
-                  updateGroup(
-                    index,
-                    nextGroup
-                  )
-                }
-                onRemove={() =>
-                  removeGroup(index)
-                }
-              />
+                className="rounded-2xl border border-slate-200 bg-white p-4"
+              >
+                <div className="mb-3 flex items-center justify-between">
+                  <p className="text-xs font-semibold text-slate-800">
+                    Condition group{" "}
+                    {index + 1}
+                    <span className="ml-2 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                      {group.logic}
+                    </span>
+                  </p>
+
+                  <button
+                    type="button"
+                    disabled={disabled}
+                    onClick={() =>
+                      removeGroup(index)
+                    }
+                    className="rounded-lg px-2 py-1 text-[11px] font-semibold text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Remove group
+                  </button>
+                </div>
+
+                <div className="space-y-3">
+                  {group.conditions.map(
+                    (
+                      condition,
+                      conditionIndex
+                    ) => (
+                      <ConditionGroup
+                        key={
+                          condition.id ??
+                          `group-${index}-condition-${conditionIndex}`
+                        }
+                        condition={
+                          condition
+                        }
+                        disabled={
+                          disabled
+                        }
+                        onChange={(
+                          next
+                        ) => {
+                          const updated =
+                            Array.isArray(
+                              next
+                            )
+                              ? next[0]
+                              : next;
+
+                          if (
+                            !updated
+                          ) {
+                            return;
+                          }
+
+                          updateGroup(
+                            index,
+                            {
+                              ...group,
+                              conditions:
+                                group.conditions.map(
+                                  (
+                                    item,
+                                    itemIndex
+                                  ) =>
+                                    itemIndex ===
+                                    conditionIndex
+                                      ? {
+                                          ...updated,
+                                          sortOrder:
+                                            conditionIndex,
+                                        }
+                                      : item
+                                ),
+                            }
+                          );
+                        }}
+                      />
+                    )
+                  )}
+                </div>
+              </div>
             )
           )}
 
