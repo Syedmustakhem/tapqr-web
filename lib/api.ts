@@ -230,7 +230,7 @@ async function performRequest<T>(
 
   if (!response.ok) {
   console.error("[API ERROR]", {
-    URL,
+    url: `${API_URL}${endpoint}`,
     status: response.status,
     statusText: response.statusText,
     body,
