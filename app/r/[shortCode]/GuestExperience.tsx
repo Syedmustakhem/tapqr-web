@@ -10,6 +10,7 @@ import type {
   GuestExperience,
 } from "./page";
 import ReviewsSection from "./ReviewsSection";
+import SpecialsBanner from "./SpecialsBanner";
 import { trackQRConversion } from "@/lib/qr-conversion";
 type CatalogItem = GuestExperience["business"]["catalogs"][number]["categories"][number]["items"][number];
 
@@ -1006,7 +1007,28 @@ export default function GuestExperience({
           )}
         </div>
       </section>
+ {/* =========================
+          TODAY'S SPECIALS (Pro)
+      ========================== */}
 
+      <SpecialsBanner
+        enabled={
+          profile?.specialsBannerEnabled ??
+          false
+        }
+        title={
+          profile?.specialsTitle
+        }
+        description={
+          profile?.specialsDescription
+        }
+        validUntil={
+          profile?.specialsValidUntil
+        }
+        primaryColor={
+          primaryColor
+        }
+      />
       {/* =========================
           CONTENT
       ========================== */}

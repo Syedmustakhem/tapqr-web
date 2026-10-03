@@ -58,7 +58,10 @@ export interface GuestExperience {
       whatsapp: string | null;
       externalReviewUrl: string | null;
       reviewFunnelEnabled: boolean | null;
-
+      specialsBannerEnabled: boolean | null;
+  specialsTitle: string | null;
+  specialsDescription: string | null;
+  specialsValidUntil: string | null;
       address: {
         line1: string | null;
         line2: string | null;
