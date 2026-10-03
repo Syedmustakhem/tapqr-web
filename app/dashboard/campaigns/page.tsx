@@ -222,6 +222,51 @@ const STATUS_ACTIONS: Record<
   ARCHIVED: [],
 };
 
+/*
+ * Safe status lookups.
+ *
+ * The API is typed to return the five known statuses,
+ * but any unexpected / missing value used to throw
+ * "Cannot read properties of undefined" during render
+ * and take down the entire campaigns page via the
+ * Next.js error boundary. These helpers degrade to a
+ * neutral "Unknown" badge and no actions instead.
+ */
+
+const FALLBACK_STATUS_META = {
+  label: "Unknown",
+  classes:
+    "border-slate-200 bg-slate-100 text-slate-500",
+};
+
+function getStatusMeta(
+  status: string | null | undefined,
+): { label: string; classes: string } {
+  if (!status) {
+    return FALLBACK_STATUS_META;
+  }
+
+  return (
+    STATUS_META[status as CampaignStatus] ??
+    FALLBACK_STATUS_META
+  );
+}
+
+function getStatusActions(
+  status: string | null | undefined,
+): CampaignStatus[] {
+  if (!status) {
+    return [];
+  }
+
+  return (
+    STATUS_ACTIONS[
+      status as CampaignStatus
+    ] ?? []
+  );
+}
+
+
 function formatDate(value?: string | null) {
   if (!value) return "Not scheduled";
 
@@ -935,7 +980,8 @@ export default function CampaignsPage() {
             <div className="mt-5 space-y-2">
               {campaigns.map((campaign) => {
                 const selected = campaign.id === selectedId;
-                const status = STATUS_META[campaign.status];
+                const status = getStatusMeta(campaign.status);
+
 
                 return (
                   <button
@@ -1017,15 +1063,17 @@ export default function CampaignsPage() {
                   <div className="flex flex-wrap items-center gap-2">
                     <span
                       className={`rounded-full border px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.08em] ${
-                        STATUS_META[
-                          selectedCampaign.status
-                        ].classes
+                       getStatusMeta(
+  selectedCampaign.status,
+).classes
+
                       }`}
                     >
                       {
-                        STATUS_META[
-                          selectedCampaign.status
-                        ].label
+                       getStatusMeta(
+  selectedCampaign.status,
+).label
+
                       }
                     </span>
 
@@ -1066,8 +1114,10 @@ export default function CampaignsPage() {
               </div>
 
               <div className="mt-5 flex flex-wrap gap-2">
-                {STATUS_ACTIONS[selectedCampaign.status].map(
-                  (status) => {
+                {getStatusActions(
+  selectedCampaign.status,
+).map((status) => {
+
                     const actionIcon =
                       status === "ACTIVE" ? (
                         <PlayCircle className="h-3.5 w-3.5" />

@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import GuestExperience from "./GuestExperience";
 
 const API_BASE = (
@@ -195,6 +195,53 @@ async function getGuestExperience(
 
   return payload?.data ?? payload ?? null;
 }
+/**
+ * Record a scan for URL-redirect QRs.
+ *
+ * The client-side GuestExperience component never renders for
+ * redirects (the server calls Next.js redirect() first), so
+ * without this the visit would never be tracked.
+ *
+ * The visitor's forwarded headers are passed through so the
+ * backend records the visitor's IP (not this server's). The
+ * backend has `trust proxy` enabled, so its rate limiter
+ * still keys per visitor.
+ *
+ * Scan recording must never break the redirect.
+ */
+async function recordRedirectScan(
+  shortCode: string
+): Promise<void> {
+  try {
+    const incoming = await headers();
+
+    const forwardedFor = incoming.get("x-forwarded-for");
+    const userAgent = incoming.get("user-agent");
+    const referer = incoming.get("referer");
+
+    await fetch(
+      `${API_ROOT}/qrcodes/public/${encodeURIComponent(
+        shortCode
+      )}/scan`,
+      {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          ...(forwardedFor
+            ? { "x-forwarded-for": forwardedFor }
+            : {}),
+          ...(userAgent
+            ? { "user-agent": userAgent }
+            : {}),
+          ...(referer ? { referer } : {}),
+        },
+        cache: "no-store",
+      }
+    );
+  } catch {
+    /* Scan recording must never break the redirect. */
+  }
+}
 
 export default async function QRGuestPage({
   params,
@@ -243,9 +290,12 @@ export default async function QRGuestPage({
       experience.qr.destinationUrl.trim()
     )
   ) {
-    redirect(
-      experience.qr.destinationUrl.trim()
-    );
+   await recordRedirectScan(code);
+
+redirect(
+  experience.qr.destinationUrl.trim()
+);
+
   }
 
   return (

@@ -60,7 +60,9 @@ type QRCodeSummary = {
 type RecentScan = {
   id: string;
   qrCodeId: string;
+  ipAddress?: string | null;
   city?: string | null;
+
   country?: string | null;
   device?: string | null;
   browser?: string | null;
@@ -2302,8 +2304,11 @@ function RecentScansCard({
               .join(", ");
 
             const device = [scan.device, scan.browser]
-              .filter(Boolean)
-              .join(" · ");
+  .filter(Boolean)
+  .join(" · ");
+
+const ip = scan.ipAddress?.trim() || "";
+
 
             return (
               <div
@@ -2321,8 +2326,10 @@ function RecentScansCard({
                     </p>
 
                     <p className="mt-1 truncate text-[11px] text-slate-400">
-                      {location || "Location unavailable"}
-                      {device ? ` · ${device}` : ""}
+                     {location || "Location unavailable"}
+{device ? ` · ${device}` : ""}
+{ip ? ` · ${ip}` : ""}
+
                     </p>
                   </div>
 

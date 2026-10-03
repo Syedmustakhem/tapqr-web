@@ -285,9 +285,23 @@ export default function LoyaltyCard({
           }}
         >
           {cleanTitle}
-        </div>
+</div>
 
-        {complete ? (
+{cleanReward && !complete && (
+  <div
+    style={{
+      marginTop: 6,
+      fontSize: 13,
+      lineHeight: 1.5,
+      opacity: 0.92,
+    }}
+  >
+    🎁 Reward: {cleanReward}
+  </div>
+)}
+
+{complete ? (
+
           <div style={{ marginTop: 10 }}>
             <div
               style={{
