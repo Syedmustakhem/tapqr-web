@@ -57,6 +57,10 @@ type BusinessProfile = {
   postalCode?: string | null;
   reviewFunnelEnabled?: boolean | null;
   externalReviewUrl?: string | null;
+  specialsBannerEnabled?: boolean | null;
+  specialsTitle?: string | null;
+  specialsDescription?: string | null;
+  specialsValidUntil?: string | null;
 
   /**
    * This is the public profile/address country.
@@ -170,6 +174,12 @@ type FormState = {
   // Review Funnel (Pro)
   reviewFunnelEnabled: boolean;
   externalReviewUrl: string;
+
+  // Today's Specials (Pro)
+  specialsBannerEnabled: boolean;
+  specialsTitle: string;
+  specialsDescription: string;
+  specialsValidUntil: string;
 
   // Public address
   addressLine1: string;
@@ -303,6 +313,12 @@ const EMPTY_FORM = (): FormState => ({
   reviewFunnelEnabled: false,
   externalReviewUrl: "",
 
+  // Today's Specials (Pro)
+  specialsBannerEnabled: false,
+  specialsTitle: "",
+  specialsDescription: "",
+  specialsValidUntil: "",
+
   // Address
   addressLine1: "",
   addressLine2: "",
@@ -338,6 +354,32 @@ function getInitials(name?: string) {
   }
 
   return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+}
+
+/*
+ * Convert an ISO datetime string into the format
+ * expected by <input type="datetime-local">:
+ * "YYYY-MM-DDTHH:mm" (local time, no timezone).
+ */
+function toDatetimeLocal(
+  value?: string | null
+): string {
+  if (!value) return "";
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) return "";
+
+  const pad = (n: number) =>
+    String(n).padStart(2, "0");
+
+  const year = date.getFullYear();
+  const month = pad(date.getMonth() + 1);
+  const day = pad(date.getDate());
+  const hours = pad(date.getHours());
+  const minutes = pad(date.getMinutes());
+
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
 }
 
 function toForm(business: Business): FormState {
@@ -381,6 +423,18 @@ function toForm(business: Business): FormState {
       profile.reviewFunnelEnabled ?? false,
     externalReviewUrl:
       profile.externalReviewUrl ?? "",
+
+    // Today's Specials (Pro)
+    specialsBannerEnabled:
+      profile.specialsBannerEnabled ?? false,
+    specialsTitle:
+      profile.specialsTitle ?? "",
+    specialsDescription:
+      profile.specialsDescription ?? "",
+    specialsValidUntil:
+      toDatetimeLocal(
+        profile.specialsValidUntil
+      ),
 
     // Address
     addressLine1: profile.addressLine1 ?? "",
@@ -833,6 +887,24 @@ export default function BusinessPage() {
             reviewFunnelEnabled:
               form.reviewFunnelEnabled,
 
+            specialsBannerEnabled:
+              form.specialsBannerEnabled,
+
+            specialsTitle:
+              form.specialsTitle.trim() ||
+              null,
+
+            specialsDescription:
+              form.specialsDescription.trim() ||
+              null,
+
+            specialsValidUntil:
+              form.specialsValidUntil
+                ? new Date(
+                    form.specialsValidUntil
+                  ).toISOString()
+                : null,
+
             description:
               form.description.trim() || null,
 
@@ -936,9 +1008,13 @@ export default function BusinessPage() {
         err instanceof ApiError &&
         err.code === "UPGRADE_REQUIRED"
       ) {
-        setError(
-          "Review Funnel is a Pro feature. Upgrade to Pro to enable it and set your Google review link."
-        );
+        /*
+         * The backend now returns a feature-specific
+         * message ("Review Funnel is a Pro feature…",
+         * "Today's Specials is a Pro feature…"), so
+         * surface it directly.
+         */
+        setError(err.message);
       } else {
         setError(
           err instanceof ApiError
@@ -2201,6 +2277,127 @@ export default function BusinessPage() {
               are asked to review on
               TapQR instead.
             </p>
+          </Panel>
+
+          {/* =====================================================
+              TODAY'S SPECIALS (Pro)
+          ===================================================== */}
+
+          <Panel
+            title="Today's Specials"
+            subtitle="Show a highlight banner on your public scan experience."
+          >
+            <div className="space-y-5">
+              <label className="flex items-start gap-3 rounded-xl border border-slate-200 p-4">
+                <input
+                  type="checkbox"
+                  checked={
+                    form.specialsBannerEnabled
+                  }
+                  disabled={
+                    !editing || saving
+                  }
+                  onChange={(event) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      specialsBannerEnabled:
+                        event.target
+                          .checked,
+                    }))
+                  }
+                  className="mt-1 h-4 w-4 accent-slate-950"
+                />
+
+                <span>
+                  <span className="block text-sm font-bold text-slate-900">
+                    Show specials banner{" "}
+                    <span className="ml-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-amber-700">
+                      Pro
+                    </span>
+                  </span>
+
+                  <span className="mt-1 block text-xs leading-5 text-slate-500">
+                    Display a highlighted
+                    banner on your public
+                    scan page. Set an end
+                    date and it hides
+                    itself automatically.
+                  </span>
+                </span>
+              </label>
+
+              <div className="grid gap-5 sm:grid-cols-2">
+                <div className="sm:col-span-2">
+                  <Field
+                    label="Banner title"
+                    value={
+                      form.specialsTitle
+                    }
+                    disabled={
+                      !editing || saving
+                    }
+                    onChange={(value) =>
+                      setField(
+                        "specialsTitle",
+                        value
+                      )
+                    }
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <TextArea
+                    label="Banner description"
+                    value={
+                      form.specialsDescription
+                    }
+                    disabled={
+                      !editing || saving
+                    }
+                    onChange={(value) =>
+                      setField(
+                        "specialsDescription",
+                        value
+                      )
+                    }
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="mb-2 block text-xs font-semibold text-slate-700">
+                    Valid until
+                    (optional)
+                  </label>
+
+                  <input
+                    type="datetime-local"
+                    value={
+                      form.specialsValidUntil
+                    }
+                    disabled={
+                      !editing || saving
+                    }
+                    onChange={(event) =>
+                      setField(
+                        "specialsValidUntil",
+                        event.target.value
+                      )
+                    }
+                    className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-3 text-sm text-slate-900 outline-none transition focus:border-blue-300 focus:ring-4 focus:ring-blue-500/5 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500"
+                  />
+
+                  <p className="mt-2 text-xs leading-5 text-slate-400">
+                    Leave empty to keep
+                    the banner visible
+                    until you turn it
+                    off. Once this date
+                    passes, the banner
+                    disappears
+                    automatically.
+                  </p>
+                </div>
+              </div>
+            </div>
           </Panel>
 
           {/* =====================================================
