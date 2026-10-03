@@ -70,7 +70,14 @@ type CampaignAnalytics = {
     startDate: string;
     endDate: string;
   };
+  overview?: {
+    totalScans?: number;
+    uniqueVisitors?: number;
+    totalConversions?: number;
+    conversionValue?: number;
+  };
   summary: {
+
     totalScans: number;
     totalVisitors: number;
     totalConversions: number;
@@ -493,8 +500,31 @@ export default function CampaignsPage() {
         ),
       ]);
 
-      setAnalytics(overviewResponse.data ?? null);
-      setAttribution(attributionResponse.data ?? null);
+      const overview =
+  overviewResponse.data?.overview;
+
+setAnalytics(
+  overviewResponse.data
+    ? {
+        ...overviewResponse.data,
+        summary: {
+          totalScans:
+            overview?.totalScans ?? 0,
+          totalVisitors:
+            overview?.uniqueVisitors ??
+            0,
+          totalConversions:
+            overview?.totalConversions ??
+            0,
+          totalConversionValue:
+            overview?.conversionValue ??
+            0,
+        },
+      }
+    : null,
+);
+setAttribution(attributionResponse.data ?? null);
+
     } catch (err) {
       setAnalytics(null);
       setAttribution(null);
@@ -1409,9 +1439,10 @@ export default function CampaignsPage() {
                             analytics?.summary
                               .totalConversionValue ?? 0,
                             attribution
-                              ?.conversionValue
-                              .currencies[0]?.currency ??
-                              "INR",
+  ?.conversionValue
+  ?.currencies?.[0]
+  ?.currency ?? "INR",
+
                           )}
                         </p>
 
@@ -1429,7 +1460,8 @@ export default function CampaignsPage() {
                         <p className="mt-2 text-xl font-black text-slate-950">
                           {(
                             attribution?.summary
-                              .attributionRate ?? 0
+  ?.attributionRate ?? 0
+
                           ).toFixed(2)}
                           %
                         </p>
