@@ -57,6 +57,7 @@ const PRO_PLANS: Array<{
       "Review Funnel",
       "Today's Specials Banner",
       "TapQR Agent OS access",
+      "Digital Loyalty Card",
     ],
   },
   {
@@ -78,6 +79,7 @@ const PRO_PLANS: Array<{
       "Review Funnel",
       "Today's Specials Banner",
       "TapQR Agent OS access",
+      "Digital Loyalty Card",
     ],
   },
 ];
