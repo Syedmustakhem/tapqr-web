@@ -221,3 +221,94 @@ export async function cancelSubscription() {
     }
   );
 }
+
+/* ============================================================
+   TRIAL + REFERRAL (growth)
+============================================================ */
+
+export type TrialStatus =
+  | "ACTIVE"
+  | "EXPIRED"
+  | "CONVERTED";
+
+export type TrialStatusData = {
+  hasTrial: boolean;
+  status: TrialStatus | null;
+  startsAt: string | null;
+  endsAt: string | null;
+  daysLeft: number;
+  phoneVerified: boolean;
+  eligibleForTrial: boolean;
+  hasPaidSubscription: boolean;
+  proUntil: string | null;
+};
+
+export type TrialStatusResponse = {
+  success: boolean;
+  data: TrialStatusData;
+};
+
+export async function getTrialStatus() {
+  return apiRequest<TrialStatusResponse>(
+    "/growth/trial/status"
+  );
+}
+
+export async function startTrial() {
+  return apiRequest<{
+    success: boolean;
+    data: {
+      status: string;
+      startsAt: string;
+      endsAt: string;
+      daysLeft: number;
+    };
+  }>("/growth/trial/start", {
+    method: "POST",
+  });
+}
+
+export type ReferralStatsData = {
+  code: string | null;
+  counts: {
+    pending: number;
+    qualified: number;
+    rewarded: number;
+    rejected: number;
+  };
+  earnedDays: number;
+  proUntil: string | null;
+  rewardDays: number;
+  maxRewardsPerYear: number;
+};
+
+export async function getReferralStats() {
+  return apiRequest<{
+    success: boolean;
+    data: ReferralStatsData;
+  }>("/growth/referral/stats");
+}
+
+export async function getOrCreateReferralCode() {
+  return apiRequest<{
+    success: boolean;
+    data: { code: string };
+  }>("/growth/referral/code", {
+    method: "POST",
+  });
+}
+
+export async function attributeReferral(
+  code: string
+) {
+  return apiRequest<{
+    success: boolean;
+    data: {
+      referralId: string;
+      status: string;
+    };
+  }>("/growth/referral/attribute", {
+    method: "POST",
+    body: JSON.stringify({ code }),
+  });
+}

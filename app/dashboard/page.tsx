@@ -38,6 +38,8 @@ import {
   saveUser,
 } from "@/lib/auth";
 import ProUpsellBanner from "@/components/billing/ProUpsellBanner";
+import TrialBanner from "@/components/billing/TrialBanner";
+import ReferralWidget from "@/components/billing/ReferralWidget";
 import SetupChainCard from "@/components/dashboard/SetupChainCard";
 
 type Business = {
@@ -451,17 +453,20 @@ export default function DashboardPage() {
       {/* PRO UPSELL — shows at most once every 7 days, Free users only */}
       <ProUpsellBanner />
 
+      {/* TRIAL STATUS — countdown / start-trial CTA / credit notice */}
+      <TrialBanner />
+
       {/* GUIDED SETUP CHAIN — progress card until all steps done */}
       <SetupChainCard />
 
       {/* HERO */}
       <section className="relative overflow-visible rounded-[28px] border border-slate-200/80 bg-white p-6 shadow-[0_8px_30px_rgba(15,23,42,0.04)] sm:p-8">
-        <div className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-blue-100/50 blur-3xl" />
+        <div className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-teal-100/50 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-20 right-32 h-40 w-40 rounded-full bg-violet-100/40 blur-3xl" />
 
         <div className="relative flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
           <div className="min-w-0">
-            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-blue-600">
+            <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-teal-100 bg-teal-50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-teal-600">
               <Sparkles className="h-3.5 w-3.5" />
               Workspace overview
             </div>
@@ -489,9 +494,9 @@ export default function DashboardPage() {
                       businessMenuOpen
                     }
                     aria-haspopup="listbox"
-                    className="inline-flex max-w-full items-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-left text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                    className="inline-flex max-w-full items-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-left text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
                   >
-                    <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-950 text-[10px] font-black text-white">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-600 text-[10px] font-black text-white">
                       {getInitials(
                         selectedBusiness.name
                       )}
@@ -524,7 +529,7 @@ export default function DashboardPage() {
                               className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition ${
                                 business.id ===
                                 selectedBusinessId
-                                  ? "bg-slate-950 text-white"
+                                  ? "bg-teal-600 text-white"
                                   : "text-slate-700 hover:bg-slate-50"
                               }`}
                             >
@@ -553,7 +558,7 @@ export default function DashboardPage() {
               )}
 
               {user?.role && (
-                <span className="rounded-full border border-blue-100 bg-blue-50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-blue-600">
+                <span className="rounded-full border border-teal-100 bg-teal-50 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.12em] text-teal-600">
                   {user.role}
                 </span>
               )}
@@ -583,7 +588,7 @@ export default function DashboardPage() {
 
             <Link
               href="/dashboard/qr"
-              className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-4 py-3 text-xs font-bold text-white shadow-lg shadow-slate-950/10 transition hover:-translate-y-0.5 hover:bg-slate-800"
+              className="inline-flex items-center gap-2 rounded-xl bg-teal-600 px-4 py-3 text-xs font-bold text-white shadow-lg shadow-slate-950/10 transition hover:-translate-y-0.5 hover:bg-teal-700"
             >
               <Plus className="h-4 w-4" />
               Create QR
@@ -720,7 +725,7 @@ export default function DashboardPage() {
                           </span>
 
                           <div
-                            className="w-full max-w-[28px] rounded-t-lg bg-blue-500 transition-all duration-500"
+                            className="w-full max-w-[28px] rounded-t-lg bg-teal-500 transition-all duration-500"
                             style={{
                               height: `${height}px`,
                             }}
@@ -930,7 +935,7 @@ export default function DashboardPage() {
                     className="px-5 py-4 transition hover:bg-slate-50/70 sm:px-6"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-teal-600">
                         <ScanLine className="h-4 w-4" />
                       </div>
 
@@ -1021,19 +1026,22 @@ export default function DashboardPage() {
         </div>
       </section>
 
+      {/* REFER & EARN */}
+      <ReferralWidget />
+
       {/* EMPTY BUSINESS CTA */}
       {businesses.length === 0 && (
-        <section className="rounded-[24px] border border-blue-100 bg-blue-50/60 px-5 py-5 sm:px-6">
+        <section className="rounded-[24px] border border-teal-100 bg-teal-50/60 px-5 py-5 sm:px-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-start gap-3">
-              <Building2 className="mt-0.5 h-5 w-5 shrink-0 text-blue-600" />
+              <Building2 className="mt-0.5 h-5 w-5 shrink-0 text-teal-600" />
 
               <div>
-                <p className="text-sm font-bold text-blue-950">
+                <p className="text-sm font-bold text-teal-950">
                   Your workspace is ready for setup
                 </p>
 
-                <p className="mt-1 text-xs leading-5 text-blue-900/70">
+                <p className="mt-1 text-xs leading-5 text-teal-900/70">
                   Create a business first, then connect QR experiences and analytics to it.
                 </p>
               </div>
@@ -1041,7 +1049,7 @@ export default function DashboardPage() {
 
             <Link
               href="/dashboard/business"
-              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-xs font-bold text-white transition hover:bg-blue-700"
+              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-teal-600 px-4 py-3 text-xs font-bold text-white transition hover:bg-teal-700"
             >
               Create business
               <ArrowRight className="h-3.5 w-3.5" />
@@ -1071,7 +1079,7 @@ function MetricCard({
     | "amber";
 }) {
   const toneClasses = {
-    blue: "bg-blue-50 text-blue-600",
+    blue: "bg-teal-50 text-teal-600",
     green:
       "bg-emerald-50 text-emerald-600",
     violet:
@@ -1141,7 +1149,7 @@ function QuickAction({
       className="group rounded-[20px] border border-slate-200/80 bg-white p-4 shadow-[0_8px_30px_rgba(15,23,42,0.03)] transition duration-300 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_14px_35px_rgba(15,23,42,0.07)]"
     >
       <div className="flex items-start justify-between">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-700 transition group-hover:bg-slate-950 group-hover:text-white">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-700 transition group-hover:bg-teal-600 group-hover:text-white">
           {icon}
         </div>
 

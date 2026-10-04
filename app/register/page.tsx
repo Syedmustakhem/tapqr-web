@@ -4,6 +4,7 @@ import Link from "next/link";
 import {
   FormEvent,
   ReactNode,
+  useEffect,
   useState,
 } from "react";
 import { useRouter } from "next/navigation";
@@ -122,6 +123,35 @@ function Feature({
 export default function LoginPage() {
   const router = useRouter();
 
+  /*
+   * Referral capture: ?ref=CODE on the register URL is
+   * stashed in localStorage and attributed server-side
+   * right after login/signup (see goDashboard).
+   */
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(
+        window.location.search
+      );
+      const ref = params
+        .get("ref")
+        ?.trim()
+        .toUpperCase();
+
+      if (
+        ref &&
+        /^[A-Z0-9]{4,16}$/.test(ref)
+      ) {
+        window.localStorage.setItem(
+          "tapqr_ref",
+          ref
+        );
+      }
+    } catch {
+      /* storage unavailable — skip silently */
+    }
+  }, []);
+
   const [step, setStep] =
     useState<Step>("identifier");
 
@@ -187,7 +217,35 @@ export default function LoginPage() {
     }, 1000);
   }
 
-  function goDashboard() {
+  async function goDashboard() {
+    /*
+     * Referral attribution: if the user arrived via a
+     * referral link, attribute it server-side now that
+     * we're authenticated. Fire-and-forget — a failure
+     * here must never block login.
+     */
+    try {
+      const code =
+        window.localStorage.getItem(
+          "tapqr_ref"
+        );
+
+      if (code) {
+        window.localStorage.removeItem(
+          "tapqr_ref"
+        );
+
+        const { attributeReferral } =
+          await import("@/lib/billing");
+
+        await attributeReferral(
+          code
+        ).catch(() => undefined);
+      }
+    } catch {
+      /* ignore — login must not break */
+    }
+
     router.replace("/dashboard");
   }
 
