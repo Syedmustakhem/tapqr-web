@@ -20,6 +20,7 @@ import {
   X,
   CreditCard,
   Lock,
+  Gift,
 } from "lucide-react";
 import { MessageSquare } from "lucide-react";
 import { apiRequest, ApiError } from "@/lib/api";
@@ -82,6 +83,11 @@ const navigation = [
     label: "Activity",
     href: "/dashboard/activity",
     icon: Activity,
+  },
+  {
+    label: "Refer & Earn",
+    href: "/dashboard/refer",
+    icon: Gift,
   },
 ];
 
@@ -315,6 +321,18 @@ export default function Sidebar({
                       }`}
                     >
                       LIVE
+                    </span>
+                  )}
+
+                  {item.label === "Refer & Earn" && (
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-[9px] font-bold ${
+                        active
+                          ? "bg-white/10 text-white/70"
+                          : "bg-teal-50 text-teal-600"
+                      }`}
+                    >
+                      FREE PRO
                     </span>
                   )}
                 </Link>

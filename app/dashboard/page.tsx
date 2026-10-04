@@ -39,7 +39,6 @@ import {
 } from "@/lib/auth";
 import ProUpsellBanner from "@/components/billing/ProUpsellBanner";
 import TrialBanner from "@/components/billing/TrialBanner";
-import ReferralWidget from "@/components/billing/ReferralWidget";
 import SetupChainCard from "@/components/dashboard/SetupChainCard";
 
 type Business = {
@@ -1025,9 +1024,6 @@ export default function DashboardPage() {
           />
         </div>
       </section>
-
-      {/* REFER & EARN */}
-      <ReferralWidget />
 
       {/* EMPTY BUSINESS CTA */}
       {businesses.length === 0 && (

@@ -22,10 +22,15 @@ import {
   ShieldCheck,
   Users,
   Zap,
+  Gift,
 } from "lucide-react";
 import { WHATSAPP_COUNTRIES } from "../data/countries";
 import { apiRequest, ApiError } from "@/lib/api";
 import { saveSession } from "@/lib/auth";
+import {
+  attributeReferral,
+  validateReferralCode,
+} from "@/lib/billing";
 import GoogleAuthButton from "@/components/auth/GoogleAuthButton";
 
 type AuthMethod = "email" | "phone";
@@ -146,6 +151,14 @@ export default function LoginPage() {
   const [success, setSuccess] = useState("");
   const [resendSeconds, setResendSeconds] = useState(0);
 
+  /*
+   * Referral invite — captured from ?ref= on the login URL.
+   * Shown as an "invited" banner; attributed only when a NEW
+   * account is created (authMode === "register").
+   */
+  const [inviteCode, setInviteCode] = useState<string | null>(null);
+  const [inviteValid, setInviteValid] = useState(false);
+
   const defaultCountry =
     WHATSAPP_COUNTRIES.find((country) => country.code === "IN") ??
     WHATSAPP_COUNTRIES[0];
@@ -165,6 +178,33 @@ export default function LoginPage() {
       (country) => country.code === savedCode
     );
     if (savedCountry) setSelectedCountry(savedCountry);
+  }, []);
+
+  /*
+   * Capture a referral code from ?ref= and stash it until the
+   * auth flow completes. Validated live for the invite banner.
+   */
+  useEffect(() => {
+    try {
+      const code = new URLSearchParams(window.location.search)
+        .get("ref")
+        ?.trim()
+        .toUpperCase();
+      if (!code) return;
+
+      window.localStorage.setItem("tapqr_pending_referral", code);
+      setInviteCode(code);
+
+      validateReferralCode(code)
+        .then((res) => {
+          if (res?.data?.valid) setInviteValid(true);
+        })
+        .catch(() => {
+          /* banner simply stays hidden */
+        });
+    } catch {
+      /* ignore */
+    }
   }, []);
 
   useEffect(() => {
@@ -228,6 +268,42 @@ export default function LoginPage() {
   }
   window.location.href = "/dashboard";
 }
+
+  /*
+   * Attribute a stashed referral code — but ONLY when a brand
+   * new account was just created. Existing users logging in
+   * are never (re-)attributed. Failures are silent: the user
+   * is already authenticated, referral is non-critical.
+   */
+  async function attributePendingReferral(
+    mode: AuthMode | null
+  ): Promise<void> {
+    if (mode !== "register") return;
+
+    let code: string | null = null;
+    try {
+      code = window.localStorage.getItem(
+        "tapqr_pending_referral"
+      );
+    } catch {
+      return;
+    }
+    if (!code) return;
+
+    try {
+      await attributeReferral(code);
+    } catch {
+      /* non-critical */
+    } finally {
+      try {
+        window.localStorage.removeItem(
+          "tapqr_pending_referral"
+        );
+      } catch {
+        /* ignore */
+      }
+    }
+  }
 
 
 
@@ -502,7 +578,14 @@ export default function LoginPage() {
           ? "Account created successfully."
           : "Login successful."
       );
-      window.setTimeout(goToDashboard, 500);
+      window.setTimeout(() => {
+        void (async () => {
+          // Attribute BEFORE navigating — the full-page
+          // redirect would abort the request otherwise.
+          await attributePendingReferral(authMode);
+          goToDashboard();
+        })();
+      }, 500);
     } catch (err) {
       setError(getErrorMessage(err));
       setOtp("");
@@ -551,6 +634,7 @@ export default function LoginPage() {
       });
 
       saveSession(registerResponse);
+      await attributePendingReferral("register");
       goToDashboard();
     } catch (err) {
       setError(getErrorMessage(err));
@@ -704,6 +788,26 @@ export default function LoginPage() {
               <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.18em] text-[#2F6BFF]">
                 {stepLabel}
               </p>
+
+              {inviteCode && inviteValid && (
+                <div className="mb-4 flex items-center gap-3 rounded-2xl border border-teal-200 bg-teal-50 px-4 py-3">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-teal-600">
+                    <Gift className="h-4 w-4 text-white" />
+                  </span>
+                  <div>
+                    <p className="text-xs font-bold text-teal-950">
+                      You&apos;ve been invited to TapQR!
+                    </p>
+                    <p className="text-[11px] leading-4 text-teal-800/70">
+                      Create your account with code{" "}
+                      <span className="font-mono font-bold">
+                        {inviteCode}
+                      </span>{" "}
+                      — your inviter earns free Pro when you subscribe.
+                    </p>
+                  </div>
+                </div>
+              )}
 
               {step === "choices" && (
                 <>

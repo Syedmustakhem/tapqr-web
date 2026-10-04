@@ -279,6 +279,7 @@ export type ReferralStatsData = {
   earnedDays: number;
   proUntil: string | null;
   rewardDays: number;
+  refereeBonusDays: number;
   maxRewardsPerYear: number;
 };
 
@@ -311,4 +312,30 @@ export async function attributeReferral(
     method: "POST",
     body: JSON.stringify({ code }),
   });
+}
+
+/*
+ * Public — validates a referral code for the invite banner
+ * on the login page. Reveals only whether the code exists.
+ */
+export async function validateReferralCode(
+  code: string
+) {
+  return apiRequest<{
+    success: boolean;
+    data: { valid: boolean };
+  }>(
+    `/growth/referral/validate/${encodeURIComponent(code)}`
+  );
+}
+
+/*
+ * Single source of truth for referral links. The login page
+ * is the only auth entry — it handles both login and
+ * registration — so all invites point there.
+ */
+export function buildReferralLink(
+  code: string
+): string {
+  return `https://tapqr.shop/login?ref=${encodeURIComponent(code)}`;
 }
