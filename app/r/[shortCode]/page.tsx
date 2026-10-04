@@ -66,6 +66,15 @@ export interface GuestExperience {
   loyaltyCardTitle: string | null;
   loyaltyStampsRequired: number | null;
   loyaltyRewardDescription: string | null;
+      appointmentBookingEnabled: boolean | null;
+      appointmentBookingMode: string | null;
+      appointmentServices: unknown;
+      appointmentEvents: unknown;
+      appointmentSlotMinutes: number | null;
+      appointmentAdvanceDays: number | null;
+      appointmentMaxPartySize: number | null;
+      appointmentMaxTokensPerDay: number | null;
+      whatsappOrderingEnabled: boolean | null;
       address: {
         line1: string | null;
         line2: string | null;

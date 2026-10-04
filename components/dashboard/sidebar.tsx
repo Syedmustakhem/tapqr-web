@@ -7,6 +7,7 @@ import {
   Activity,
   BarChart3,
   Building2,
+  CalendarClock,
   CheckCircle2,
   LayoutDashboard,
   LogOut,
@@ -48,6 +49,11 @@ const navigation = [
     label: "QR Studio",
     href: "/dashboard/qr",
     icon: QrCode,
+  },
+  {
+    label: "Appointments",
+    href: "/dashboard/appointments",
+    icon: CalendarClock,
   },
   {
     label: "Analytics",

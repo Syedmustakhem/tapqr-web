@@ -6,6 +6,8 @@ import {
   useEffect,
 } from "react";
 import LoyaltyCard from "./LoyaltyCard";
+import AppointmentBooking from "./AppointmentBooking";
+import WhatsAppOrdering from "./WhatsAppOrdering";
 
 import type {
   GuestExperience,
@@ -1048,6 +1050,55 @@ export default function GuestExperience({
         }
         rewardDescription={
           profile?.loyaltyRewardDescription
+        }
+        primaryColor={
+          primaryColor
+        }
+      />
+      {/* =========================
+          APPOINTMENT BOOKING (Pro)
+      ========================== */}
+
+      <AppointmentBooking
+        enabled={
+          profile?.appointmentBookingEnabled ??
+          false
+        }
+        businessId={business.id}
+        mode={
+          profile?.appointmentBookingMode
+        }
+        services={
+  profile?.appointmentServices as any
+}
+
+        events={
+  profile?.appointmentEvents as any
+}
+
+        advanceDays={
+          profile?.appointmentAdvanceDays
+        }
+        maxPartySize={
+          profile?.appointmentMaxPartySize
+        }
+        primaryColor={
+          primaryColor
+        }
+      />
+      {/* =========================
+          WHATSAPP ORDERING (Pro)
+      ========================== */}
+
+      <WhatsAppOrdering
+        enabled={
+          profile?.whatsappOrderingEnabled ??
+          false
+        }
+        businessName={business.name}
+        whatsappUrl={whatsappUrl}
+        catalogs={
+          business.catalogs as any
         }
         primaryColor={
           primaryColor
