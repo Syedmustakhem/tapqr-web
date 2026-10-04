@@ -33,7 +33,9 @@ import {
   X,
 } from "lucide-react";
 
+import { useRouter } from "next/navigation";
 import { apiRequest, ApiError } from "@/lib/api";
+import { useSetupChain } from "@/lib/setup-chain";
 
 type QRStatus =
   | "ACTIVE"
@@ -230,6 +232,29 @@ function getErrorMessage(error: unknown) {
 }
 
 export default function QRPage() {
+  const router = useRouter();
+
+  /*
+   * Setup chain guard — QR Studio is step 2 and stays
+   * locked until the user has a business (step 1).
+   */
+  const chain = useSetupChain();
+
+  useEffect(() => {
+    if (
+      !chain.loading &&
+      !chain.hasBusiness
+    ) {
+      router.replace(
+        "/dashboard/getting-started"
+      );
+    }
+  }, [
+    chain.loading,
+    chain.hasBusiness,
+    router,
+  ]);
+
   const [businesses, setBusinesses] =
     useState<Business[]>([]);
   const [selectedBusinessId, setSelectedBusinessId] =
@@ -924,6 +949,14 @@ if (clipboard) {
         "Unable to generate the QR image."
       );
     }
+  }
+
+  if (
+    !chain.loading &&
+    !chain.hasBusiness
+  ) {
+    /* Redirecting to the setup chain. */
+    return null;
   }
 
   if (loading) {

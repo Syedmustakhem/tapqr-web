@@ -19,9 +19,11 @@ import {
   Users,
   X,
   CreditCard,
+  Lock,
 } from "lucide-react";
 import { MessageSquare } from "lucide-react";
 import { apiRequest, ApiError } from "@/lib/api";
+import { useSetupChain } from "@/lib/setup-chain";
 import { clearSession, getStoredUser, type AuthUser } from "@/lib/auth";
 
 interface SidebarProps {
@@ -111,6 +113,25 @@ export default function Sidebar({
   const [logoutOpen, setLogoutOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const [user] = useState<AuthUser | null>(() => getStoredUser());
+
+  /*
+   * Guided setup chain — lock QR Studio until the user has a
+   * business, and Campaigns until they have a QR. Never lock
+   * while loading (avoids flicker for existing users).
+   */
+  const chain = useSetupChain();
+
+  const isLocked = (label: string) => {
+    if (chain.loading) return false;
+    if (label === "QR Studio") return !chain.hasBusiness;
+    if (label === "Campaigns") return !chain.hasQr;
+    return false;
+  };
+
+  const goToSetup = () => {
+    onClose();
+    router.push("/dashboard/getting-started");
+  };
 
   const isActive = (href: string) => {
     if (href === "/dashboard") {
@@ -233,6 +254,29 @@ export default function Sidebar({
             {navigation.map((item) => {
               const Icon = item.icon;
               const active = isActive(item.href);
+              const locked = isLocked(item.label);
+
+              if (locked) {
+                return (
+                  <button
+                    key={item.href}
+                    type="button"
+                    onClick={goToSetup}
+                    title="Complete the previous setup step to unlock"
+                    className="group flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-sm font-medium text-slate-400 transition-all hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-blue-500/15"
+                  >
+                    <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-50 group-hover:bg-white">
+                      <Icon className="h-[17px] w-[17px] text-slate-300" />
+                    </span>
+
+                    <span className="tapqr-sidebar-label min-w-0 flex-1 overflow-hidden truncate whitespace-nowrap !text-inherit">
+                      {item.label}
+                    </span>
+
+                    <Lock className="h-3.5 w-3.5 shrink-0 text-slate-300" />
+                  </button>
+                );
+              }
 
               return (
                 <Link
