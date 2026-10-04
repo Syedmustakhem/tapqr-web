@@ -32,12 +32,7 @@ import {
 
 import { apiRequest, ApiError } from "@/lib/api";
 
-type CampaignStatus =
-  | "DRAFT"
-  | "ACTIVE"
-  | "PAUSED"
-  | "COMPLETED"
-  | "ARCHIVED";
+type CampaignStatus = "DRAFT" | "ACTIVE" | "PAUSED" | "COMPLETED" | "ARCHIVED";
 
 type Campaign = {
   id: string;
@@ -77,7 +72,6 @@ type CampaignAnalytics = {
     conversionValue?: number;
   };
   summary: {
-
     totalScans: number;
     totalVisitors: number;
     totalConversions: number;
@@ -192,36 +186,31 @@ type AttributionResponse = {
   data?: AttributionAnalytics;
 };
 
-const STATUS_META: Record<
-  CampaignStatus,
-  { label: string; classes: string }
-> = {
-  DRAFT: {
-    label: "Draft",
-    classes: "border-slate-200 bg-slate-100 text-slate-600",
-  },
-  ACTIVE: {
-    label: "Active",
-    classes: "border-emerald-100 bg-emerald-50 text-emerald-700",
-  },
-  PAUSED: {
-    label: "Paused",
-    classes: "border-amber-100 bg-amber-50 text-amber-700",
-  },
-  COMPLETED: {
-    label: "Completed",
-    classes: "border-blue-100 bg-blue-50 text-blue-700",
-  },
-  ARCHIVED: {
-    label: "Archived",
-    classes: "border-slate-200 bg-slate-50 text-slate-500",
-  },
-};
+const STATUS_META: Record<CampaignStatus, { label: string; classes: string }> =
+  {
+    DRAFT: {
+      label: "Draft",
+      classes: "border-slate-200 bg-slate-100 text-slate-600",
+    },
+    ACTIVE: {
+      label: "Active",
+      classes: "border-emerald-100 bg-emerald-50 text-emerald-700",
+    },
+    PAUSED: {
+      label: "Paused",
+      classes: "border-amber-100 bg-amber-50 text-amber-700",
+    },
+    COMPLETED: {
+      label: "Completed",
+      classes: "border-blue-100 bg-blue-50 text-blue-700",
+    },
+    ARCHIVED: {
+      label: "Archived",
+      classes: "border-slate-200 bg-slate-50 text-slate-500",
+    },
+  };
 
-const STATUS_ACTIONS: Record<
-  CampaignStatus,
-  CampaignStatus[]
-> = {
+const STATUS_ACTIONS: Record<CampaignStatus, CampaignStatus[]> = {
   DRAFT: ["ACTIVE", "ARCHIVED"],
   ACTIVE: ["PAUSED", "COMPLETED", "ARCHIVED"],
   PAUSED: ["ACTIVE", "ARCHIVED"],
@@ -242,37 +231,27 @@ const STATUS_ACTIONS: Record<
 
 const FALLBACK_STATUS_META = {
   label: "Unknown",
-  classes:
-    "border-slate-200 bg-slate-100 text-slate-500",
+  classes: "border-slate-200 bg-slate-100 text-slate-500",
 };
 
-function getStatusMeta(
-  status: string | null | undefined,
-): { label: string; classes: string } {
+function getStatusMeta(status: string | null | undefined): {
+  label: string;
+  classes: string;
+} {
   if (!status) {
     return FALLBACK_STATUS_META;
   }
 
-  return (
-    STATUS_META[status as CampaignStatus] ??
-    FALLBACK_STATUS_META
-  );
+  return STATUS_META[status as CampaignStatus] ?? FALLBACK_STATUS_META;
 }
 
-function getStatusActions(
-  status: string | null | undefined,
-): CampaignStatus[] {
+function getStatusActions(status: string | null | undefined): CampaignStatus[] {
   if (!status) {
     return [];
   }
 
-  return (
-    STATUS_ACTIONS[
-      status as CampaignStatus
-    ] ?? []
-  );
+  return STATUS_ACTIONS[status as CampaignStatus] ?? [];
 }
-
 
 function formatDate(value?: string | null) {
   if (!value) return "Not scheduled";
@@ -306,9 +285,7 @@ function formatCurrency(value: number, currency = "INR") {
 function getCurrentBusinessId() {
   if (typeof window === "undefined") return "";
 
-  return (
-    localStorage.getItem("tapqr_current_business_id") ?? ""
-  );
+  return localStorage.getItem("tapqr_current_business_id") ?? "";
 }
 
 function toDateTimeLocal(value?: string | null) {
@@ -320,9 +297,7 @@ function toDateTimeLocal(value?: string | null) {
 
   const offset = date.getTimezoneOffset() * 60_000;
 
-  return new Date(date.getTime() - offset)
-    .toISOString()
-    .slice(0, 16);
+  return new Date(date.getTime() - offset).toISOString().slice(0, 16);
 }
 
 function toISOStringOrNull(value: string) {
@@ -354,13 +329,12 @@ export default function CampaignsPage() {
 
   const [days, setDays] = useState(30);
 
-  const [analytics, setAnalytics] =
-    useState<CampaignAnalytics | null>(null);
-  const [attribution, setAttribution] =
-    useState<AttributionAnalytics | null>(null);
+  const [analytics, setAnalytics] = useState<CampaignAnalytics | null>(null);
+  const [attribution, setAttribution] = useState<AttributionAnalytics | null>(
+    null,
+  );
   const [qrCodes, setQRCodes] = useState<QRCodeRecord[]>([]);
-  const [campaignQRCodes, setCampaignQRCodes] =
-    useState<QRCodeRecord[]>([]);
+  const [campaignQRCodes, setCampaignQRCodes] = useState<QRCodeRecord[]>([]);
   const [qrPerformance, setQRPerformance] =
     useState<QRPerformanceAnalytics | null>(null);
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
@@ -375,36 +349,26 @@ export default function CampaignsPage() {
   });
 
   const selectedCampaign = useMemo(
-    () =>
-      campaigns.find(
-        (campaign) => campaign.id === selectedId,
-      ) ?? null,
+    () => campaigns.find((campaign) => campaign.id === selectedId) ?? null,
     [campaigns, selectedId],
   );
 
   const activeCount = useMemo(
-    () =>
-      campaigns.filter(
-        (campaign) => campaign.status === "ACTIVE",
-      ).length,
+    () => campaigns.filter((campaign) => campaign.status === "ACTIVE").length,
     [campaigns],
   );
 
   const scheduledCount = useMemo(
     () =>
       campaigns.filter(
-        (campaign) =>
-          campaign.status === "DRAFT" &&
-          Boolean(campaign.startsAt),
+        (campaign) => campaign.status === "DRAFT" && Boolean(campaign.startsAt),
       ).length,
     [campaigns],
   );
 
   const completedCount = useMemo(
     () =>
-      campaigns.filter(
-        (campaign) => campaign.status === "COMPLETED",
-      ).length,
+      campaigns.filter((campaign) => campaign.status === "COMPLETED").length,
     [campaigns],
   );
 
@@ -451,20 +415,16 @@ export default function CampaignsPage() {
       if (showRefresh) setRefreshing(true);
       else setLoading(true);
 
-      const response =
-        await apiRequest<CampaignListResponse>(
-          `/campaign/business/${businessId}/campaigns`,
-        );
+      const response = await apiRequest<CampaignListResponse>(
+        `/campaign/business/${businessId}/campaigns`,
+      );
 
       const data = response.data ?? [];
 
       setCampaigns(data);
 
       setSelectedId((current) => {
-        if (
-          current &&
-          data.some((campaign) => campaign.id === current)
-        ) {
+        if (current && data.some((campaign) => campaign.id === current)) {
           return current;
         }
 
@@ -472,9 +432,7 @@ export default function CampaignsPage() {
       });
     } catch (err) {
       setError(
-        err instanceof ApiError
-          ? err.message
-          : "Unable to load campaigns.",
+        err instanceof ApiError ? err.message : "Unable to load campaigns.",
       );
     } finally {
       setLoading(false);
@@ -488,10 +446,7 @@ export default function CampaignsPage() {
     try {
       setAnalyticsLoading(true);
 
-      const [
-        overviewResponse,
-        attributionResponse,
-      ] = await Promise.all([
+      const [overviewResponse, attributionResponse] = await Promise.all([
         apiRequest<AnalyticsResponse>(
           `/analytics/business/${businessId}/campaigns/${campaignId}?days=${days}`,
         ),
@@ -500,31 +455,22 @@ export default function CampaignsPage() {
         ),
       ]);
 
-      const overview =
-  overviewResponse.data?.overview;
+      const overview = overviewResponse.data?.overview;
 
-setAnalytics(
-  overviewResponse.data
-    ? {
-        ...overviewResponse.data,
-        summary: {
-          totalScans:
-            overview?.totalScans ?? 0,
-          totalVisitors:
-            overview?.uniqueVisitors ??
-            0,
-          totalConversions:
-            overview?.totalConversions ??
-            0,
-          totalConversionValue:
-            overview?.conversionValue ??
-            0,
-        },
-      }
-    : null,
-);
-setAttribution(attributionResponse.data ?? null);
-
+      setAnalytics(
+        overviewResponse.data
+          ? {
+              ...overviewResponse.data,
+              summary: {
+                totalScans: overview?.totalScans ?? 0,
+                totalVisitors: overview?.uniqueVisitors ?? 0,
+                totalConversions: overview?.totalConversions ?? 0,
+                totalConversionValue: overview?.conversionValue ?? 0,
+              },
+            }
+          : null,
+      );
+      setAttribution(attributionResponse.data ?? null);
     } catch (err) {
       setAnalytics(null);
       setAttribution(null);
@@ -550,9 +496,7 @@ setAttribution(attributionResponse.data ?? null);
           apiRequest<CampaignQRCodesResponse>(
             `/campaign/business/${businessId}/campaigns/${campaignId}/qrcodes`,
           ),
-          apiRequest<QRListResponse>(
-            `/qrcodes/business/${businessId}`,
-          ),
+          apiRequest<QRListResponse>(`/qrcodes/business/${businessId}`),
           apiRequest<QRPerformanceResponse>(
             `/analytics/business/${businessId}/campaigns/${campaignId}/qr-performance?days=${days}`,
           ),
@@ -599,9 +543,7 @@ setAttribution(attributionResponse.data ?? null);
       await loadCampaignQRData(selectedCampaign.id);
     } catch (err) {
       setError(
-        err instanceof ApiError
-          ? err.message
-          : "Unable to attach QR code.",
+        err instanceof ApiError ? err.message : "Unable to attach QR code.",
       );
     } finally {
       setAttachingQrId(null);
@@ -668,9 +610,7 @@ setAttribution(attributionResponse.data ?? null);
     setSuccess("");
   }
 
-  async function submitCampaign(
-    event: FormEvent<HTMLFormElement>,
-  ) {
+  async function submitCampaign(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (!businessId) {
@@ -701,12 +641,9 @@ setAttribution(attributionResponse.data ?? null);
     if (
       startsAt &&
       endsAt &&
-      new Date(endsAt).getTime() <
-        new Date(startsAt).getTime()
+      new Date(endsAt).getTime() < new Date(startsAt).getTime()
     ) {
-      setError(
-        "Campaign end time cannot be before start time.",
-      );
+      setError("Campaign end time cannot be before start time.");
       return;
     }
 
@@ -716,61 +653,48 @@ setAttribution(attributionResponse.data ?? null);
       setSuccess("");
 
       if (editing && selectedCampaign) {
-        const response =
-          await apiRequest<CampaignResponse>(
-            `/campaign/business/${businessId}/campaigns/${selectedCampaign.id}`,
-            {
-              method: "PATCH",
-              body: JSON.stringify({
-                name,
-                description: form.description.trim() || null,
-                startsAt,
-                endsAt,
-              }),
-            },
-          );
+        const response = await apiRequest<CampaignResponse>(
+          `/campaign/business/${businessId}/campaigns/${selectedCampaign.id}`,
+          {
+            method: "PATCH",
+            body: JSON.stringify({
+              name,
+              description: form.description.trim() || null,
+              startsAt,
+              endsAt,
+            }),
+          },
+        );
 
         if (response.data) {
           setCampaigns((current) =>
             current.map((campaign) =>
-              campaign.id === response.data!.id
-                ? response.data!
-                : campaign,
+              campaign.id === response.data!.id ? response.data! : campaign,
             ),
           );
         }
 
-        setSuccess(
-          response.message ??
-            "Campaign updated successfully.",
-        );
+        setSuccess(response.message ?? "Campaign updated successfully.");
       } else {
-        const response =
-          await apiRequest<CampaignResponse>(
-            `/campaign/business/${businessId}/campaigns`,
-            {
-              method: "POST",
-              body: JSON.stringify({
-                name,
-                description: form.description.trim() || null,
-                startsAt,
-                endsAt,
-              }),
-            },
-          );
+        const response = await apiRequest<CampaignResponse>(
+          `/campaign/business/${businessId}/campaigns`,
+          {
+            method: "POST",
+            body: JSON.stringify({
+              name,
+              description: form.description.trim() || null,
+              startsAt,
+              endsAt,
+            }),
+          },
+        );
 
         if (response.data) {
-          setCampaigns((current) => [
-            response.data!,
-            ...current,
-          ]);
+          setCampaigns((current) => [response.data!, ...current]);
           setSelectedId(response.data.id);
         }
 
-        setSuccess(
-          response.message ??
-            "Campaign created successfully.",
-        );
+        setSuccess(response.message ?? "Campaign created successfully.");
       }
 
       setShowModal(false);
@@ -796,29 +720,23 @@ setAttribution(attributionResponse.data ?? null);
       setError("");
       setSuccess("");
 
-      const response =
-        await apiRequest<CampaignResponse>(
-          `/campaign/business/${businessId}/campaigns/${selectedCampaign.id}/status`,
-          {
-            method: "PATCH",
-            body: JSON.stringify({ status }),
-          },
-        );
+      const response = await apiRequest<CampaignResponse>(
+        `/campaign/business/${businessId}/campaigns/${selectedCampaign.id}/status`,
+        {
+          method: "PATCH",
+          body: JSON.stringify({ status }),
+        },
+      );
 
       if (response.data) {
         setCampaigns((current) =>
           current.map((campaign) =>
-            campaign.id === response.data!.id
-              ? response.data!
-              : campaign,
+            campaign.id === response.data!.id ? response.data! : campaign,
           ),
         );
       }
 
-      setSuccess(
-        response.message ??
-          "Campaign status updated successfully.",
-      );
+      setSuccess(response.message ?? "Campaign status updated successfully.");
     } catch (err) {
       setError(
         err instanceof ApiError
@@ -862,9 +780,8 @@ setAttribution(attributionResponse.data ?? null);
           </h1>
 
           <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
-            Campaigns belong to a TapQR business workspace.
-            Select a business from the Business page and
-            return here.
+            Campaigns belong to a TapQR business workspace. Select a business
+            from the Business page and return here.
           </p>
         </section>
       </main>
@@ -874,11 +791,7 @@ setAttribution(attributionResponse.data ?? null);
   return (
     <main className="space-y-6">
       {error && (
-        <Banner
-          tone="error"
-          message={error}
-          onClose={() => setError("")}
-        />
+        <Banner tone="error" message={error} onClose={() => setError("")} />
       )}
 
       {success && (
@@ -904,9 +817,8 @@ setAttribution(attributionResponse.data ?? null);
             </h1>
 
             <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
-              Group QR activity into campaigns, control
-              campaign lifecycle and measure campaign
-              performance from one workspace.
+              Group QR activity into campaigns, control campaign lifecycle and
+              measure campaign performance from one workspace.
             </p>
           </div>
 
@@ -918,9 +830,7 @@ setAttribution(attributionResponse.data ?? null);
               className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-xs font-bold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
             >
               <RefreshCw
-                className={`h-4 w-4 ${
-                  refreshing ? "animate-spin" : ""
-                }`}
+                className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`}
               />
               Refresh
             </button>
@@ -993,8 +903,7 @@ setAttribution(attributionResponse.data ?? null);
               </p>
 
               <p className="mt-1 text-xs leading-5 text-slate-500">
-                Create your first campaign to start grouping
-                QR activity.
+                Create your first campaign to start grouping QR activity.
               </p>
 
               <button
@@ -1011,7 +920,6 @@ setAttribution(attributionResponse.data ?? null);
               {campaigns.map((campaign) => {
                 const selected = campaign.id === selectedId;
                 const status = getStatusMeta(campaign.status);
-
 
                 return (
                   <button
@@ -1042,15 +950,11 @@ setAttribution(attributionResponse.data ?? null);
 
                         <span
                           className={`mt-1 block text-[11px] ${
-                            selected
-                              ? "text-white/55"
-                              : "text-slate-400"
+                            selected ? "text-white/55" : "text-slate-400"
                           }`}
                         >
                           {campaign.startsAt
-                            ? `Starts ${formatDate(
-                                campaign.startsAt,
-                              )}`
+                            ? `Starts ${formatDate(campaign.startsAt)}`
                             : "No start time"}
                         </span>
                       </span>
@@ -1081,8 +985,7 @@ setAttribution(attributionResponse.data ?? null);
                   Select a campaign
                 </p>
                 <p className="mt-1 text-xs text-slate-400">
-                  Campaign details and analytics will appear
-                  here.
+                  Campaign details and analytics will appear here.
                 </p>
               </div>
             </div>
@@ -1093,26 +996,16 @@ setAttribution(attributionResponse.data ?? null);
                   <div className="flex flex-wrap items-center gap-2">
                     <span
                       className={`rounded-full border px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.08em] ${
-                       getStatusMeta(
-  selectedCampaign.status,
-).classes
-
+                        getStatusMeta(selectedCampaign.status).classes
                       }`}
                     >
-                      {
-                       getStatusMeta(
-  selectedCampaign.status,
-).label
-
-                      }
+                      {getStatusMeta(selectedCampaign.status).label}
                     </span>
 
                     {selectedCampaign.startsAt && (
                       <span className="inline-flex items-center gap-1 text-[10px] font-medium text-slate-400">
                         <CalendarDays className="h-3 w-3" />
-                        {formatDate(
-                          selectedCampaign.startsAt,
-                        )}
+                        {formatDate(selectedCampaign.startsAt)}
                       </span>
                     )}
                   </div>
@@ -1144,46 +1037,40 @@ setAttribution(attributionResponse.data ?? null);
               </div>
 
               <div className="mt-5 flex flex-wrap gap-2">
-                {getStatusActions(
-  selectedCampaign.status,
-).map((status) => {
-
-                    const actionIcon =
-                      status === "ACTIVE" ? (
-                        <PlayCircle className="h-3.5 w-3.5" />
-                      ) : status === "PAUSED" ? (
-                        <PauseCircle className="h-3.5 w-3.5" />
-                      ) : (
-                        <CheckCircle2 className="h-3.5 w-3.5" />
-                      );
-
-                    return (
-                      <button
-                        key={status}
-                        type="button"
-                        onClick={() =>
-                          void updateStatus(status)
-                        }
-                        disabled={changingStatus}
-                        className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-[10px] font-bold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
-                      >
-                        {changingStatus ? (
-                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                        ) : (
-                          actionIcon
-                        )}
-
-                        {status === "ACTIVE"
-                          ? "Activate"
-                          : status === "PAUSED"
-                            ? "Pause"
-                            : status === "COMPLETED"
-                              ? "Complete"
-                              : "Archive"}
-                      </button>
+                {getStatusActions(selectedCampaign.status).map((status) => {
+                  const actionIcon =
+                    status === "ACTIVE" ? (
+                      <PlayCircle className="h-3.5 w-3.5" />
+                    ) : status === "PAUSED" ? (
+                      <PauseCircle className="h-3.5 w-3.5" />
+                    ) : (
+                      <CheckCircle2 className="h-3.5 w-3.5" />
                     );
-                  },
-                )}
+
+                  return (
+                    <button
+                      key={status}
+                      type="button"
+                      onClick={() => void updateStatus(status)}
+                      disabled={changingStatus}
+                      className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-[10px] font-bold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
+                    >
+                      {changingStatus ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        actionIcon
+                      )}
+
+                      {status === "ACTIVE"
+                        ? "Activate"
+                        : status === "PAUSED"
+                          ? "Pause"
+                          : status === "COMPLETED"
+                            ? "Complete"
+                            : "Archive"}
+                    </button>
+                  );
+                })}
               </div>
 
               <div className="mt-6 grid gap-4 xl:grid-cols-2">
@@ -1208,7 +1095,10 @@ setAttribution(attributionResponse.data ?? null);
                   {qrLoading ? (
                     <div className="mt-4 space-y-2">
                       {Array.from({ length: 3 }).map((_, index) => (
-                        <div key={index} className="h-14 animate-pulse rounded-xl bg-white" />
+                        <div
+                          key={index}
+                          className="h-14 animate-pulse rounded-xl bg-white"
+                        />
                       ))}
                     </div>
                   ) : campaignQRCodes.length === 0 ? (
@@ -1224,13 +1114,20 @@ setAttribution(attributionResponse.data ?? null);
                   ) : (
                     <div className="mt-4 space-y-2">
                       {campaignQRCodes.map((qr) => (
-                        <div key={qr.id} className="flex items-center gap-3 rounded-xl border border-slate-100 bg-white p-3">
+                        <div
+                          key={qr.id}
+                          className="flex items-center gap-3 rounded-xl border border-slate-100 bg-white p-3"
+                        >
                           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
                             <QrCode className="h-4 w-4" />
                           </span>
                           <div className="min-w-0 flex-1">
-                            <p className="truncate text-xs font-bold text-slate-800">{qr.name}</p>
-                            <p className="mt-0.5 truncate text-[10px] text-slate-400">/{qr.shortCode}</p>
+                            <p className="truncate text-xs font-bold text-slate-800">
+                              {qr.name}
+                            </p>
+                            <p className="mt-0.5 truncate text-[10px] text-slate-400">
+                              /{qr.shortCode}
+                            </p>
                           </div>
                           <button
                             type="button"
@@ -1250,41 +1147,59 @@ setAttribution(attributionResponse.data ?? null);
                     </div>
                   )}
 
-                  {!qrLoading && qrCodes.filter((qr) => !campaignQRCodes.some((attached) => attached.id === qr.id)).length > 0 && (
-                    <div className="mt-4 border-t border-slate-100 pt-4">
-                      <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.1em] text-slate-400">
-                        Available QR codes
-                      </p>
-                      <div className="max-h-44 space-y-2 overflow-y-auto pr-1">
-                        {qrCodes
-                          .filter((qr) => !campaignQRCodes.some((attached) => attached.id === qr.id))
-                          .map((qr) => (
-                            <div key={qr.id} className="flex items-center gap-3 rounded-xl border border-slate-100 bg-white p-3">
-                              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-50 text-slate-500">
-                                <QrCode className="h-4 w-4" />
-                              </span>
-                              <div className="min-w-0 flex-1">
-                                <p className="truncate text-xs font-semibold text-slate-700">{qr.name}</p>
-                                <p className="mt-0.5 truncate text-[10px] text-slate-400">/{qr.shortCode}</p>
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() => void attachQRCode(qr.id)}
-                                disabled={attachingQrId !== null}
-                                className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-slate-950 px-2.5 py-2 text-[10px] font-bold text-white transition hover:bg-slate-800 disabled:opacity-50"
+                  {!qrLoading &&
+                    qrCodes.filter(
+                      (qr) =>
+                        !campaignQRCodes.some(
+                          (attached) => attached.id === qr.id,
+                        ),
+                    ).length > 0 && (
+                      <div className="mt-4 border-t border-slate-100 pt-4">
+                        <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.1em] text-slate-400">
+                          Available QR codes
+                        </p>
+                        <div className="max-h-44 space-y-2 overflow-y-auto pr-1">
+                          {qrCodes
+                            .filter(
+                              (qr) =>
+                                !campaignQRCodes.some(
+                                  (attached) => attached.id === qr.id,
+                                ),
+                            )
+                            .map((qr) => (
+                              <div
+                                key={qr.id}
+                                className="flex items-center gap-3 rounded-xl border border-slate-100 bg-white p-3"
                               >
-                                {attachingQrId === qr.id ? (
-                                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                                ) : (
-                                  <Link2 className="h-3.5 w-3.5" />
-                                )}
-                                Attach
-                              </button>
-                            </div>
-                          ))}
+                                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-50 text-slate-500">
+                                  <QrCode className="h-4 w-4" />
+                                </span>
+                                <div className="min-w-0 flex-1">
+                                  <p className="truncate text-xs font-semibold text-slate-700">
+                                    {qr.name}
+                                  </p>
+                                  <p className="mt-0.5 truncate text-[10px] text-slate-400">
+                                    /{qr.shortCode}
+                                  </p>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => void attachQRCode(qr.id)}
+                                  disabled={attachingQrId !== null}
+                                  className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-slate-950 px-2.5 py-2 text-[10px] font-bold text-white transition hover:bg-slate-800 disabled:opacity-50"
+                                >
+                                  {attachingQrId === qr.id ? (
+                                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                  ) : (
+                                    <Link2 className="h-3.5 w-3.5" />
+                                  )}
+                                  Attach
+                                </button>
+                              </div>
+                            ))}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
                 </section>
 
                 <section className="rounded-2xl border border-slate-100 bg-white p-4">
@@ -1334,17 +1249,31 @@ setAttribution(attributionResponse.data ?? null);
                             <tr key={qr.id}>
                               <td className="py-3 pr-3">
                                 <div className="flex min-w-0 items-center gap-2">
-                                  <span className="text-[9px] font-black text-slate-300">#{qr.rank}</span>
+                                  <span className="text-[9px] font-black text-slate-300">
+                                    #{qr.rank}
+                                  </span>
                                   <div className="min-w-0">
-                                    <p className="max-w-[150px] truncate text-[11px] font-bold text-slate-700">{qr.name}</p>
-                                    <p className="mt-0.5 text-[9px] text-slate-400">/{qr.shortCode}</p>
+                                    <p className="max-w-[150px] truncate text-[11px] font-bold text-slate-700">
+                                      {qr.name}
+                                    </p>
+                                    <p className="mt-0.5 text-[9px] text-slate-400">
+                                      /{qr.shortCode}
+                                    </p>
                                   </div>
                                 </div>
                               </td>
-                              <td className="px-2 py-3 text-right text-[11px] font-bold text-slate-700">{formatNumber(qr.metrics.scans)}</td>
-                              <td className="px-2 py-3 text-right text-[11px] font-semibold text-slate-600">{formatNumber(qr.metrics.uniqueVisitors)}</td>
-                              <td className="px-2 py-3 text-right text-[11px] font-semibold text-slate-600">{formatNumber(qr.metrics.conversions)}</td>
-                              <td className="pl-2 py-3 text-right text-[11px] font-bold text-blue-600">{qr.metrics.conversionRate.toFixed(2)}%</td>
+                              <td className="px-2 py-3 text-right text-[11px] font-bold text-slate-700">
+                                {formatNumber(qr.metrics.scans)}
+                              </td>
+                              <td className="px-2 py-3 text-right text-[11px] font-semibold text-slate-600">
+                                {formatNumber(qr.metrics.uniqueVisitors)}
+                              </td>
+                              <td className="px-2 py-3 text-right text-[11px] font-semibold text-slate-600">
+                                {formatNumber(qr.metrics.conversions)}
+                              </td>
+                              <td className="pl-2 py-3 text-right text-[11px] font-bold text-blue-600">
+                                {qr.metrics.conversionRate.toFixed(2)}%
+                              </td>
                             </tr>
                           ))}
                         </tbody>
@@ -1371,9 +1300,7 @@ setAttribution(attributionResponse.data ?? null);
 
                   <select
                     value={days}
-                    onChange={(event) =>
-                      setDays(Number(event.target.value))
-                    }
+                    onChange={(event) => setDays(Number(event.target.value))}
                     className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 outline-none focus:border-slate-400"
                   >
                     <option value={7}>Last 7 days</option>
@@ -1385,26 +1312,20 @@ setAttribution(attributionResponse.data ?? null);
 
                 {analyticsLoading ? (
                   <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                    {Array.from({ length: 3 }).map(
-                      (_, index) => (
-                        <div
-                          key={index}
-                          className="h-24 animate-pulse rounded-2xl bg-slate-50"
-                        />
-                      ),
-                    )}
+                    {Array.from({ length: 3 }).map((_, index) => (
+                      <div
+                        key={index}
+                        className="h-24 animate-pulse rounded-2xl bg-slate-50"
+                      />
+                    ))}
                   </div>
                 ) : (
                   <>
                     <div className="mt-5 grid gap-3 sm:grid-cols-3">
                       <AnalyticsMetric
                         title="Scans"
-                        value={formatNumber(
-                          analytics?.summary.totalScans ?? 0,
-                        )}
-                        icon={
-                          <Activity className="h-4 w-4" />
-                        }
+                        value={formatNumber(analytics?.summary.totalScans ?? 0)}
+                        icon={<Activity className="h-4 w-4" />}
                       />
 
                       <AnalyticsMetric
@@ -1412,9 +1333,7 @@ setAttribution(attributionResponse.data ?? null);
                         value={formatNumber(
                           analytics?.summary.totalVisitors ?? 0,
                         )}
-                        icon={
-                          <TrendingUp className="h-4 w-4" />
-                        }
+                        icon={<TrendingUp className="h-4 w-4" />}
                       />
 
                       <AnalyticsMetric
@@ -1422,9 +1341,7 @@ setAttribution(attributionResponse.data ?? null);
                         value={formatNumber(
                           analytics?.summary.totalConversions ?? 0,
                         )}
-                        icon={
-                          <CheckCircle2 className="h-4 w-4" />
-                        }
+                        icon={<CheckCircle2 className="h-4 w-4" />}
                       />
                     </div>
 
@@ -1436,19 +1353,14 @@ setAttribution(attributionResponse.data ?? null);
 
                         <p className="mt-2 text-xl font-black text-slate-950">
                           {formatCurrency(
-                            analytics?.summary
-                              .totalConversionValue ?? 0,
-                            attribution
-  ?.conversionValue
-  ?.currencies?.[0]
-  ?.currency ?? "INR",
-
+                            analytics?.summary.totalConversionValue ?? 0,
+                            attribution?.conversionValue?.currencies?.[0]
+                              ?.currency ?? "INR",
                           )}
                         </p>
 
                         <p className="mt-1 text-[10px] text-slate-400">
-                          Across recorded campaign
-                          conversions
+                          Across recorded campaign conversions
                         </p>
                       </div>
 
@@ -1458,17 +1370,15 @@ setAttribution(attributionResponse.data ?? null);
                         </p>
 
                         <p className="mt-2 text-xl font-black text-slate-950">
-                          {(
-                            attribution?.summary
-  ?.attributionRate ?? 0
-
-                          ).toFixed(2)}
+                          {(attribution?.summary?.attributionRate ?? 0).toFixed(
+                            2,
+                          )}
                           %
                         </p>
 
                         <p className="mt-1 text-[10px] text-slate-400">
-                          Conversions with rule, experiment
-                          or variant attribution
+                          Conversions with rule, experiment or variant
+                          attribution
                         </p>
                       </div>
                     </div>
@@ -1480,31 +1390,26 @@ setAttribution(attributionResponse.data ?? null);
                         </p>
                       </div>
 
-                      {(attribution?.conversionTypes ?? [])
-                        .length === 0 ? (
+                      {(attribution?.conversionTypes ?? []).length === 0 ? (
                         <div className="px-4 py-6 text-center text-xs text-slate-400">
                           No conversion data for this period.
                         </div>
                       ) : (
                         <div className="divide-y divide-slate-100">
-                          {attribution!.conversionTypes.map(
-                            (item) => (
-                              <div
-                                key={item.type}
-                                className="flex items-center justify-between px-4 py-3"
-                              >
-                                <span className="text-xs font-semibold text-slate-700">
-                                  {item.type}
-                                </span>
+                          {attribution!.conversionTypes.map((item) => (
+                            <div
+                              key={item.type}
+                              className="flex items-center justify-between px-4 py-3"
+                            >
+                              <span className="text-xs font-semibold text-slate-700">
+                                {item.type}
+                              </span>
 
-                                <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold text-slate-600">
-                                  {formatNumber(
-                                    item.conversions,
-                                  )}
-                                </span>
-                              </div>
-                            ),
-                          )}
+                              <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold text-slate-600">
+                                {formatNumber(item.conversions)}
+                              </span>
+                            </div>
+                          ))}
                         </div>
                       )}
                     </div>
@@ -1562,9 +1467,7 @@ function Metric({
         {value}
       </p>
 
-      <p className="mt-1 text-[10px] font-medium text-slate-400">
-        {helper}
-      </p>
+      <p className="mt-1 text-[10px] font-medium text-slate-400">{helper}</p>
     </div>
   );
 }
@@ -1587,9 +1490,7 @@ function AnalyticsMetric({
         </span>
       </div>
 
-      <p className="mt-2 text-xl font-black text-slate-950">
-        {value}
-      </p>
+      <p className="mt-2 text-xl font-black text-slate-950">{value}</p>
     </div>
   );
 }
@@ -1641,12 +1542,14 @@ function CampaignModal({
     endsAt: string;
   };
   saving: boolean;
-  setForm: Dispatch<SetStateAction<{
+  setForm: Dispatch<
+    SetStateAction<{
       name: string;
       description: string;
       startsAt: string;
       endsAt: string;
-    }>>;
+    }>
+  >;
   onClose: () => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 }) {
@@ -1782,9 +1685,7 @@ function CampaignModal({
               disabled={saving}
               className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {saving && (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              )}
+              {saving && <Loader2 className="h-4 w-4 animate-spin" />}
 
               {editing ? "Save changes" : "Create campaign"}
             </button>

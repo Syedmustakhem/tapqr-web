@@ -62,6 +62,7 @@ type BusinessProfile = {
   specialsDescription?: string | null;
   specialsValidUntil?: string | null;
   loyaltyCardEnabled?: boolean | null;
+  whatsappOrderingEnabled?: boolean | null;
   loyaltyCardTitle?: string | null;
   loyaltyStampsRequired?: number | null;
   loyaltyRewardDescription?: string | null;
@@ -187,6 +188,7 @@ type FormState = {
 
   // Loyalty Card (Pro)
   loyaltyCardEnabled: boolean;
+  whatsappOrderingEnabled: boolean;
   loyaltyCardTitle: string;
   loyaltyStampsRequired: string;
   loyaltyRewardDescription: string;
@@ -331,6 +333,7 @@ const EMPTY_FORM = (): FormState => ({
 
   // Loyalty Card (Pro)
   loyaltyCardEnabled: false,
+  whatsappOrderingEnabled: false,
   loyaltyCardTitle: "",
   loyaltyStampsRequired: "10",
   loyaltyRewardDescription: "",
@@ -455,6 +458,8 @@ function toForm(business: Business): FormState {
     // Loyalty Card (Pro)
     loyaltyCardEnabled:
       profile.loyaltyCardEnabled ?? false,
+    whatsappOrderingEnabled:
+      profile.whatsappOrderingEnabled ?? false,
     loyaltyCardTitle:
       profile.loyaltyCardTitle ?? "",
     loyaltyStampsRequired:
@@ -961,6 +966,9 @@ export default function BusinessPage() {
 
             loyaltyCardEnabled:
               form.loyaltyCardEnabled,
+
+            whatsappOrderingEnabled:
+              form.whatsappOrderingEnabled,
 
             loyaltyCardTitle:
               form.loyaltyCardTitle.trim() ||
@@ -2580,6 +2588,62 @@ export default function BusinessPage() {
                 card shows the reward
                 to claim.
               </p>
+            </div>
+          </Panel>
+
+          {/* =====================================================
+              WHATSAPP ORDERING (Pro)
+          ===================================================== */}
+
+          <Panel
+            title="WhatsApp Ordering"
+            subtitle="Let scanners build a cart from your catalog and send the order to your WhatsApp."
+          >
+            <div className="space-y-5">
+              <label className="flex items-start gap-3 rounded-xl border border-slate-200 p-4">
+                <input
+                  type="checkbox"
+                  checked={
+                    form.whatsappOrderingEnabled
+                  }
+                  disabled={
+                    !editing || saving
+                  }
+                  onChange={(event) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      whatsappOrderingEnabled:
+                        event.target
+                          .checked,
+                    }))
+                  }
+                  className="mt-1 h-4 w-4 accent-slate-950"
+                />
+
+                <span>
+                  <span className="block text-sm font-bold text-slate-900">
+                    Enable WhatsApp
+                    Ordering{" "}
+                    <span className="ml-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-amber-700">
+                      Pro
+                    </span>
+                  </span>
+
+                  <span className="mt-1 block text-xs leading-5 text-slate-500">
+                    Scanners see an
+                    "Order on WhatsApp"
+                    button. They pick
+                    items from your
+                    catalog, and the
+                    order opens in
+                    WhatsApp addressed
+                    to your business
+                    number. Make sure
+                    your WhatsApp number
+                    is set above.
+                  </span>
+                </span>
+              </label>
             </div>
           </Panel>
 
