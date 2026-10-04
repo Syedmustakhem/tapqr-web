@@ -10,6 +10,12 @@ import {
   apiRequest,
   ApiError,
 } from "@/lib/api";
+import {
+  getBillingStatus,
+  isUpgradeRequired,
+} from "@/lib/billing";
+import UpgradeModal from "@/components/billing/UpgradeModal";
+import ProLock from "@/components/billing/ProLock";
 
 /*
  * ============================================================
@@ -304,6 +310,14 @@ export default function AppointmentsPage() {
     useState("");
   const [error, setError] = useState("");
 
+  /* Pro plan state — null = unknown, never lock on a billing hiccup. */
+  const [isPro, setIsPro] =
+    useState<boolean | null>(null);
+
+  /* Centered upgrade modal — feature label, or null when closed. */
+  const [upgradeFeature, setUpgradeFeature] =
+    useState<string | null>(null);
+
   useEffect(() => {
     const stored =
       typeof window !== "undefined"
@@ -312,6 +326,23 @@ export default function AppointmentsPage() {
           )
         : null;
     if (stored) setBusinessId(stored);
+
+    let cancelled = false;
+    getBillingStatus()
+      .then((response) => {
+        if (cancelled) {
+          return;
+        }
+        const code =
+          response?.data?.plan?.code ?? "FREE";
+        setIsPro(code !== "FREE");
+      })
+      .catch(() => {
+        /* Leave isPro null — never lock on a billing hiccup. */
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const loadConfig = useCallback(async () => {
@@ -585,11 +616,22 @@ export default function AppointmentsPage() {
       );
       setMessage("Settings saved.");
     } catch (e) {
-      setError(
-        e instanceof ApiError
-          ? e.message
-          : "Could not save settings."
-      );
+      if (isUpgradeRequired(e)) {
+        const label = (
+          e instanceof ApiError ? e.message : ""
+        )
+          .split(" requires a Pro plan")[0]
+          .trim();
+        setUpgradeFeature(
+          label || "Appointment Booking"
+        );
+      } else {
+        setError(
+          e instanceof ApiError
+            ? e.message
+            : "Could not save settings."
+        );
+      }
     } finally {
       setSaving(false);
     }
@@ -879,6 +921,15 @@ export default function AppointmentsPage() {
 
       {tab === "settings" && (
         <section className="space-y-6">
+          <ProLock
+            locked={isPro === false}
+            feature="Appointment Booking"
+            onUpgrade={() =>
+              setUpgradeFeature(
+                "Appointment Booking"
+              )
+            }
+          >
           {configLoading ? (
             <p className="text-sm text-slate-400">
               Loading settings…
@@ -1286,8 +1337,19 @@ export default function AppointmentsPage() {
               </button>
             </>
           )}
+          </ProLock>
         </section>
       )}
+
+      <UpgradeModal
+        open={upgradeFeature !== null}
+        feature={
+          upgradeFeature ?? "Appointment Booking"
+        }
+        onClose={() =>
+          setUpgradeFeature(null)
+        }
+      />
     </main>
   );
 }

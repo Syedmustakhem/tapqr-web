@@ -32,6 +32,9 @@ import {
 } from "lucide-react";
 
 import { apiRequest, ApiError } from "@/lib/api";
+import { getBillingStatus } from "@/lib/billing";
+import UpgradeModal from "@/components/billing/UpgradeModal";
+import ProLock from "@/components/billing/ProLock";
 
 type BusinessStatus = "ACTIVE" | "INACTIVE" | "SUSPENDED" | string;
 
@@ -573,6 +576,21 @@ export default function BusinessPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
+  /*
+   * Pro plan state — drives the locked overlays
+   * on Pro panels. null = unknown (never lock
+   * on a failed lookup; the backend still
+   * enforces entitlements).
+   */
+  const [isPro, setIsPro] = useState<boolean | null>(null);
+
+  /*
+   * Centered "Upgrade to Pro" modal. Set to the
+   * feature label when a free member hits a
+   * paywall; null = closed.
+   */
+  const [upgradeFeature, setUpgradeFeature] = useState<string | null>(null);
+
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
 
   const [createForm, setCreateForm] = useState({
@@ -582,6 +600,29 @@ export default function BusinessPage() {
     logo: "",
     description: "",
   });
+
+  useEffect(() => {
+    let cancelled = false;
+
+    getBillingStatus()
+      .then((response) => {
+        if (cancelled) {
+          return;
+        }
+
+        const code =
+          response?.data?.plan?.code ?? "FREE";
+
+        setIsPro(code !== "FREE");
+      })
+      .catch(() => {
+        /* Leave isPro null — never lock on a billing hiccup. */
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const selectedBusiness = useMemo(
     () =>
@@ -1085,12 +1126,19 @@ export default function BusinessPage() {
         err.code === "UPGRADE_REQUIRED"
       ) {
         /*
-         * The backend now returns a feature-specific
-         * message ("Review Funnel is a Pro feature…",
-         * "Today's Specials is a Pro feature…"), so
-         * surface it directly.
+         * Backend messages look like
+         * "Review Funnel requires a Pro plan…".
+         * Show the centered upgrade modal with
+         * the feature name instead of a top
+         * banner — it's impossible to miss.
          */
-        setError(err.message);
+        const label = err.message
+          .split(" requires a Pro plan")[0]
+          .trim();
+
+        setUpgradeFeature(
+          label || "This feature"
+        );
       } else {
         setError(
           err instanceof ApiError
@@ -2282,6 +2330,13 @@ export default function BusinessPage() {
               REVIEW FUNNEL (Pro)
           ===================================================== */}
 
+          <ProLock
+            locked={isPro === false}
+            feature="Review Funnel"
+            onUpgrade={() =>
+              setUpgradeFeature("Review Funnel")
+            }
+          >
           <Panel
             title="Review Funnel"
             subtitle="Turn scans into Google reviews — and catch unhappy customers privately."
@@ -2354,11 +2409,19 @@ export default function BusinessPage() {
               TapQR instead.
             </p>
           </Panel>
+          </ProLock>
 
           {/* =====================================================
               TODAY'S SPECIALS (Pro)
           ===================================================== */}
 
+          <ProLock
+            locked={isPro === false}
+            feature="Today's Specials"
+            onUpgrade={() =>
+              setUpgradeFeature("Today's Specials")
+            }
+          >
           <Panel
             title="Today's Specials"
             subtitle="Show a highlight banner on your public scan experience."
@@ -2475,11 +2538,19 @@ export default function BusinessPage() {
               </div>
             </div>
           </Panel>
+          </ProLock>
 
           {/* =====================================================
               LOYALTY CARD (Pro)
           ===================================================== */}
 
+          <ProLock
+            locked={isPro === false}
+            feature="Loyalty Card"
+            onUpgrade={() =>
+              setUpgradeFeature("Loyalty Card")
+            }
+          >
           <Panel
             title="Loyalty Card"
             subtitle="Reward repeat scanners with a digital stamp card."
@@ -2590,11 +2661,19 @@ export default function BusinessPage() {
               </p>
             </div>
           </Panel>
+          </ProLock>
 
           {/* =====================================================
               WHATSAPP ORDERING (Pro)
           ===================================================== */}
 
+          <ProLock
+            locked={isPro === false}
+            feature="WhatsApp Ordering"
+            onUpgrade={() =>
+              setUpgradeFeature("WhatsApp Ordering")
+            }
+          >
           <Panel
             title="WhatsApp Ordering"
             subtitle="Let scanners build a cart from your catalog and send the order to your WhatsApp."
@@ -2646,6 +2725,7 @@ export default function BusinessPage() {
               </label>
             </div>
           </Panel>
+          </ProLock>
 
           {/* =====================================================
               SAVE BAR
@@ -3077,6 +3157,17 @@ export default function BusinessPage() {
           }
         />
       )}
+
+      {/* Centered upgrade modal for paywalled features */}
+      <UpgradeModal
+        open={upgradeFeature !== null}
+        feature={
+          upgradeFeature ?? "This feature"
+        }
+        onClose={() =>
+          setUpgradeFeature(null)
+        }
+      />
     </main>
   );
 }
