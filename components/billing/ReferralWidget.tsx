@@ -13,6 +13,7 @@ import {
 import {
   getReferralStats,
   getOrCreateReferralCode,
+  buildReferralLink,
   type ReferralStatsData,
 } from "@/lib/billing";
 
@@ -28,8 +29,6 @@ import {
  * earns the referrer 30 days of Pro free (credited after
  * their current plan time ends).
  */
-
-const SITE_URL = "https://tapqr.shop";
 
 export default function ReferralWidget() {
   const [stats, setStats] =
@@ -55,7 +54,7 @@ export default function ReferralWidget() {
         setStats(res.data);
 
         if (res.data.code) {
-          const link = `${SITE_URL}/register?ref=${res.data.code}`;
+          const link = buildReferralLink(res.data.code);
           const dataUrl =
             await QRCode.toDataURL(
               link,
@@ -88,7 +87,7 @@ export default function ReferralWidget() {
     return null;
   }
 
-  const link = `${SITE_URL}/register?ref=${stats.code}`;
+  const link = buildReferralLink(stats.code);
   const earnedMonths = Math.floor(
     stats.earnedDays / 30
   );
@@ -130,10 +129,15 @@ export default function ReferralWidget() {
               {stats.rewardDays} days of Pro
               free
             </span>{" "}
-            — up to{" "}
-            {stats.maxRewardsPerYear} per
-            year. Credits stack after your
-            current plan ends.
+            — and they get a{" "}
+            <span className="font-bold text-slate-700">
+              {stats.refereeBonusDays}-day
+              Pro bonus
+            </span>
+            . Up to{" "}
+            {stats.maxRewardsPerYear} rewards
+            per year. Credits stack after
+            your current plan ends.
           </p>
 
           {/* Code + link */}

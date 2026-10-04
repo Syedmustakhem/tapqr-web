@@ -7,6 +7,7 @@ import {
   Clock3,
   ArrowRight,
   Gift,
+  AlertCircle,
 } from "lucide-react";
 import {
   getTrialStatus,
@@ -21,8 +22,10 @@ import {
  * ============================================================
  *
  * Shows on the dashboard overview:
- *  - ACTIVE trial      -> countdown + upgrade CTA
- *  - Eligible, no trial -> "start free trial" CTA
+ *  - ACTIVE trial, > 3 days left -> countdown + upgrade CTA
+ *  - ACTIVE trial, <= 3 days left -> URGENT renewal alert
+ *    (daily, until they renew or the trial ends)
+ *  - Eligible, no trial -> "claim free Pro" CTA
  *  - Pro via credits   -> "Pro active until <date>" note
  *  - Paid subscriber   -> nothing
  */
@@ -118,6 +121,49 @@ export default function TrialBanner() {
     data.hasTrial &&
     data.status === "ACTIVE"
   ) {
+    // Last 3 days: urgent daily renewal alert. If they
+    // renew, the subscription takes over; otherwise the
+    // trial simply expires back to Free.
+    if (data.daysLeft <= 3) {
+      return (
+        <section className="rounded-[24px] border border-rose-200 bg-gradient-to-r from-rose-50 to-white px-5 py-4 sm:px-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-rose-600" />
+              <div>
+                <p className="text-sm font-bold text-slate-900">
+                  Your free Pro ends in{" "}
+                  {data.daysLeft}{" "}
+                  {data.daysLeft === 1
+                    ? "day"
+                    : "days"}
+                </p>
+                <p className="mt-0.5 text-xs text-slate-500">
+                  Renew now to keep the
+                  review funnel, loyalty
+                  card, bookings, WhatsApp
+                  ordering and everything
+                  else — otherwise Pro
+                  switches off on{" "}
+                  {formatBillingDate(
+                    data.endsAt
+                  )}
+                  .
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/dashboard/payments"
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-rose-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-rose-700"
+            >
+              Renew Pro now
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+        </section>
+      );
+    }
+
     return (
       <section className="rounded-[24px] border border-amber-200 bg-amber-50 px-5 py-4 sm:px-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -161,12 +207,17 @@ export default function TrialBanner() {
             <Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-teal-600" />
             <div>
               <p className="text-sm font-bold text-slate-900">
-                Try Pro free for 15 days
+                Pro FREE for 15 days —
+                everything unlocked
               </p>
               <p className="mt-0.5 text-xs text-slate-500">
-                Review funnel, loyalty card,
-                bookings, WhatsApp ordering
-                and more — no card required.
+                Review funnel, today&apos;s
+                specials, loyalty card,
+                appointment booking,
+                WhatsApp ordering, UPI
+                payments and full scan
+                analytics — no card
+                required.
               </p>
               {error && (
                 <p className="mt-1 text-xs font-medium text-red-600">
@@ -181,8 +232,8 @@ export default function TrialBanner() {
             className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-teal-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-teal-700 disabled:opacity-60"
           >
             {starting
-              ? "Starting…"
-              : "Start free trial"}
+              ? "Claiming…"
+              : "Claim free Pro"}
             <ArrowRight className="h-3.5 w-3.5" />
           </button>
         </div>
