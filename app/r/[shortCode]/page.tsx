@@ -75,6 +75,10 @@ export interface GuestExperience {
       appointmentMaxPartySize: number | null;
       appointmentMaxTokensPerDay: number | null;
       whatsappOrderingEnabled: boolean | null;
+      upiPayEnabled: boolean | null;
+      upiVpa: string | null;
+      upiPayeeName: string | null;
+      upiPresetAmounts: unknown;
       address: {
         line1: string | null;
         line2: string | null;
