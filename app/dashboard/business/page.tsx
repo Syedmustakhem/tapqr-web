@@ -66,6 +66,10 @@ type BusinessProfile = {
   specialsValidUntil?: string | null;
   loyaltyCardEnabled?: boolean | null;
   whatsappOrderingEnabled?: boolean | null;
+  upiPayEnabled?: boolean | null;
+  upiVpa?: string | null;
+  upiPayeeName?: string | null;
+  upiPresetAmounts?: unknown;
   loyaltyCardTitle?: string | null;
   loyaltyStampsRequired?: number | null;
   loyaltyRewardDescription?: string | null;
@@ -192,6 +196,10 @@ type FormState = {
   // Loyalty Card (Pro)
   loyaltyCardEnabled: boolean;
   whatsappOrderingEnabled: boolean;
+  upiPayEnabled: boolean;
+  upiVpa: string;
+  upiPayeeName: string;
+  upiPresetAmounts: string;
   loyaltyCardTitle: string;
   loyaltyStampsRequired: string;
   loyaltyRewardDescription: string;
@@ -337,6 +345,10 @@ const EMPTY_FORM = (): FormState => ({
   // Loyalty Card (Pro)
   loyaltyCardEnabled: false,
   whatsappOrderingEnabled: false,
+  upiPayEnabled: false,
+  upiVpa: "",
+  upiPayeeName: "",
+  upiPresetAmounts: "",
   loyaltyCardTitle: "",
   loyaltyStampsRequired: "10",
   loyaltyRewardDescription: "",
@@ -463,6 +475,19 @@ function toForm(business: Business): FormState {
       profile.loyaltyCardEnabled ?? false,
     whatsappOrderingEnabled:
       profile.whatsappOrderingEnabled ?? false,
+    upiPayEnabled:
+      profile.upiPayEnabled ?? false,
+    upiVpa:
+      profile.upiVpa ?? "",
+    upiPayeeName:
+      profile.upiPayeeName ?? "",
+    upiPresetAmounts: Array.isArray(
+      profile.upiPresetAmounts
+    )
+      ? (
+          profile.upiPresetAmounts as number[]
+        ).join(", ")
+      : "",
     loyaltyCardTitle:
       profile.loyaltyCardTitle ?? "",
     loyaltyStampsRequired:
@@ -1010,6 +1035,29 @@ export default function BusinessPage() {
 
             whatsappOrderingEnabled:
               form.whatsappOrderingEnabled,
+
+            upiPayEnabled:
+              form.upiPayEnabled,
+
+            upiVpa:
+              form.upiVpa.trim() || null,
+
+            upiPayeeName:
+              form.upiPayeeName.trim() ||
+              null,
+
+            upiPresetAmounts:
+              form.upiPresetAmounts
+                .split(",")
+                .map((x) =>
+                  parseInt(x.trim(), 10)
+                )
+                .filter(
+                  (n) =>
+                    Number.isFinite(n) &&
+                    n > 0
+                )
+                .slice(0, 6),
 
             loyaltyCardTitle:
               form.loyaltyCardTitle.trim() ||
@@ -2723,6 +2771,145 @@ export default function BusinessPage() {
                   </span>
                 </span>
               </label>
+            </div>
+          </Panel>
+          </ProLock>
+
+          {/* =====================================================
+              UPI PAY (Pro)
+          ===================================================== */}
+
+          <ProLock
+            locked={isPro === false}
+            feature="UPI Pay"
+            onUpgrade={() =>
+              setUpgradeFeature("UPI Pay")
+            }
+          >
+          <Panel
+            title="UPI Pay"
+            subtitle="Let scanners pay you directly via any UPI app — no login, no commission."
+          >
+            <div className="space-y-5">
+              <label className="flex items-start gap-3 rounded-xl border border-slate-200 p-4">
+                <input
+                  type="checkbox"
+                  checked={
+                    form.upiPayEnabled
+                  }
+                  disabled={
+                    !editing || saving
+                  }
+                  onChange={(event) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      upiPayEnabled:
+                        event.target
+                          .checked,
+                    }))
+                  }
+                  className="mt-1 h-4 w-4 accent-slate-950"
+                />
+
+                <span>
+                  <span className="block text-sm font-bold text-slate-900">
+                    Enable UPI Pay{" "}
+                    <span className="ml-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-amber-700">
+                      Pro
+                    </span>
+                  </span>
+
+                  <span className="mt-1 block text-xs leading-5 text-slate-500">
+                    Scanners see a
+                    "Pay via UPI"
+                    button. On mobile
+                    it opens their UPI
+                    app with your
+                    details filled in;
+                    on desktop they get
+                    a QR to scan.
+                    TapQR never touches
+                    the money.
+                  </span>
+                </span>
+              </label>
+
+              <div>
+                <label className="text-xs font-bold text-slate-500">
+                  Your UPI ID (VPA)
+                </label>
+                <input
+                  type="text"
+                  value={form.upiVpa}
+                  disabled={
+                    !editing || saving
+                  }
+                  onChange={(event) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      upiVpa:
+                        event.target.value,
+                    }))
+                  }
+                  placeholder="yourname@upi"
+                  className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 font-mono text-sm outline-none focus:border-slate-400 disabled:opacity-50"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-500">
+                  Payee name (shown
+                  in the UPI app)
+                </label>
+                <input
+                  type="text"
+                  value={form.upiPayeeName}
+                  disabled={
+                    !editing || saving
+                  }
+                  onChange={(event) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      upiPayeeName:
+                        event.target.value,
+                    }))
+                  }
+                  placeholder="Your business name"
+                  className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-slate-400 disabled:opacity-50"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-500">
+                  Preset amounts
+                  (optional,
+                  comma-separated)
+                </label>
+                <input
+                  type="text"
+                  value={
+                    form.upiPresetAmounts
+                  }
+                  disabled={
+                    !editing || saving
+                  }
+                  onChange={(event) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      upiPresetAmounts:
+                        event.target.value,
+                    }))
+                  }
+                  placeholder="50, 100, 500"
+                  className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-slate-400 disabled:opacity-50"
+                />
+                <p className="mt-1 text-xs text-slate-400">
+                  Quick-tap chips
+                  above the amount
+                  field. Leave empty
+                  for free entry.
+                </p>
+              </div>
             </div>
           </Panel>
           </ProLock>

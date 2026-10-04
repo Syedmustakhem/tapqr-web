@@ -8,6 +8,7 @@ import {
 import LoyaltyCard from "./LoyaltyCard";
 import AppointmentBooking from "./AppointmentBooking";
 import WhatsAppOrdering from "./WhatsAppOrdering";
+import UpiPay from "./UpiPay";
 
 import type {
   GuestExperience,
@@ -1069,13 +1070,11 @@ export default function GuestExperience({
           profile?.appointmentBookingMode
         }
         services={
-  profile?.appointmentServices as any
-}
-
+          profile?.appointmentServices as any
+        }
         events={
-  profile?.appointmentEvents as any
-}
-
+          profile?.appointmentEvents as any
+        }
         advanceDays={
           profile?.appointmentAdvanceDays
         }
@@ -1099,6 +1098,27 @@ export default function GuestExperience({
         whatsappUrl={whatsappUrl}
         catalogs={
           business.catalogs as any
+        }
+        primaryColor={
+          primaryColor
+        }
+      />
+      {/* =========================
+          UPI PAY (Pro)
+      ========================== */}
+
+      <UpiPay
+        enabled={
+          profile?.upiPayEnabled ??
+          false
+        }
+        businessName={business.name}
+        upiVpa={profile?.upiVpa}
+        upiPayeeName={
+          profile?.upiPayeeName
+        }
+        upiPresetAmounts={
+          profile?.upiPresetAmounts as any
         }
         primaryColor={
           primaryColor

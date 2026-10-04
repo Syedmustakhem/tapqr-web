@@ -28,7 +28,7 @@ import { Sparkles, X } from "lucide-react";
 const BENEFITS = [
   "Review Funnel, Specials Banner & Loyalty Card",
   "Appointment Booking in 6 modes",
-  "Scan-to-WhatsApp Ordering",
+  "Scan-to-WhatsApp Ordering & UPI Pay",
   "Pro scan analytics & more",
 ];
 
