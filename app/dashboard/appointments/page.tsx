@@ -83,6 +83,7 @@ type ServiceConfig = {
   name: string;
   durationMinutes: number;
   price?: number | null;
+  staffMobile?: string | null;
 };
 
 type EventConfig = {
@@ -286,6 +287,8 @@ export default function AppointmentsPage() {
     useState("30");
   const [draftPrice, setDraftPrice] =
     useState("");
+  const [draftStaffMobile, setDraftStaffMobile] =
+    useState("");
 
   // Event draft
   const [draftEventName, setDraftEventName] =
@@ -481,6 +484,8 @@ export default function AppointmentsPage() {
     const price = draftPrice.trim()
       ? parseFloat(draftPrice)
       : null;
+    const staffMobile =
+      draftStaffMobile.trim();
     if (!name) {
       setError("Name is required.");
       return;
@@ -495,6 +500,17 @@ export default function AppointmentsPage() {
       );
       return;
     }
+    if (
+      staffMobile &&
+      !/^\+[1-9]\d{6,14}$/.test(
+        staffMobile
+      )
+    ) {
+      setError(
+        "Staff mobile must be in E.164 format, e.g. +919121657235."
+      );
+      return;
+    }
     setServices((prev) => [
       ...prev,
       {
@@ -505,11 +521,14 @@ export default function AppointmentsPage() {
           price !== null && !isNaN(price)
             ? price
             : null,
+        staffMobile:
+          staffMobile || null,
       },
     ]);
     setDraftName("");
     setDraftDuration("30");
     setDraftPrice("");
+    setDraftStaffMobile("");
     setError("");
   };
 
@@ -1136,6 +1155,9 @@ export default function AppointmentsPage() {
                                       : ""
                                   }`
                                 : ""}
+                              {s.staffMobile
+                                ? ` · 🔔 ${s.staffMobile}`
+                                : ""}
                             </p>
                           </div>
                           <button
@@ -1204,7 +1226,24 @@ export default function AppointmentsPage() {
                     >
                       Add
                     </button>
+                    <input
+                      type="tel"
+                      value={draftStaffMobile}
+                      onChange={(e) =>
+                        setDraftStaffMobile(
+                          e.target.value
+                        )
+                      }
+                      placeholder="Staff WhatsApp — e.g. +919121657235 (optional)"
+                      className="rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-slate-400 sm:col-span-4"
+                    />
                   </div>
+                  <p className="mt-2 text-[11px] leading-4 text-slate-400">
+                    When a staff number is
+                    set, new bookings for
+                    this service alert that
+                    number on WhatsApp.
+                  </p>
                 </div>
               )}
 

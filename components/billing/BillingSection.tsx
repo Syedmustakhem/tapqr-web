@@ -10,17 +10,27 @@ import Link from "next/link";
 
 import {
   AlertCircle,
+  ArrowLeftRight,
   CreditCard,
+  Download,
+  FileText,
   Loader2,
   Receipt,
+  Wallet,
 } from "lucide-react";
 
 import {
   cancelSubscription,
   formatBillingDate,
   formatINR,
+  getBillingHistory,
   getBillingStatus,
+  getInvoiceUrl,
+  getPaymentMethods,
+  switchPlan,
   type BillingStatusData,
+  type HistoryPayment,
+  type SavedPaymentMethod,
 } from "@/lib/billing";
 
 /* ============================================================
@@ -89,6 +99,21 @@ export default function BillingSection() {
   const [notice, setNotice] =
     useState("");
 
+  const [history, setHistory] =
+    useState<HistoryPayment[]>([]);
+  const [historyLoading, setHistoryLoading] =
+    useState(true);
+
+  const [methods, setMethods] =
+    useState<SavedPaymentMethod[]>([]);
+  const [methodsLoading, setMethodsLoading] =
+    useState(true);
+
+  const [switching, setSwitching] =
+    useState(false);
+  const [invoiceFor, setInvoiceFor] =
+    useState<string | null>(null);
+
   const loadStatus =
     useCallback(async () => {
       try {
@@ -115,6 +140,94 @@ export default function BillingSection() {
   useEffect(() => {
     void loadStatus();
   }, [loadStatus]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const [h, m] =
+          await Promise.all([
+            getBillingHistory(),
+            getPaymentMethods(),
+          ]);
+        setHistory(h.data ?? []);
+        setMethods(m.data ?? []);
+      } catch {
+        /* sections stay empty */
+      } finally {
+        setHistoryLoading(false);
+        setMethodsLoading(false);
+      }
+    })();
+  }, []);
+
+  const handleSwitchPlan = async (
+    target: "PRO_MONTHLY" | "PRO_YEARLY"
+  ) => {
+    if (switching) return;
+
+    const label =
+      target === "PRO_YEARLY"
+        ? "Yearly (₹999)"
+        : "Monthly (₹199)";
+
+    const confirmed = window.confirm(
+      `Switch to ${label}? Razorpay will prorate the change — you'll be charged or credited the difference.`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setSwitching(true);
+      setNotice("");
+
+      const response =
+        await switchPlan(target);
+
+      setNotice(
+        `Plan switched to ${
+          response?.data?.planName ?? label
+        }. The change is prorated by Razorpay.`
+      );
+
+      await loadStatus();
+    } catch (err) {
+      setNotice(
+        err instanceof Error
+          ? err.message
+          : "Unable to switch plans."
+      );
+    } finally {
+      setSwitching(false);
+    }
+  };
+
+  const handleInvoice = async (
+    payment: HistoryPayment
+  ) => {
+    if (invoiceFor) return;
+
+    try {
+      setInvoiceFor(payment.id);
+      setNotice("");
+
+      const response =
+        await getInvoiceUrl(payment.id);
+
+      const url = response?.data?.url;
+
+      if (url) {
+        window.open(url, "_blank");
+      }
+    } catch (err) {
+      setNotice(
+        err instanceof Error
+          ? err.message
+          : "Could not fetch the invoice."
+      );
+    } finally {
+      setInvoiceFor(null);
+    }
+  };
 
   const handleCancel =
     async () => {
@@ -217,9 +330,6 @@ export default function BillingSection() {
       "ACTIVE" &&
     !subscription?.cancelAtPeriodEnd;
 
-  const payments =
-    status.payments ?? [];
-
   return (
     <div className="max-w-xl space-y-6">
       {notice && (
@@ -303,6 +413,52 @@ export default function BillingSection() {
               : "Upgrade to Pro"}
           </Link>
 
+          {subscriptionActive &&
+            planCode === "PRO_MONTHLY" && (
+              <button
+                type="button"
+                onClick={() =>
+                  void handleSwitchPlan(
+                    "PRO_YEARLY"
+                  )
+                }
+                disabled={switching}
+                className="inline-flex items-center gap-2 rounded-xl border border-teal-200 bg-teal-50 px-5 py-2.5 text-xs font-bold text-teal-800 transition hover:bg-teal-100 disabled:opacity-50"
+              >
+                {switching ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <ArrowLeftRight className="h-3.5 w-3.5" />
+                )}
+                {switching
+                  ? "Switching…"
+                  : "Switch to Yearly"}
+              </button>
+            )}
+
+          {subscriptionActive &&
+            planCode === "PRO_YEARLY" && (
+              <button
+                type="button"
+                onClick={() =>
+                  void handleSwitchPlan(
+                    "PRO_MONTHLY"
+                  )
+                }
+                disabled={switching}
+                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-xs font-bold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
+              >
+                {switching ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <ArrowLeftRight className="h-3.5 w-3.5" />
+                )}
+                {switching
+                  ? "Switching…"
+                  : "Switch to Monthly"}
+              </button>
+            )}
+
           {subscriptionActive && (
             <button
               type="button"
@@ -358,31 +514,88 @@ export default function BillingSection() {
         </div>
       </div>
 
-      {/* Invoices */}
+      {/* Saved payment methods */}
+
+      <div className="rounded-2xl border border-slate-200 bg-white p-5">
+        <div className="flex items-center gap-2">
+          <Wallet className="h-4 w-4 text-slate-400" />
+
+          <p className="text-xs font-bold uppercase tracking-wide text-slate-400">
+            Saved payment methods
+          </p>
+        </div>
+
+        {methodsLoading ? (
+          <p className="mt-3 text-sm text-slate-500">
+            Loading…
+          </p>
+        ) : methods.length ===
+          0 ? (
+          <p className="mt-3 text-sm text-slate-500">
+            No saved cards yet. Your card
+            is saved automatically after
+            your first Pro payment.
+          </p>
+        ) : (
+          <div className="mt-3 space-y-2">
+            {methods.map((method) => (
+              <div
+                key={method.id}
+                className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/60 px-4 py-3"
+              >
+                <CreditCard className="h-5 w-5 shrink-0 text-slate-500" />
+
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-bold text-slate-900">
+                    {method.cardName ??
+                      method.network ??
+                      method.method ??
+                      "Card"}
+                    {method.last4 &&
+                      ` •••• ${method.last4}`}
+                  </p>
+
+                  {method.vpa && (
+                    <p className="text-xs text-slate-500">
+                      {method.vpa}
+                    </p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Billing history */}
 
       <div className="rounded-2xl border border-slate-200 bg-white p-5">
         <div className="flex items-center gap-2">
           <Receipt className="h-4 w-4 text-slate-400" />
 
           <p className="text-xs font-bold uppercase tracking-wide text-slate-400">
-            Invoice history
+            Billing history
           </p>
         </div>
 
-        {payments.length ===
-        0 ? (
+        {historyLoading ? (
+          <p className="mt-3 text-sm text-slate-500">
+            Loading…
+          </p>
+        ) : history.length ===
+          0 ? (
           <p className="mt-3 text-sm text-slate-500">
             No payments yet.
           </p>
         ) : (
           <div className="mt-3 divide-y divide-slate-100">
-            {payments.map(
+            {history.map(
               (payment) => (
                 <div
                   key={payment.id}
                   className="flex items-center justify-between gap-4 py-3"
                 >
-                  <div>
+                  <div className="min-w-0">
                     <p className="text-sm font-bold text-slate-900">
                       {formatINR(
                         payment.amountPaise
@@ -392,13 +605,37 @@ export default function BillingSection() {
                     <p className="mt-0.5 text-xs text-slate-500">
                       {formatBillingDate(
                         payment.createdAt
-                      )}
+                      )}{" "}
+                      ·{" "}
+                      <span className="capitalize">
+                        {payment.status}
+                      </span>
                     </p>
                   </div>
 
-                  <span className="rounded-full bg-slate-100 px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.1em] text-slate-600">
-                    {payment.status}
-                  </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      void handleInvoice(
+                        payment
+                      )
+                    }
+                    disabled={
+                      invoiceFor ===
+                      payment.id
+                    }
+                    title="Download GST invoice"
+                    className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-slate-200 px-3 py-1.5 text-[11px] font-bold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
+                  >
+                    {invoiceFor ===
+                    payment.id ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <FileText className="h-3.5 w-3.5" />
+                    )}
+                    <Download className="h-3 w-3" />
+                    Invoice
+                  </button>
                 </div>
               )
             )}
