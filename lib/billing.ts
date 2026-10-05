@@ -223,6 +223,87 @@ export async function cancelSubscription() {
 }
 
 /* ============================================================
+   BILLING HISTORY
+============================================================ */
+
+export type HistoryPayment = {
+  id: string;
+  amountPaise: number;
+  currency: string;
+  status: string;
+  razorpayPaymentId: string | null;
+  createdAt: string;
+};
+
+export async function getBillingHistory() {
+  return apiRequest<{
+    success: boolean;
+    data: HistoryPayment[];
+  }>("/billing/history");
+}
+
+/* ============================================================
+   GST INVOICE
+============================================================ */
+
+export async function getInvoiceUrl(
+  paymentId: string
+) {
+  return apiRequest<{
+    success: boolean;
+    data: {
+      invoiceId: string;
+      url: string;
+    };
+  }>(
+    `/billing/invoices/${encodeURIComponent(
+      paymentId
+    )}`
+  );
+}
+
+/* ============================================================
+   SAVED PAYMENT METHODS
+============================================================ */
+
+export type SavedPaymentMethod = {
+  id: string;
+  method: string | null;
+  last4: string | null;
+  network: string | null;
+  cardName: string | null;
+  bank: string | null;
+  vpa: string | null;
+};
+
+export async function getPaymentMethods() {
+  return apiRequest<{
+    success: boolean;
+    data: SavedPaymentMethod[];
+  }>("/billing/payment-methods");
+}
+
+/* ============================================================
+   SWITCH PLAN (monthly <-> yearly, prorated)
+============================================================ */
+
+export async function switchPlan(
+  planCode: "PRO_MONTHLY" | "PRO_YEARLY"
+) {
+  return apiRequest<{
+    success: boolean;
+    data: {
+      planCode: string;
+      planName: string;
+      status: string;
+    };
+  }>("/billing/switch-plan", {
+    method: "POST",
+    body: JSON.stringify({ planCode }),
+  });
+}
+
+/* ============================================================
    TRIAL + REFERRAL (growth)
 ============================================================ */
 

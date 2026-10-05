@@ -12,6 +12,11 @@ import { useSearchParams } from "next/navigation";
 import QRCode from "qrcode";
 
 import {
+  applyBrandMarkToPng,
+  applyBrandMarkToSvg,
+} from "@/lib/qr-brand";
+
+import {
   ArrowLeft,
   Check,
   CheckCircle2,
@@ -334,6 +339,20 @@ export default function QRStudioPage() {
     setLogoPreviewError,
   ] = useState(false);
 
+  /*
+   * TapQR brand mark: baked into the QR center by default.
+   * The "Powered by TapQR" frame is an optional caption bar.
+   */
+  const [
+    brandMarkEnabled,
+    setBrandMarkEnabled,
+  ] = useState(true);
+
+  const [
+    poweredByFrame,
+    setPoweredByFrame,
+  ] = useState(false);
+
   const [
     copied,
     setCopied,
@@ -609,9 +628,31 @@ export default function QRStudioPage() {
         },
       }
     )
-      .then((dataUrl) => {
-        if (active) {
-          setPreview(dataUrl);
+      .then(async (dataUrl) => {
+        if (!active) return;
+
+        try {
+          const branded =
+            brandMarkEnabled
+              ? await applyBrandMarkToPng(
+                  dataUrl,
+                  {
+                    businessLogoUrl:
+                      branding.logoUrl,
+                    poweredByFrame,
+                  }
+                )
+              : dataUrl;
+
+          if (active) {
+            setPreview(branded);
+          }
+        } catch {
+          // Brand mark failed (e.g. logo CORS) —
+          // fall back to the plain QR.
+          if (active) {
+            setPreview(dataUrl);
+          }
         }
       })
       .catch(() => {
@@ -632,6 +673,9 @@ export default function QRStudioPage() {
     selectedQR,
     branding.qrForegroundColor,
     branding.qrBackgroundColor,
+    branding.logoUrl,
+    brandMarkEnabled,
+    poweredByFrame,
   ]);
 
   /* ==========================================================
@@ -785,12 +829,30 @@ export default function QRStudioPage() {
           }
         );
 
+      let finalUrl = dataUrl;
+
+      if (brandMarkEnabled) {
+        try {
+          finalUrl =
+            await applyBrandMarkToPng(
+              dataUrl,
+              {
+                businessLogoUrl:
+                  branding.logoUrl,
+                poweredByFrame,
+              }
+            );
+        } catch {
+          // Fall back to the plain QR.
+        }
+      }
+
       const link =
         document.createElement(
           "a"
         );
 
-      link.href = dataUrl;
+      link.href = finalUrl;
 
       link.download = `${safeFileName(
         selectedQR.name
@@ -867,9 +929,27 @@ export default function QRStudioPage() {
           }
         );
 
+      let finalSvg = svg;
+
+      if (brandMarkEnabled) {
+        try {
+          finalSvg =
+            await applyBrandMarkToSvg(
+              svg,
+              {
+                businessLogoUrl:
+                  branding.logoUrl,
+                poweredByFrame,
+              }
+            );
+        } catch {
+          // Fall back to the plain QR.
+        }
+      }
+
       const blob =
         new Blob(
-          [svg],
+          [finalSvg],
           {
             type:
               "image/svg+xml;charset=utf-8",
@@ -1709,6 +1789,100 @@ export default function QRStudioPage() {
                   })
                 }
               />
+            </StudioCard>
+
+            {/* =================================================
+               TAPQR BRAND MARK
+            ================================================= */}
+
+            <StudioCard
+              icon={
+                <Sparkles className="h-5 w-5" />
+              }
+              title="TapQR brand mark"
+              description="A tiny TapQR mark baked into the QR center."
+            >
+              <button
+                type="button"
+                role="switch"
+                aria-checked={
+                  brandMarkEnabled
+                }
+                onClick={() =>
+                  setBrandMarkEnabled(
+                    (v) => !v
+                  )
+                }
+                className="flex w-full items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-left"
+              >
+                <span>
+                  <span className="block text-sm font-bold text-slate-900">
+                    Center brand mark
+                  </span>
+                  <span className="mt-0.5 block text-xs text-slate-500">
+                    {branding.logoUrl
+                      ? "Your logo in the center, TapQR badge alongside."
+                      : "TapQR logo in the QR center."}{" "}
+                    Kept under 20% — scanning
+                    never breaks.
+                  </span>
+                </span>
+                <span
+                  className={`relative h-6 w-11 shrink-0 rounded-full transition ${
+                    brandMarkEnabled
+                      ? "bg-teal-500"
+                      : "bg-slate-200"
+                  }`}
+                >
+                  <span
+                    className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${
+                      brandMarkEnabled
+                        ? "left-[22px]"
+                        : "left-0.5"
+                    }`}
+                  />
+                </span>
+              </button>
+
+              <button
+                type="button"
+                role="switch"
+                aria-checked={
+                  poweredByFrame
+                }
+                onClick={() =>
+                  setPoweredByFrame(
+                    (v) => !v
+                  )
+                }
+                className="flex w-full items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 text-left"
+              >
+                <span>
+                  <span className="block text-sm font-bold text-slate-900">
+                    “Powered by TapQR”
+                    frame
+                  </span>
+                  <span className="mt-0.5 block text-xs text-slate-500">
+                    Caption bar under the
+                    QR.
+                  </span>
+                </span>
+                <span
+                  className={`relative h-6 w-11 shrink-0 rounded-full transition ${
+                    poweredByFrame
+                      ? "bg-teal-500"
+                      : "bg-slate-200"
+                  }`}
+                >
+                  <span
+                    className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${
+                      poweredByFrame
+                        ? "left-[22px]"
+                        : "left-0.5"
+                    }`}
+                  />
+                </span>
+              </button>
             </StudioCard>
 
             {/* =================================================

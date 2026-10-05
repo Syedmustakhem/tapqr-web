@@ -14,7 +14,10 @@ import {
   Bell,
   CheckCircle2,
   ChevronRight,
+  Code2,
   CreditCard,
+  Languages,
+  LifeBuoy,
   Loader2,
   Lock,
   LogOut,
@@ -34,6 +37,9 @@ import {
 } from "@/lib/auth";
 
 import BillingSection from "@/components/billing/BillingSection";
+import PreferencesSection from "@/components/settings/PreferencesSection";
+import HelpSupportSection from "@/components/settings/HelpSupportSection";
+import DeveloperSection from "@/components/settings/DeveloperSection";
 
 /* -------------------------------------------------------------------------- */
 /* Types                                                                      */
@@ -139,7 +145,10 @@ type SectionId =
   | "security"
   | "notifications"
   | "billing"
-  | "privacy";
+  | "privacy"
+  | "preferences"
+  | "help"
+  | "developer";
 
 /* -------------------------------------------------------------------------- */
 /* Page                                                                       */
@@ -944,6 +953,84 @@ export default function SettingsPage() {
                   email.
                 </p>
               </div>
+            </div>
+          )}
+        </div>
+
+        {/* PREFERENCES */}
+        <div className="border-b border-slate-100 last:border-b-0">
+          <SectionButton
+            icon={
+              <Languages className="h-5 w-5" />
+            }
+            title="Preferences"
+            description="Dashboard language and timezone."
+            open={
+              openSection ===
+              "preferences"
+            }
+            onClick={() =>
+              toggleSection(
+                "preferences"
+              )
+            }
+          />
+
+          {openSection ===
+            "preferences" && (
+            <div className="border-t border-slate-100 bg-slate-50/60 px-5 py-6 sm:px-8">
+              <PreferencesSection />
+            </div>
+          )}
+        </div>
+
+        {/* HELP & SUPPORT */}
+        <div className="border-b border-slate-100 last:border-b-0">
+          <SectionButton
+            icon={
+              <LifeBuoy className="h-5 w-5" />
+            }
+            title="Help & Support"
+            description="Get help, read FAQs, or contact us."
+            open={
+              openSection === "help"
+            }
+            onClick={() =>
+              toggleSection("help")
+            }
+          />
+
+          {openSection ===
+            "help" && (
+            <div className="border-t border-slate-100 bg-slate-50/60 px-5 py-6 sm:px-8">
+              <HelpSupportSection />
+            </div>
+          )}
+        </div>
+
+        {/* DEVELOPER */}
+        <div className="border-b border-slate-100 last:border-b-0">
+          <SectionButton
+            icon={
+              <Code2 className="h-5 w-5" />
+            }
+            title="Developer"
+            description="API keys for integrations and AI agents."
+            open={
+              openSection ===
+              "developer"
+            }
+            onClick={() =>
+              toggleSection(
+                "developer"
+              )
+            }
+          />
+
+          {openSection ===
+            "developer" && (
+            <div className="border-t border-slate-100 bg-slate-50/60 px-5 py-6 sm:px-8">
+              <DeveloperSection />
             </div>
           )}
         </div>
